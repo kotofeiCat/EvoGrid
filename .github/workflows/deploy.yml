@@ -29,8 +29,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 49351
           source: "docker-compose.yml,Dockerfile,init-scripts/**,*/target/*.jar"
-          target: "/home/${{ secrets.SSH_USER }}/pokemon-cloud"
+          target: "/var/www/EvoGrid"
           overwrite: true
 
       - name: Restart Docker Containers via SSH
@@ -39,6 +40,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 49351
           script: |
             cd /var/www/EvoGrid
             docker compose down --remove-orphans
