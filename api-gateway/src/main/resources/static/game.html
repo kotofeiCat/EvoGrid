@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvoGrid — Карта мира</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/uiverse.css">
+</head>
+<body>
+
+<div class="fullscreen-map-wrap">
+    <div class="floating-map-pill">
+        <span id="active-fighter-indicator">Активный боец: 1</span>
+    </div>
+    <div id="map"></div>
+</div>
+
+<div id="dock-mount"></div>
+
+<div id="modal-wild-inspect" class="modal-backdrop hidden">
+    <div class="modal-window">
+        <div class="inspector-layout">
+            <div id="wild-card-holder"></div>
+            <div class="inspector-details">
+                <h2 id="wild-title">Дикий покемон</h2>
+                <div id="wild-lore" class="lore-box"></div>
+                <p style="font-size:13px;color:#64748b">
+                    Боец из твоей пачки: <b id="wild-active-slot-label" style="color:#0f172a">Слот 1</b>
+                </p>
+                <div style="display:flex;gap:12px;margin-top:8px">
+                    <button class="uiv-btn primary" style="flex:1" onclick="confirmStartBattle()">
+                        <span class="button_top">Начать бой</span>
+                    </button>
+                    <button class="uiv-btn" onclick="closeWildModal()">
+                        <span class="button_top">Отмена</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-battle" class="modal-backdrop hidden">
+    <div class="modal-window" style="max-width:720px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 id="battle-status-title">Раунд 1</h3>
+            <span style="font-size:12px;color:#64748b;font-weight:600">
+                    FIRE &gt; FOREST &gt; WATER (x1.5)
+                </span>
+        </div>
+
+        <div class="battle-arena-row">
+            <div id="battle-player-card"></div>
+            <div style="font-size:20px;font-weight:800;color:#94a3b8">VS</div>
+            <div id="battle-enemy-card"></div>
+        </div>
+
+        <div id="battle-log-container" class="combat-log-box"></div>
+
+        <div style="display:flex;gap:12px">
+            <button id="btn-do-attack" class="uiv-btn primary" style="flex:1" onclick="doAttack()">
+                <span class="button_top">Атаковать</span>
+            </button>
+            <button id="btn-do-catch" class="uiv-btn" style="flex:1" onclick="doCatch()">
+                <span class="button_top">Бросить покебол</span>
+            </button>
+            <button class="uiv-btn" onclick="closeBattleWindow()">
+                <span class="button_top">Покинуть бой</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui-components.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

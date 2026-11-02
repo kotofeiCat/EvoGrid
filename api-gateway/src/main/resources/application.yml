@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowCredentials: true
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+
+        - id: pokemon-service
+          uri: lb://pokemon-service
+          predicates:
+            - Path=/api/pokemons/**
+
+        - id: world-service
+          uri: lb://world-service
+          predicates:
+            - Path=/api/world/**
+
+        - id: battle-service
+          uri: lb://battle-service
+          predicates:
+            - Path=/api/battles/**

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvoGrid — Профиль, Пачка и Покедекс</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/uiverse.css">
+</head>
+<body>
+
+<main class="workspace-page">
+
+    <!-- СЕКЦИЯ 1: МИНИМАЛИСТИЧНЫЙ ПРОФИЛЬ -->
+    <section id="view-profile" class="view-section hidden">
+        <div class="minimal-profile-hero">
+            <div class="hero-identity">
+                <div class="hero-avatar" id="prof-avatar">A</div>
+                <div>
+                    <h1 id="prof-name">Trainer</h1>
+                    <p>Иследователь мира EvoGrid Cloud</p>
+                </div>
+            </div>
+            <button class="uiv-btn" onclick="ApiService.logout()">
+                <span class="button_top">Выйти из аккаунта</span>
+            </button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-tile">
+                <div class="metric-head">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    <span>Уровень тренера</span>
+                </div>
+                <div class="metric-value" id="prof-level">1</div>
+            </div>
+
+            <div class="metric-tile">
+                <div class="metric-head">
+                    <span class="material-symbols-outlined">bolt</span>
+                    <span>Опыт (XP)</span>
+                </div>
+                <div class="metric-value"><span id="prof-xp">0</span> / 100</div>
+            </div>
+
+            <div class="metric-tile">
+                <div class="metric-head">
+                    <span class="material-symbols-outlined">catching_pokemon</span>
+                    <span>Запас покеболов</span>
+                </div>
+                <div class="metric-value" id="prof-balls">15</div>
+            </div>
+
+            <div class="metric-tile">
+                <div class="metric-head">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span>Поймано в коллекцию</span>
+                </div>
+                <div class="metric-value" id="prof-total-count">1</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ 2: НАСТРОЙКА ПАЧКИ (3 СЛОТА + ВЫБОР АКТИВНОГО СЛОТА) -->
+    <section id="view-party" class="view-section hidden">
+        <div class="section-header" style="text-align:left;max-width:100%">
+            <h2>Настройка боевой пачки</h2>
+            <p>Выбери активный слот для боя на карте или нажми на покемона из коллекции ниже, чтобы переставить слоты</p>
+        </div>
+
+        <div id="party-slots-row" class="cards-row" style="justify-content:flex-start"></div>
+
+        <div class="section-header" style="text-align:left;max-width:100%;margin-top:16px">
+            <h2>Твои пойманные покемоны</h2>
+            <p>Нажми на карточку, чтобы открыть характеристики и назначить в слот 1, 2 или 3</p>
+        </div>
+
+        <div id="owned-collection-row" class="cards-row" style="justify-content:flex-start"></div>
+    </section>
+
+    <!-- СЕКЦИЯ 3: ПОЛНЫЙ ПОКЕДЕКС (ВСЕ 13 ВИДОВ EVOGRID) -->
+    <section id="view-pokedex" class="view-section hidden">
+        <div class="section-header" style="text-align:left;max-width:100%">
+            <h2>Энциклопедия Покедекс</h2>
+            <p>Полный каталог всех видов EvoGrid с их стихиями и балансом характеристик (150 очков)</p>
+        </div>
+
+        <div id="pokedex-catalog-row" class="cards-row" style="justify-content:flex-start"></div>
+    </section>
+
+</main>
+
+<!-- Нижнее меню навигации (firemonste_8052) -->
+<div id="dock-mount"></div>
+
+<!-- МОДАЛЬНОЕ ОКНО: ДОСЬЕ ПОКЕМОНА -->
+<div id="modal-poke-details" class="modal-backdrop hidden">
+    <div class="modal-window">
+        <div class="inspector-layout">
+            <div id="detail-card-box"></div>
+            <div class="inspector-details">
+                <h2 id="detail-poke-name">Покемон</h2>
+                <div id="detail-poke-lore" class="lore-box"></div>
+
+                <div id="slot-assignment-controls">
+                    <p style="font-size:13px;font-weight:700;margin-bottom:10px">Назначить в слот боевой пачки:</p>
+                    <div style="display:flex;gap:8px">
+                        <button class="uiv-btn primary" onclick="assignToSlot(1)"><span class="button_top">Слот 1</span></button>
+                        <button class="uiv-btn primary" onclick="assignToSlot(2)"><span class="button_top">Слот 2</span></button>
+                        <button class="uiv-btn primary" onclick="assignToSlot(3)"><span class="button_top">Слот 3</span></button>
+                    </div>
+                </div>
+
+                <button class="uiv-btn" style="margin-top:6px" onclick="closeDetailModal()">
+                    <span class="button_top">Закрыть</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui-components.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

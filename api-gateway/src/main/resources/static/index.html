@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvoGrid — Вход и Регистрация</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/uiverse.css">
+</head>
+<body>
+
+<!-- ЭКРАН 1: ФОРМА ВХОДА / РЕГИСТРАЦИИ (alexruix + Satwinder04 + Voxybuns) -->
+<main id="step-auth" class="center-page">
+    <div class="form-box">
+        <form class="form" onsubmit="handleAuthForm(event)">
+            <span class="title" id="auth-title">Регистрация</span>
+            <span class="subtitle" id="auth-subtitle">Создай аккаунт тренера в мире EvoGrid</span>
+
+            <div class="form-container">
+                <div class="input-container">
+                    <input type="email" id="email-input" required>
+                    <label for="email-input" class="label">Электронная почта (Email)</label>
+                    <div class="underline"></div>
+                </div>
+
+                <div class="input-container">
+                    <input type="password" id="password-input" required minlength="4">
+                    <label for="password-input" class="label">Пароль</label>
+                    <div class="underline"></div>
+                </div>
+            </div>
+
+            <p id="auth-error" style="color:#be123c;font-size:13px;font-weight:700" class="hidden"></p>
+
+            <button type="submit" class="uiv-btn primary">
+                <span class="button_top" id="auth-btn-label">Выбрать стартовика →</span>
+            </button>
+        </form>
+
+        <div class="form-section">
+            <p id="auth-switch-text">
+                Уже есть аккаунт? <a onclick="toggleAuthMode()">Войти</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+<!-- ЭКРАН 2: ВЫБОР СТАРТОВИКА (Карточки KSAplay) -->
+<main id="step-starter" class="center-page hidden">
+    <div class="section-header">
+        <h2>Выбери стартового покемона</h2>
+        <p>Нажми на карточку покемона, чтобы изучить его баланс и поставить в 1-й слот пачки</p>
+    </div>
+
+    <div id="starters-row" class="cards-row"></div>
+
+    <div style="display:flex;gap:16px">
+        <button class="uiv-btn" onclick="backToAuth()">
+            <span class="button_top">← Назад</span>
+        </button>
+        <button class="uiv-btn primary" onclick="goToGeoStep()">
+            <span class="button_top">Подтвердить выбор →</span>
+        </button>
+    </div>
+</main>
+
+<!-- ЭКРАН 3: РАЗРЕШЕНИЕ НА ГЕОЛОКАЦИЮ -->
+<main id="step-geo" class="center-page hidden">
+    <div class="form-box" style="max-width:440px;padding:32px;text-align:center">
+        <h2 style="margin-bottom:10px">Доступ к GPS-координатам</h2>
+        <p style="color:#475569;font-size:14px;line-height:1.5;margin-bottom:20px">
+            Разреши браузеру доступ к геолокации, чтобы перемещаться по реальному миру и искать покемонов вокруг себя.
+        </p>
+        <p id="geo-status-msg" style="font-size:13px;font-weight:700;color:#0284c7;margin-bottom:18px">
+            Ожидание подтверждения...
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <button class="uiv-btn primary" onclick="startWithRealGps()">
+                <span class="button_top">Разрешить GPS и открыть карту</span>
+            </button>
+            <button class="uiv-btn" onclick="startWithDemoCoords()">
+                <span class="button_top">Демо-режим (Координаты по умолчанию)</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/ui-components.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

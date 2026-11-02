@@ -1,0 +1,340 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200');
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 22px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+:root {
+    --bg-gradient: linear-gradient(145deg, #f4f9ff 0%, #e6f3fe 100%);
+    --surface: rgba(255, 255, 255, 0.85);
+    --text-main: #0f172a;
+    --text-secondary: #64748b;
+    --accent: #0284c7;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.center-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    gap: 28px;
+}
+
+.cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+}
+
+.section-header {
+    text-align: center;
+    max-width: 560px;
+}
+
+.section-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+
+/* ПОЛНОЭКРАННАЯ КАРТА БЕЗ ХЕДЕРА */
+.fullscreen-map-wrap {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.leaflet-tile-pane {
+    filter: saturate(1.04) contrast(0.98);
+}
+
+/* Невесомый переключатель шага кликом в правом верхнем углу карты */
+.floating-map-pill {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    padding: 10px 16px;
+    border-radius: 99px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.floating-map-pill label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+/* Маркеры на карте без грубых рамок */
+.trainer-map-pin {
+    width: 20px;
+    height: 20px;
+    background: #0284c7;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 8px rgba(2, 132, 199, 0.24);
+}
+
+.wild-map-badge {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 99px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wild-map-badge img {
+    width: 16px;
+    height: 16px;
+}
+
+.wild-map-badge:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 26px rgba(2, 132, 199, 0.22);
+}
+
+/* МИНИМАЛИСТИЧНАЯ СТРАНИЦА ПРОФИЛЯ, ПАЧКИ И ПОКЕДЕКСА */
+.workspace-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 48px 24px 130px;
+}
+
+.view-section {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.minimal-profile-hero {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border-radius: 28px;
+    padding: 36px 40px;
+    box-shadow: 0 18px 45px rgba(2, 132, 199, 0.06);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.hero-identity {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.hero-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow: 0 12px 24px rgba(2, 132, 199, 0.25);
+}
+
+.hero-identity h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.hero-identity p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+.metric-tile {
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    border-radius: 22px;
+    padding: 24px 26px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric-tile .metric-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.metric-tile .metric-head img {
+    width: 20px;
+    height: 20px;
+}
+
+.metric-tile .metric-value {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
+}
+
+.slot-pillar {
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.04);
+}
+
+.slot-tag {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: #e0f2fe;
+    padding: 5px 14px;
+    border-radius: 99px;
+}
+
+/* МОДАЛЬНЫЕ ОКНА (БЕЗ ГРУБЫХ РАМОК) */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 3000;
+}
+
+.modal-window {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 32px;
+    max-width: 680px;
+    width: 100%;
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+}
+
+.inspector-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: center;
+    justify-content: center;
+}
+
+.inspector-details {
+    flex: 1;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lore-box {
+    background: #f8fafc;
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.battle-arena-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    gap: 18px;
+    margin: 20px 0;
+}
+
+.combat-log-box {
+    background: #f8fafc;
+    border-radius: 16px;
+    height: 130px;
+    overflow-y: auto;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #334155;
+}
