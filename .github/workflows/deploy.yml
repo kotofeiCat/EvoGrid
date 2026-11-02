@@ -23,26 +23,23 @@ jobs:
       - name: Build All Services
         run: mvn clean package -DskipTests
 
-      - name: Copy Files to VPS via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 49351
-          source: "docker-compose.yml,Dockerfile,init-scripts/**,*/target/*.jar"
-          target: "/var/www/EvoGrid"
-          overwrite: true
+      - name: Deploy to VPS via SSH Stream
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: 49351
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
-      - name: Restart Docker Containers via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 49351
-          script: |
+          tar -czf - docker-compose.yml Dockerfile init-scripts */target/*.jar | \
+            ssh -p $SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "tar -xzf - -C /var/www/EvoGrid"
+
+          ssh -p $SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
             cd /var/www/EvoGrid
             docker compose down --remove-orphans
             docker compose up -d --build
             docker image prune -f
+          EOF
