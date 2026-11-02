@@ -6,40 +6,22 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
-
-      - name: Build All Services
-        run: mvn clean package -DskipTests
-
-      - name: Deploy to VPS via SSH Stream
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: 49351
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-
-          tar -czf - docker-compose.yml Dockerfile init-scripts */target/*.jar | \
-            ssh -p $SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "tar -xzf - -C /var/www/EvoGrid"
-
-          ssh -p $SSH_PORT -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 49351
+          script: |
             cd /var/www/EvoGrid
+            git fetch --all
+            git reset --hard origin/main
+            mvn clean package -DskipTests
             docker compose down --remove-orphans
             docker compose up -d --build
             docker image prune -f
-          EOF

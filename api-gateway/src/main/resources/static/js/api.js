@@ -1,4 +1,4 @@
-const API_BASE = window.location.port === '8080' ? '' : 'http://localhost:8080';
+const API_BASE = '';
 const CATCH_RADIUS_METERS = 70;
 
 const GOOGLE_ICONS = {
