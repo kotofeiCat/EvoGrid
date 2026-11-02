@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SSH_USER }}/pokemon-cloud
+            cd /var/www/EvoGrid
             docker compose down --remove-orphans
             docker compose up -d --build
             docker image prune -f
