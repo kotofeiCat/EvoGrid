@@ -1,0 +1,165 @@
+version: '3.8'
+
+networks:
+  evogrid-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: evogrid-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - evogrid-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  discovery-server:
+    build:
+      context: .
+      args:
+        JAR_FILE: discovery-server/target/*.jar
+    container_name: discovery-server
+    restart: always
+    environment:
+      CONFIG_SERVER_HOST: config-server
+    networks:
+      - evogrid-net
+
+  config-server:
+    build:
+      context: .
+      args:
+        JAR_FILE: config-server/target/*.jar
+    container_name: config-server
+    restart: always
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+    networks:
+      - evogrid-net
+
+  pokemon-service:
+    build:
+      context: .
+      args:
+        JAR_FILE: pokemon-service/target/*.jar
+    container_name: pokemon-service
+    restart: always
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POKEMON_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      EUREKA_URI: http://discovery-server:8761/eureka
+      CONFIG_SERVER_HOST: config-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - evogrid-net
+
+  user-service:
+    build:
+      context: .
+      args:
+        JAR_FILE: user-service/target/*.jar
+    container_name: user-service
+    restart: always
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${USER_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URI: http://discovery-server:8761/eureka
+      CONFIG_SERVER_HOST: config-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - evogrid-net
+
+  world-service:
+    build:
+      context: .
+      args:
+        JAR_FILE: world-service/target/*.jar
+    container_name: world-service
+    restart: always
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${WORLD_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      EUREKA_URI: http://discovery-server:8761/eureka
+      CONFIG_SERVER_HOST: config-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - evogrid-net
+
+  battle-service:
+    build:
+      context: .
+      args:
+        JAR_FILE: battle-service/target/*.jar
+    container_name: battle-service
+    restart: always
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${BATTLE_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      EUREKA_URI: http://discovery-server:8761/eureka
+      CONFIG_SERVER_HOST: config-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-server:
+        condition: service_started
+    networks:
+      - evogrid-net
+
+  api-gateway:
+    build:
+      context: .
+      args:
+        JAR_FILE: api-gateway/target/*.jar
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "${GATEWAY_PORT:-80}:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      EUREKA_URI: http://discovery-server:8761/eureka
+      CONFIG_SERVER_HOST: config-server
+    depends_on:
+      - discovery-server
+    networks:
+      - evogrid-net

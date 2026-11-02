@@ -1,0 +1,4 @@
+CREATE DATABASE user_db;
+CREATE DATABASE pokemon_db;
+CREATE DATABASE world_db;
+CREATE DATABASE battle_db;

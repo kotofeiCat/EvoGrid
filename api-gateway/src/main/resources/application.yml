@@ -1,11 +1,14 @@
 server:
   port: 8080
 
+jwt:
+  secret: ${JWT_SECRET:EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
+
 spring:
   application:
     name: api-gateway
   config:
-    import: "optional:configserver:http://localhost:8888"
+    import: "optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
   cloud:
     gateway:
       globalcors:
@@ -25,17 +28,14 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
-
         - id: pokemon-service
           uri: lb://pokemon-service
           predicates:
             - Path=/api/pokemons/**
-
         - id: world-service
           uri: lb://world-service
           predicates:
             - Path=/api/world/**
-
         - id: battle-service
           uri: lb://battle-service
           predicates:
