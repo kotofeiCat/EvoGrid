@@ -38,20 +38,29 @@ jobs:
           done
 
           tar -czf deploy.tar.gz -C deploy_pkg .
-          ls -lh deploy.tar.gz
 
-      - name: Ensure target directory exists on server
+      - name: Prepare server and Swap memory
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 30s
-          command_timeout: 2m
+          port: 49351
+          timeout: 60s
+          command_timeout: 3m
           script: |
-            sudo mkdir -p /var/www/EboGrid
-            sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /var/www/EboGrid
+            # Создаем 4GB Swap, если его еще нет, чтобы Java-сервисы не вешали сервер
+            if [ ! -f /swapfile ]; then
+              fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
+              chmod 600 /swapfile
+              mkswap /swapfile
+              swapon /swapfile
+              echo '/swapfile none swap sw 0 0' >> /etc/fstab
+            else
+              swapon /swapfile || true
+            fi
+
+            mkdir -p /var/www/EboGrid
 
       - name: Upload archive to server
         uses: appleboy/scp-action@v0.1.7
@@ -59,8 +68,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 60s
+          port: 49351
+          timeout: 90s
           source: "deploy.tar.gz"
           target: "/var/www/EboGrid"
 
@@ -70,12 +79,15 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          timeout: 30s
+          port: 49351
+          timeout: 60s
           command_timeout: 10m
           script: |
             set -e
             cd /var/www/EboGrid
+
+            # Останавливаем предыдущие контейнеры для освобождения памяти
+            docker compose down || true
 
             tar -xzf deploy.tar.gz
             rm -f deploy.tar.gz
@@ -92,8 +104,13 @@ jobs:
             EOF
 
             docker compose build
+
+            # Поэтапный запуск для снижения пиковой нагрузки на CPU и RAM
             docker compose up -d postgres discovery-server config-server
             sleep 15
-            docker compose up -d pokemon-service user-service world-service battle-service api-gateway
+            docker compose up -d pokemon-service user-service
+            sleep 10
+            docker compose up -d world-service battle-service api-gateway
+
             docker image prune -f
             docker compose ps
