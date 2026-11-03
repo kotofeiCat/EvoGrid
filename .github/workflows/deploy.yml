@@ -1,27 +1,102 @@
-name: Deploy EvoGrid MVP
+name: Build and Deploy EvoGrid
 
 on:
   push:
     branches:
       - main
+      - master
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Deploy on VPS
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build all microservices with Maven
+        run: mvn clean package -DskipTests -T 1C
+
+      - name: Prepare deployment archive
+        run: |
+          mkdir -p deploy_pkg/init-scripts
+          cp docker-compose.yml Dockerfile .dockerignore deploy_pkg/
+          cp -r init-scripts/* deploy_pkg/init-scripts/
+
+          for service in config-server discovery-server api-gateway user-service pokemon-service world-service battle-service; do
+            mkdir -p "deploy_pkg/$service/target"
+            cp "$service/target/$service-1.0.0.jar" "deploy_pkg/$service/target/"
+          done
+
+          tar -czf deploy.tar.gz -C deploy_pkg .
+          ls -lh deploy.tar.gz
+
+      - name: Ensure target directory exists on server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 49351
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 30s
+          command_timeout: 2m
           script: |
-            cd /var/www/EvoGrid
-            git fetch --all
-            git reset --hard origin/main
-            mvn clean package -DskipTests
-            docker compose down --remove-orphans
-            docker compose up -d --build
+            sudo mkdir -p /var/www/EboGrid
+            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/EboGrid
+
+      - name: Upload archive to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 60s
+          source: "deploy.tar.gz"
+          target: "/var/www/EboGrid"
+
+      - name: Extract and start Docker containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 30s
+          command_timeout: 10m
+          script: |
+            set -e
+            cd /var/www/EboGrid
+
+            tar -xzf deploy.tar.gz
+            rm -f deploy.tar.gz
+
+            cat <<EOF > .env
+            POSTGRES_USER=${{ secrets.POSTGRES_USER || 'postgres' }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD || 'postgres' }}
+            POSTGRES_DB=postgres
+            USER_DB_NAME=user_db
+            POKEMON_DB_NAME=pokemon_db
+            WORLD_DB_NAME=world_db
+            BATTLE_DB_NAME=battle_db
+            JWT_SECRET=${{ secrets.JWT_SECRET || 'EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!' }}
+            EOF
+
+            docker compose build
+
+            docker compose up -d postgres discovery-server config-server
+            sleep 15
+
+            docker compose up -d pokemon-service user-service world-service battle-service api-gateway
+
             docker image prune -f
+            docker compose ps

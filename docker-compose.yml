@@ -11,25 +11,25 @@ services:
     container_name: evogrid-postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - evogrid-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   discovery-server:
     build:
       context: .
       args:
-        JAR_FILE: discovery-server/target/*.jar
+        JAR_FILE: discovery-server/target/discovery-server-1.0.0.jar
     container_name: discovery-server
     restart: always
     environment:
@@ -41,11 +41,12 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: config-server/target/*.jar
+        JAR_FILE: config-server/target/config-server-1.0.0.jar
     container_name: config-server
     restart: always
     environment:
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
     depends_on:
       - discovery-server
     networks:
@@ -55,21 +56,24 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: pokemon-service/target/*.jar
+        JAR_FILE: pokemon-service/target/pokemon-service-1.0.0.jar
     container_name: pokemon-service
     restart: always
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${POKEMON_DB_NAME}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POKEMON_DB_NAME:-pokemon_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
       postgres:
         condition: service_healthy
       discovery-server:
+        condition: service_started
+      config-server:
         condition: service_started
     networks:
       - evogrid-net
@@ -78,22 +82,25 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: user-service/target/*.jar
+        JAR_FILE: user-service/target/user-service-1.0.0.jar
     container_name: user-service
     restart: always
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${USER_DB_NAME}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
+      DB_NAME: ${USER_DB_NAME:-user_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
       postgres:
         condition: service_healthy
       discovery-server:
+        condition: service_started
+      config-server:
         condition: service_started
     networks:
       - evogrid-net
@@ -102,21 +109,24 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: world-service/target/*.jar
+        JAR_FILE: world-service/target/world-service-1.0.0.jar
     container_name: world-service
     restart: always
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${WORLD_DB_NAME}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${WORLD_DB_NAME:-world_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
       postgres:
         condition: service_healthy
       discovery-server:
+        condition: service_started
+      config-server:
         condition: service_started
     networks:
       - evogrid-net
@@ -125,21 +135,24 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: battle-service/target/*.jar
+        JAR_FILE: battle-service/target/battle-service-1.0.0.jar
     container_name: battle-service
     restart: always
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${BATTLE_DB_NAME}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${BATTLE_DB_NAME:-battle_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
       postgres:
         condition: service_healthy
       discovery-server:
+        condition: service_started
+      config-server:
         condition: service_started
     networks:
       - evogrid-net
@@ -148,16 +161,18 @@ services:
     build:
       context: .
       args:
-        JAR_FILE: api-gateway/target/*.jar
+        JAR_FILE: api-gateway/target/api-gateway-1.0.0.jar
     container_name: api-gateway
     restart: always
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
       EUREKA_URI: http://discovery-server:8761/eureka
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
       - discovery-server
+      - config-server
     networks:
       - evogrid-net
