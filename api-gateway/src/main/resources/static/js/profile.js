@@ -151,6 +151,7 @@ async function openDossierModal(pokeObj, isOwned) {
     document.getElementById('detail-poke-lore').textContent =
         species.description || 'Обитатель мира EvoGrid.';
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);
+    showSheet('detail-poke-sheet', pokeObj);
 
     const abilitiesListEl = document.getElementById('detail-poke-abilities-list');
     abilitiesListEl.innerHTML = `<div class="ability-loading">Загрузка способностей...</div>`;

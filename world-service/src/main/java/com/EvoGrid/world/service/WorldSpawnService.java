@@ -26,6 +26,9 @@ public class WorldSpawnService {
     private static final double SPAWN_OFFSET_DEG = 0.00062;
     private static final int MIN_NEARBY_SPAWNS = 6;
 
+    /** Тестовые виды: есть в покедексе, но в мире не появляются (1 = Серый грызун). */
+    private static final Set<Long> TEST_SPECIES_IDS = Set.of(1L);
+
     private final WorldSpawnRepository spawnRepository;
     private final PokemonClient pokemonClient;
 
@@ -36,7 +39,9 @@ public class WorldSpawnService {
 
     @Transactional
     public List<WorldSpawnDto> getOrGenerateSpawnsNear(double lat, double lon) {
-        List<PokemonSpeciesDto> catalog = fetchCatalog();
+        List<PokemonSpeciesDto> catalog = fetchCatalog().stream()
+                .filter(s -> !TEST_SPECIES_IDS.contains(s.id()))
+                .toList();
         Set<String> validNames = catalog.stream()
                 .map(PokemonSpeciesDto::name)
                 .collect(Collectors.toSet());
@@ -56,7 +61,7 @@ public class WorldSpawnService {
         }
 
         int missingCount = MIN_NEARBY_SPAWNS - existing.size();
-        if (missingCount > 0) {
+        if (missingCount > 0 && !catalog.isEmpty()) {
             ThreadLocalRandom random = ThreadLocalRandom.current();
             for (int i = 0; i < missingCount; i++) {
                 PokemonSpeciesDto s = catalog.get(random.nextInt(catalog.size()));
@@ -87,11 +92,8 @@ public class WorldSpawnService {
         try {
             return pokemonClient.getAllSpecies();
         } catch (Exception t) {
-            log.warn("pokemon-service недоступен ({}). Используется Fallback!", t.getMessage());
-            return List.of(new PokemonSpeciesDto(
-                    1L, "Серый грызун", "NEUTRAL", "Баланс",
-                    "Резервный покемон", 75, 25, 25, 25, false
-            ));
+            log.warn("pokemon-service недоступен ({}). Новые спавны не создаются.", t.getMessage());
+            return List.of();
         }
     }
 

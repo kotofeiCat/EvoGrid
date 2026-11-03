@@ -45,9 +45,10 @@ const UiComponents = {
         const def = poke.defense ?? poke.baseDefense ?? 25;
         const spd = poke.speed ?? poke.baseSpeed ?? 25;
         const elem = poke.element || 'NEUTRAL';
+        const art = typeof getPokemonArt === 'function' ? getPokemonArt(poke) : null;
 
         return `
-        <div class="poke-card ${isSelected ? 'selected-card' : ''}" data-element="${elem}">
+        <div class="poke-card ${isSelected ? 'selected-card' : ''} ${art ? 'has-art art-' + art.fit : ''}" data-element="${elem}">
             <section class="landscape-section">
                 <div class="sky"></div>
                 <div class="sun"></div>
@@ -63,6 +64,7 @@ const UiComponents = {
                 <div class="tree-1" style="color:#475569">${VECTOR_PATHS.TREE}</div>
                 <div class="tree-2" style="color:#475569">${VECTOR_PATHS.TREE}</div>
                 <div class="tree-3" style="color:#334155">${VECTOR_PATHS.TREE}</div>
+                ${art ? `<img class="poke-art fit-${art.fit}" src="${art.src}" alt="" loading="lazy" draggable="false">` : ''}
                 <div class="filter"></div>
 
                 <!-- Верхние контрастные плашки стихии и HP -->

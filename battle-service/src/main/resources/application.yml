@@ -1,5 +1,7 @@
 server:
   port: 8083
+  error:
+    include-message: always
 
 spring:
   application:
@@ -29,3 +31,5 @@ resilience4j:
         slidingWindowSize: 5
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
+battle:
+  turn-seconds: 30

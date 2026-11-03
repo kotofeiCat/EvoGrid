@@ -30,6 +30,7 @@
             <div class="inspector-details">
                 <h2 id="wild-title">Дикий покемон</h2>
                 <div id="wild-lore" class="lore-box"></div>
+                <img id="wild-sheet" class="dossier-sheet hidden" alt="Концепт-арт покемона" loading="lazy">
                 <p class="active-slot-hint">
                     В бой вступит: <b id="wild-active-slot-label">Слот #1</b>
                 </p>
@@ -51,12 +52,17 @@
     <div class="modal-window battle-modal-window">
         <div class="battle-header">
             <h3 id="battle-status-title">Ход 1</h3>
-            <span class="battle-rules-hint">FIRE &gt; FOREST &gt; WATER (x1.5) • STAB x1.25</span>
+            <div id="turn-timer" class="turn-timer" aria-live="polite">
+                <span class="turn-timer-label"><span id="turn-timer-sec">30</span> с</span>
+                <div class="turn-timer-track"><div id="turn-timer-fill" class="turn-timer-fill"></div></div>
+            </div>
         </div>
+        <p class="battle-rules-hint">Огонь бьёт лес, лес — воду, вода — огонь (x1.5). Атака своей стихии — x1.25.</p>
 
         <div class="battle-arena-row">
             <div class="battle-fighter-col">
                 <div id="battle-player-card"></div>
+                <div class="hp-bar"><div id="battle-player-hp" class="hp-bar-fill"></div></div>
                 <div id="battle-player-statuses" class="status-badges-row"></div>
             </div>
 
@@ -64,20 +70,30 @@
 
             <div class="battle-fighter-col">
                 <div id="battle-enemy-card"></div>
+                <div class="hp-bar"><div id="battle-enemy-hp" class="hp-bar-fill"></div></div>
                 <div id="battle-enemy-statuses" class="status-badges-row"></div>
             </div>
         </div>
 
+        <div id="battle-result" class="battle-result hidden"></div>
+
         <div id="battle-log-container" class="combat-log-box"></div>
 
-        <!-- Сетка из 4 способностей -->
-        <div class="abilities-section-title">Способность на этот ход</div>
-        <div id="battle-abilities-grid" class="abilities-grid"></div>
+        <div id="battle-skip-notice" class="skip-notice hidden">
+            <span id="battle-skip-text">Ваш покемон спит и пропускает этот ход.</span>
+            <button class="uiv-btn primary" onclick="skipTurn()">
+                <span class="button_top">Пропустить ход</span>
+            </button>
+        </div>
 
-        <!-- Нижний ряд действий -->
+        <div id="battle-abilities-wrap">
+            <div class="abilities-section-title">Способность на этот ход</div>
+            <div id="battle-abilities-grid" class="abilities-grid"></div>
+        </div>
+
         <div class="modal-actions-row">
             <button id="btn-do-catch" class="uiv-btn primary" onclick="doCatch()">
-                <span class="button_top">Бросить Покебол</span>
+                <span class="button_top">Бросить покебол</span>
             </button>
             <button class="uiv-btn" onclick="closeBattleWindow()">
                 <span class="button_top">Выйти</span>
@@ -87,6 +103,7 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/pokemon-art.js"></script>
 <script src="js/ui-components.js"></script>
 <script src="js/game.js"></script>
 </body>

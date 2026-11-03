@@ -71,6 +71,15 @@ async function loadYandexMapsScript() {
     return ymapsScriptPromise;
 }
 
+async function readError(res, fallback) {
+    try {
+        const body = await res.json();
+        return body.message || body.reason || fallback;
+    } catch {
+        return fallback;
+    }
+}
+
 const ApiService = {
     async getPublicConfig() {
         const res = await fetch(`${API_BASE}/api/config/public`, {
@@ -193,7 +202,7 @@ const ApiService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, spawnId, partySlot })
         });
-        if (!res.ok) throw new Error('Не удалось начать бой');
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось начать бой'));
         return res.json();
     },
 
@@ -202,6 +211,16 @@ const ApiService = {
             method: 'POST',
             credentials: 'include'
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось сделать ход'));
+        return res.json();
+    },
+
+    async battleTimeout(battleId) {
+        const res = await fetch(`${API_BASE}/api/battles/${battleId}/timeout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Не удалось завершить ход');
         return res.json();
     },
 
@@ -210,6 +229,7 @@ const ApiService = {
             method: 'POST',
             credentials: 'include'
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось бросить покебол'));
         return res.json();
     }
 };

@@ -14,23 +14,17 @@
     <!-- ВКЛАДКА 1: ПРОФИЛЬ -->
     <section id="view-profile" class="view-section hidden">
         <div class="profile-card-hero">
-            <div class="profile-hero-top">
-                <div class="hero-identity">
-                    <div class="hero-avatar" id="prof-avatar">A</div>
-                    <div class="hero-text">
-                        <span class="trainer-badge">Тренер EvoGrid</span>
-                        <h1 id="prof-name">Trainer</h1>
-                        <p>Аккаунт синхронизирован с EvoGrid Cloud</p>
-                    </div>
+            <div class="hero-identity">
+                <div class="hero-avatar" id="prof-avatar">A</div>
+                <div class="hero-text">
+                    <h1 id="prof-name">Trainer</h1>
+                    <p>Тренер EvoGrid</p>
                 </div>
-                <button class="uiv-btn logout-btn" onclick="ApiService.logout()">
-                    <span class="button_top">Выйти из аккаунта</span>
-                </button>
             </div>
 
             <div class="xp-progress-wrap">
                 <div class="xp-progress-labels">
-                    <span>Прогресс до следующего уровня</span>
+                    <span>Опыт до следующего уровня</span>
                     <b><span id="prof-xp">0</span> / 100 XP</b>
                 </div>
                 <div class="xp-progress-track">
@@ -47,15 +41,6 @@
                 <div class="metric-info">
                     <span class="metric-label">Уровень тренера</span>
                     <div class="metric-value" id="prof-level">1</div>
-                </div>
-            </div>
-            <div class="metric-tile">
-                <div class="metric-icon-box amber">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </div>
-                <div class="metric-info">
-                    <span class="metric-label">Опыт (XP)</span>
-                    <div class="metric-value"><span id="prof-xp-tile">0</span> <small>/ 100</small></div>
                 </div>
             </div>
             <div class="metric-tile">
@@ -76,6 +61,13 @@
                     <div class="metric-value" id="prof-total-count">1</div>
                 </div>
             </div>
+        </div>
+
+        <div class="profile-footer">
+            <button type="button" class="logout-link" onclick="ApiService.logout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                Выйти из аккаунта
+            </button>
         </div>
     </section>
 
@@ -115,6 +107,7 @@
             <div class="inspector-details">
                 <h2 id="detail-poke-name">Покемон</h2>
                 <div id="detail-poke-lore" class="lore-box"></div>
+                <img id="detail-poke-sheet" class="dossier-sheet hidden" alt="Концепт-арт покемона" loading="lazy">
 
                 <!-- Способности пойманного покемона -->
                 <div id="detail-poke-abilities-wrap">
@@ -140,6 +133,7 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/pokemon-art.js"></script>
 <script src="js/ui-components.js"></script>
 <script src="js/profile.js"></script>
 </body>

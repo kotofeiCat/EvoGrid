@@ -1333,3 +1333,430 @@ h1, h2, h3 {
     margin-top: auto;
     padding-top: 2px;
 }
+
+/* ==========================================================================
+   БОЙ: ТАЙМЕР ХОДА, HP, РЕЗУЛЬТАТ, ЛОГ
+   ========================================================================== */
+.battle-rules-hint {
+    display: block;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: 600;
+    color: var(--ink-faint);
+}
+
+.turn-timer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 160px;
+    flex: 0 1 220px;
+}
+
+.turn-timer-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    min-width: 42px;
+    text-align: right;
+}
+
+.turn-timer-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--paper-deep);
+    overflow: hidden;
+}
+
+.turn-timer-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--radar);
+    border-radius: 999px;
+    transition: width 0.25s linear, background-color 0.2s ease;
+}
+
+.turn-timer.urgent .turn-timer-fill {
+    background: var(--danger);
+}
+
+.turn-timer.urgent .turn-timer-label {
+    color: var(--danger);
+    animation: timerPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes timerPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.15); }
+}
+
+.hp-bar {
+    width: 100%;
+    max-width: 265px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--paper-deep);
+    overflow: hidden;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: #22b35e;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(.2, .8, .2, 1), background-color 0.3s ease;
+}
+
+.hp-bar-fill.mid { background: var(--amber); }
+.hp-bar-fill.low { background: var(--danger); }
+
+.battle-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 14px;
+    border-radius: var(--r-md);
+    margin-bottom: 12px;
+    text-align: center;
+    animation: resultPop 0.45s cubic-bezier(.2, 1.4, .4, 1);
+}
+
+.battle-result b {
+    font-family: var(--font-display);
+    font-size: 22px;
+}
+
+.battle-result span {
+    font-size: 14px;
+}
+
+.battle-result.win {
+    background: var(--radar-soft);
+    color: var(--radar);
+}
+
+.battle-result.lose {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+@keyframes resultPop {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.skip-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-radius: var(--r-md);
+    background: #fff4d6;
+    color: #6b4a00;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.combat-log-box {
+    height: 220px;
+    font-size: 13.5px;
+    padding: 12px 16px;
+}
+
+.combat-log-box .log-round {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: #8fb0ff;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.combat-log-box .log-round:first-child {
+    margin-top: 0;
+    border-top: none;
+}
+
+.combat-log-box .log-line {
+    color: #b9c6e0;
+}
+
+.combat-log-box .log-line.recent {
+    color: #ffffff;
+    animation: logIn 0.3s ease-out;
+}
+
+.combat-log-box > div:last-child {
+    font-weight: 600;
+}
+
+@keyframes logIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Попадание и лечение */
+.poke-card.anim-hit {
+    animation: cardHit 0.45s ease-out;
+}
+
+.poke-card.anim-heal {
+    animation: cardHeal 0.6s ease-out;
+}
+
+@keyframes cardHit {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7px) rotate(-1.5deg); }
+    40% { transform: translateX(6px) rotate(1deg); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(2px); }
+}
+
+@keyframes cardHeal {
+    0% { box-shadow: 0 0 0 0 rgba(34, 179, 94, 0.6); }
+    100% { box-shadow: 0 0 0 14px rgba(34, 179, 94, 0); }
+}
+
+.dmg-float {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    z-index: 20;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 26px;
+    pointer-events: none;
+    text-shadow: 0 2px 8px rgba(15, 31, 61, 0.5);
+    animation: dmgFloat 1.1s ease-out forwards;
+}
+
+.dmg-float.dmg { color: #ffffff; }
+.dmg-float.heal { color: #7dffb0; }
+
+@keyframes dmgFloat {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+    15% { transform: translate(-50%, -6px) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -48px) scale(1); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+    .combat-log-box {
+        height: 170px;
+        font-size: 12.5px;
+    }
+    .turn-timer {
+        flex-basis: 100%;
+        min-width: 0;
+    }
+    .hp-bar {
+        height: 6px;
+    }
+    .dmg-float {
+        font-size: 20px;
+    }
+}
+
+/* ==========================================================================
+   ПРОФИЛЬ: простая карточка + выход внизу
+   ========================================================================== */
+.profile-card-hero {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+    gap: 18px;
+}
+
+.profile-card-hero::before {
+    content: none;
+}
+
+.hero-avatar {
+    background: var(--radar);
+    color: #ffffff;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+}
+
+.hero-text h1 {
+    color: var(--ink);
+}
+
+.hero-text p {
+    color: var(--ink-soft);
+}
+
+.xp-progress-labels {
+    color: var(--ink-soft);
+}
+
+.xp-progress-labels b {
+    color: var(--ink);
+}
+
+.xp-progress-track {
+    background: var(--paper-deep);
+}
+
+.xp-progress-fill {
+    background: var(--radar);
+}
+
+.metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+}
+
+.logout-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.logout-link svg {
+    width: 18px;
+    height: 18px;
+}
+
+.logout-link:hover {
+    background: var(--danger-soft);
+}
+
+@media (max-width: 640px) {
+    .metrics-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+    .metric-tile {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 380px) {
+    .metrics-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* ==========================================================================
+   АНИМАЦИИ ИНТЕРФЕЙСА
+   ========================================================================== */
+/* Экран входа: появление логотипа и формы */
+#step-auth .brand {
+    animation: riseIn 0.6s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+#step-auth .form-box {
+    animation: riseIn 0.6s 0.12s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+#step-starter .cards-row > div,
+#pokedex-catalog-row > .grid-card-item,
+#owned-collection-row > .grid-card-item,
+#party-slots-row > .slot-pillar {
+    animation: riseIn 0.45s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+#pokedex-catalog-row > .grid-card-item:nth-child(2),
+#owned-collection-row > .grid-card-item:nth-child(2),
+#party-slots-row > .slot-pillar:nth-child(2),
+#step-starter .cards-row > div:nth-child(2) { animation-delay: 0.05s; }
+#pokedex-catalog-row > .grid-card-item:nth-child(3),
+#owned-collection-row > .grid-card-item:nth-child(3),
+#party-slots-row > .slot-pillar:nth-child(3),
+#step-starter .cards-row > div:nth-child(3) { animation-delay: 0.1s; }
+#pokedex-catalog-row > .grid-card-item:nth-child(4),
+#owned-collection-row > .grid-card-item:nth-child(4) { animation-delay: 0.15s; }
+#pokedex-catalog-row > .grid-card-item:nth-child(n+5),
+#owned-collection-row > .grid-card-item:nth-child(n+5) { animation-delay: 0.2s; }
+
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.metric-tile,
+.profile-card-hero {
+    animation: riseIn 0.45s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+/* Дикие покемоны на карте слегка покачиваются */
+.wild-map-badge {
+    animation: badgeBob 2.4s ease-in-out infinite;
+}
+
+.wild-map-badge.in-range {
+    animation: badgeBob 1.2s ease-in-out infinite;
+}
+
+@keyframes badgeBob {
+    0%, 100% { transform: translate(-50%, -50%); }
+    50% { transform: translate(-50%, calc(-50% - 4px)); }
+}
+
+/* Выбранная карточка стартовика «подпрыгивает» */
+.cards-row .poke-card.selected-card {
+    animation: selectPop 0.35s cubic-bezier(.2, 1.4, .4, 1);
+}
+
+@keyframes selectPop {
+    0% { transform: scale(0.96); }
+    100% { transform: scale(1); }
+}
+
+/* Вкладки нижнего меню */
+.example-1 .icon-content .link.active-nav svg {
+    animation: navPop 0.35s cubic-bezier(.2, 1.4, .4, 1);
+}
+
+@keyframes navPop {
+    0% { transform: scale(0.7); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.profile-card-hero .hero-identity {
+    flex: none;
+}
+
+.dossier-sheet {
+    width: 100%;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: #ffffff;
+    display: block;
+}

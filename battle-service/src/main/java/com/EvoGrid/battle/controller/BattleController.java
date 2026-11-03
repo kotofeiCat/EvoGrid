@@ -44,7 +44,7 @@ public class BattleController {
     public BattleStateDto startBattle(
             @RequestBody StartBattleRequest request,
             @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
-        return battleService.startBattle(request, authUserId);
+        return battleService.start(request, authUserId);
     }
 
     @PostMapping("/{battleId}/attack")
@@ -53,7 +53,7 @@ public class BattleController {
             @PathVariable Long battleId,
             @RequestParam(name = "slot", required = false, defaultValue = "1") Integer slot,
             @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
-        return battleService.attackTurn(battleId, authUserId, slot);
+        return battleService.useAbility(battleId, authUserId, slot);
     }
 
     @PostMapping("/{battleId}/catch")
@@ -64,11 +64,19 @@ public class BattleController {
         return battleService.throwPokeball(battleId, authUserId);
     }
 
+    @PostMapping("/{battleId}/timeout")
+    @Operation(summary = "Время хода вышло или боец спит/оглушён — разыграть ход автоматически")
+    public BattleStateDto timeout(
+            @PathVariable Long battleId,
+            @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
+        return battleService.timeout(battleId, authUserId);
+    }
+
     @GetMapping("/{battleId}")
     @Operation(summary = "Получить текущее состояние боя")
     public BattleStateDto getBattle(
             @PathVariable Long battleId,
             @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
-        return battleService.getBattleState(battleId, authUserId);
+        return battleService.get(battleId, authUserId);
     }
 }

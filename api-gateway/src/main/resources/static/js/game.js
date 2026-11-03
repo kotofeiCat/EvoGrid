@@ -116,17 +116,6 @@ async function initYandexGameMap(lat, lon) {
         }
     );
     map.geoObjects.add(playerMarker);
-
-    // Клик по карте для передвижения
-    map.events.add('click', (e) => {
-        const walkToggle = document.getElementById('click-walk-toggle');
-        if (!walkToggle || walkToggle.checked) {
-            const coords = e.get('coords');
-            if (Array.isArray(coords)) {
-                moveTrainerTo(coords[0], coords[1], true);
-            }
-        }
-    });
 }
 
 function animateMarkerTo(targetLat, targetLon, durationMs = 380) {
@@ -364,6 +353,7 @@ function tryInspectWildPokemon(spawn) {
     document.getElementById('wild-card-holder').innerHTML = UiComponents.createPokemonLandscapeCard(spawn);
     document.getElementById('wild-title').textContent = `${spawn.name} (${spawn.archetype})`;
     document.getElementById('wild-lore').textContent = speciesInfo?.description || 'Обитатель мира EvoGrid.';
+    showSheet('wild-sheet', spawn);
     document.getElementById('wild-active-slot-label').textContent = `Слот #${activeSlot} (${Math.round(distance)} м)`;
 
     document.getElementById('modal-wild-inspect').classList.remove('hidden');
@@ -381,19 +371,35 @@ async function confirmStartBattle() {
             selectedWildSpawn.spawnId,
             currentUser.activePartySlot || 1
         );
+        lastHp = null;
         renderBattleState();
         document.getElementById('modal-battle').classList.remove('hidden');
     } catch (err) {
-        UiComponents.showErrorAlert('Ошибка боя', err.message);
+        UiComponents.showErrorAlert('Бой не начался', err.message);
     }
 }
+
+// ==================== СОСТОЯНИЕ БОЯ ====================
+
+const BATTLE_STATUS_TEXT = {
+    IN_PROGRESS: null,
+    WON_BY_KO: { title: 'Победа!', text: 'Дикий покемон повержен.', kind: 'win' },
+    CAPTURED: { title: 'Пойман!', text: 'Покемон добавлен в коллекцию.', kind: 'win' },
+    LOST: { title: 'Поражение', text: 'Ваш покемон без сил. Попробуйте другим бойцом.', kind: 'lose' }
+};
+
+let battleBusy = false;
+let turnTimerId = null;
+let turnDeadlineMs = 0;
+let turnTotalSec = 30;
+let lastHp = null;
 
 function renderStatusBadges(statuses = []) {
     if (!statuses || statuses.length === 0) {
         return `<span class="status-badge empty-status">Нет эффектов</span>`;
     }
     return statuses.map(st => {
-        const isNegative = /ожог|яд|сон|оглуш|замедл|ослеп/i.test(st);
+        const isNegative = /горени|яд|сон|оглуш|замедл|ослеп/i.test(st);
         return `<span class="status-badge ${isNegative ? 'debuff' : 'buff'}">${st}</span>`;
     }).join('');
 }
@@ -409,31 +415,27 @@ function formatAbilityMetaBadge(ab) {
     return `PWR ${ab.power}${stabLabel}`;
 }
 
-function renderAbilitiesGrid(abilities = [], isBattleOver = false) {
+function renderAbilitiesGrid(abilities = [], locked = false) {
     const grid = document.getElementById('battle-abilities-grid');
     if (!grid) return;
 
     if (!abilities || abilities.length === 0) {
         grid.innerHTML = `
-            <button class="uiv-btn primary" style="grid-column: 1 / -1" ${isBattleOver ? 'disabled' : ''} onclick="doAttack(1)">
+            <button class="uiv-btn primary" style="grid-column: 1 / -1" ${locked ? 'disabled' : ''} onclick="doAttack(1)">
                 <span class="button_top">Атаковать</span>
-            </button>
-        `;
+            </button>`;
         return;
     }
 
     grid.innerHTML = abilities.map(ab => {
         const onCooldown = (ab.currentCooldown || 0) > 0;
-        const disabled = isBattleOver || onCooldown;
-
+        const disabled = locked || onCooldown;
         const cdBadge = onCooldown
             ? `<span class="cd-pill active-cd">КД: ${ab.currentCooldown} х.</span>`
             : (ab.maxCooldown > 0 ? `<span class="cd-pill">КД ${ab.maxCooldown}</span>` : `<span class="cd-pill ready-cd">Готово</span>`);
 
         return `
-            <button class="uiv-btn ability-btn"
-                    ${disabled ? 'disabled' : ''}
-                    onclick="doAttack(${ab.slot})">
+            <button class="uiv-btn ability-btn" ${disabled ? 'disabled' : ''} onclick="doAttack(${ab.slot})">
                 <span class="button_top ability-top">
                     <span class="ability-header-row">
                         <span class="ability-name">${ab.slot}. ${ab.name}</span>
@@ -444,91 +446,208 @@ function renderAbilitiesGrid(abilities = [], isBattleOver = false) {
                         <span class="ability-type-tag">${formatAbilityMetaBadge(ab)}</span>
                     </span>
                 </span>
-            </button>
-        `;
+            </button>`;
     }).join('');
+}
+
+function setHpBar(id, cur, max) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const pct = max > 0 ? Math.max(0, Math.min(100, (cur / max) * 100)) : 0;
+    el.style.width = `${pct}%`;
+    el.classList.toggle('low', pct <= 25);
+    el.classList.toggle('mid', pct > 25 && pct <= 55);
+}
+
+function flashHit(containerId, delta) {
+    const card = document.querySelector(`#${containerId} .poke-card`);
+    if (!card || delta === 0) return;
+    card.classList.remove('anim-hit', 'anim-heal');
+    void card.offsetWidth; // перезапуск анимации
+    card.classList.add(delta < 0 ? 'anim-hit' : 'anim-heal');
+
+    const float = document.createElement('span');
+    float.className = `dmg-float ${delta < 0 ? 'dmg' : 'heal'}`;
+    float.textContent = delta < 0 ? `−${Math.abs(delta)}` : `+${delta}`;
+    card.appendChild(float);
+    setTimeout(() => float.remove(), 1100);
 }
 
 function renderBattleState() {
     const b = currentBattle;
-    document.getElementById('battle-status-title').textContent = `Ход ${b.turnNumber} • ${b.status}`;
+    const isOver = b.status !== 'IN_PROGRESS';
 
-    const playerSpdVal = b.playerEffectiveSpeed !== undefined && b.playerEffectiveSpeed !== b.playerSpeed
-        ? `${b.playerEffectiveSpeed} (${b.playerSpeed})`
-        : b.playerSpeed;
+    document.getElementById('battle-status-title').textContent = isOver ? `Бой окончен · ход ${b.turnNumber}` : `Ход ${b.turnNumber}`;
 
-    const enemySpdVal = b.enemyEffectiveSpeed !== undefined && b.enemyEffectiveSpeed !== b.enemySpeed
-        ? `${b.enemyEffectiveSpeed} (${b.enemySpeed})`
-        : b.enemySpeed;
+    const spd = (eff, base) => (eff !== undefined && eff !== base ? `${eff} (${base})` : base);
 
-    const playerCardObj = {
+    document.getElementById('battle-player-card').innerHTML = UiComponents.createPokemonLandscapeCard({
+        speciesId: b.playerSpeciesId,
         name: b.playerPokemonName,
         element: b.playerElement,
         archetype: 'Ваш боец',
         maxHp: `${b.playerCurrentHp}/${b.playerMaxHp}`,
         attack: b.playerAttack,
         defense: b.playerDefense,
-        speed: playerSpdVal
-    };
-
-    const enemyCardObj = {
+        speed: spd(b.playerEffectiveSpeed, b.playerSpeed)
+    });
+    document.getElementById('battle-enemy-card').innerHTML = UiComponents.createPokemonLandscapeCard({
+        speciesId: b.enemySpeciesId,
         name: b.enemyPokemonName,
         element: b.enemyElement,
         archetype: b.enemyArchetype,
         maxHp: `${b.enemyCurrentHp}/${b.enemyMaxHp}`,
         attack: b.enemyAttack,
         defense: b.enemyDefense,
-        speed: enemySpdVal
-    };
+        speed: spd(b.enemyEffectiveSpeed, b.enemySpeed)
+    });
 
-    document.getElementById('battle-player-card').innerHTML = UiComponents.createPokemonLandscapeCard(playerCardObj);
-    document.getElementById('battle-enemy-card').innerHTML = UiComponents.createPokemonLandscapeCard(enemyCardObj);
-
-    const playerStatusesEl = document.getElementById('battle-player-statuses');
-    if (playerStatusesEl) {
-        playerStatusesEl.innerHTML = renderStatusBadges(b.playerActiveStatuses);
+    setHpBar('battle-player-hp', b.playerCurrentHp, b.playerMaxHp);
+    setHpBar('battle-enemy-hp', b.enemyCurrentHp, b.enemyMaxHp);
+    if (lastHp) {
+        flashHit('battle-player-card', b.playerCurrentHp - lastHp.player);
+        flashHit('battle-enemy-card', b.enemyCurrentHp - lastHp.enemy);
     }
+    lastHp = { player: b.playerCurrentHp, enemy: b.enemyCurrentHp };
 
-    const enemyStatusesEl = document.getElementById('battle-enemy-statuses');
-    if (enemyStatusesEl) {
-        enemyStatusesEl.innerHTML = renderStatusBadges(b.enemyActiveStatuses);
-    }
+    document.getElementById('battle-player-statuses').innerHTML = renderStatusBadges(b.playerActiveStatuses);
+    document.getElementById('battle-enemy-statuses').innerHTML = renderStatusBadges(b.enemyActiveStatuses);
 
+    // Лог: ходы отделены заголовками, последний ход выделен
     const logBox = document.getElementById('battle-log-container');
-    logBox.innerHTML = (b.combatLog || [])
-        .map(line => `<div>${line.replace(/[^\p{L}\p{N}\p{P}\p{Z}\p{S}]/gu, '')}</div>`)
-        .join('');
+    const lines = b.combatLog || [];
+    let lastRoundIdx = 0;
+    lines.forEach((l, idx) => { if (l.startsWith('—')) lastRoundIdx = idx; });
+    logBox.innerHTML = lines.map((line, idx) => {
+        const cls = line.startsWith('—') ? 'log-round' : (idx > lastRoundIdx ? 'log-line recent' : 'log-line');
+        return `<div class="${cls}">${escapeHtml(line)}</div>`;
+    }).join('');
     logBox.scrollTop = logBox.scrollHeight;
 
-    const isOver = b.status !== 'IN_PROGRESS';
-    renderAbilitiesGrid(b.playerAbilities, isOver);
+    // Результат боя
+    const resultEl = document.getElementById('battle-result');
+    const result = BATTLE_STATUS_TEXT[b.status];
+    if (result) {
+        resultEl.className = `battle-result ${result.kind}`;
+        resultEl.innerHTML = `<b>${result.title}</b><span>${result.text}</span>`;
+    } else {
+        resultEl.className = 'battle-result hidden';
+    }
+
+    // Сон / оглушение: способности недоступны, есть кнопка «Пропустить ход»
+    const skip = !isOver && b.playerSkipsTurn;
+    document.getElementById('battle-skip-notice').classList.toggle('hidden', !skip);
+    if (skip) {
+        const asleep = (b.playerActiveStatuses || []).some(s => /сон/i.test(s));
+        document.getElementById('battle-skip-text').textContent =
+            `${b.playerPokemonName} ${asleep ? 'спит' : 'оглушён'} и пропускает этот ход.`;
+    }
+
+    document.getElementById('battle-abilities-wrap').classList.toggle('hidden', isOver);
+    renderAbilitiesGrid(b.playerAbilities, isOver || skip || battleBusy);
 
     const catchBtn = document.getElementById('btn-do-catch');
-    if (catchBtn) catchBtn.disabled = isOver;
+    if (catchBtn) {
+        catchBtn.disabled = isOver || battleBusy;
+        catchBtn.classList.toggle('hidden', isOver);
+    }
+
+    startTurnTimer(isOver ? 0 : b.turnSecondsLeft, b.turnSecondsTotal || 30);
 }
 
-async function doAttack(slot = 1) {
-    if (!currentBattle) return;
-    currentBattle = await ApiService.attackBattle(currentBattle.battleId, slot);
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// ==================== ТАЙМЕР ХОДА ====================
+
+function startTurnTimer(secondsLeft, totalSec) {
+    clearInterval(turnTimerId);
+    const timerEl = document.getElementById('turn-timer');
+    if (!secondsLeft || secondsLeft <= 0) {
+        timerEl.classList.add('hidden');
+        if (currentBattle && currentBattle.status === 'IN_PROGRESS') {
+            handleTurnTimeout();
+        }
+        return;
+    }
+    timerEl.classList.remove('hidden');
+    turnTotalSec = totalSec;
+    turnDeadlineMs = Date.now() + secondsLeft * 1000;
+    tickTurnTimer();
+    turnTimerId = setInterval(tickTurnTimer, 250);
+}
+
+function tickTurnTimer() {
+    const leftMs = Math.max(0, turnDeadlineMs - Date.now());
+    const sec = Math.ceil(leftMs / 1000);
+    document.getElementById('turn-timer-sec').textContent = sec;
+    const fill = document.getElementById('turn-timer-fill');
+    fill.style.width = `${(leftMs / (turnTotalSec * 1000)) * 100}%`;
+    document.getElementById('turn-timer').classList.toggle('urgent', sec <= 5);
+
+    if (leftMs <= 0) {
+        clearInterval(turnTimerId);
+        handleTurnTimeout();
+    }
+}
+
+async function handleTurnTimeout() {
+    if (!currentBattle || currentBattle.status !== 'IN_PROGRESS' || battleBusy) return;
+    await runBattleAction(() => ApiService.battleTimeout(currentBattle.battleId));
+}
+
+function stopTurnTimer() {
+    clearInterval(turnTimerId);
+}
+
+// ==================== ДЕЙСТВИЯ ====================
+
+async function runBattleAction(request) {
+    if (!currentBattle || battleBusy) return;
+    battleBusy = true;
+    stopTurnTimer();
+    renderAbilitiesGrid(currentBattle.playerAbilities, true);
+    try {
+        currentBattle = await request();
+    } catch (err) {
+        UiComponents.showErrorAlert('Ошибка боя', err.message);
+    } finally {
+        battleBusy = false;
+    }
     renderBattleState();
     await checkBattleEnd();
 }
 
-async function doCatch() {
-    if (!currentBattle) return;
-    currentBattle = await ApiService.catchPokemon(currentBattle.battleId);
-    renderBattleState();
-    await checkBattleEnd();
+function doAttack(slot = 1) {
+    return runBattleAction(() => ApiService.attackBattle(currentBattle.battleId, slot));
+}
+
+function skipTurn() {
+    return runBattleAction(() => ApiService.battleTimeout(currentBattle.battleId));
+}
+
+function doCatch() {
+    return runBattleAction(() => ApiService.catchPokemon(currentBattle.battleId));
 }
 
 async function checkBattleEnd() {
-    if (currentBattle.status !== 'IN_PROGRESS') {
-        currentUser = await ApiService.getCurrentUser();
-        updateActiveFighterLabel();
-        await loadNearbySpawns(currentUser.latitude, currentUser.longitude);
+    if (currentBattle && currentBattle.status !== 'IN_PROGRESS') {
+        stopTurnTimer();
+        try {
+            currentUser = await ApiService.getCurrentUser();
+            updateActiveFighterLabel();
+            await loadNearbySpawns(currentUser.latitude, currentUser.longitude);
+        } catch {
+            // карта обновится при следующем движении
+        }
     }
 }
 
 function closeBattleWindow() {
+    stopTurnTimer();
     document.getElementById('modal-battle').classList.add('hidden');
 }
