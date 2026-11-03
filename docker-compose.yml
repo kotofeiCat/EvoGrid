@@ -178,7 +178,8 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      JWT_SECRET: ${JWT_SECRET:-EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
+      JWT_SECRET: ${JWT_SECRET}
+      YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY}
       EUREKA_URI: http://discovery-server:8761/eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server

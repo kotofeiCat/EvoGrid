@@ -1,5 +1,6 @@
 const API_BASE = '';
 const CATCH_RADIUS_METERS = 70;
+const DEFAULT_YANDEX_KEY = 'b2580f1d-2034-4383-8b7b-2b9052bb1e32';
 
 const SVG_ICONS = {
     FIRE: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`,
@@ -31,7 +32,53 @@ function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
+let ymapsScriptPromise = null;
+
+async function loadYandexMapsScript() {
+    if (window.ymaps3) {
+        await window.ymaps3.ready;
+        return window.ymaps3;
+    }
+    if (ymapsScriptPromise) {
+        return ymapsScriptPromise;
+    }
+
+    ymapsScriptPromise = (async () => {
+        let apiKey = DEFAULT_YANDEX_KEY;
+        try {
+            const cfg = await ApiService.getPublicConfig();
+            if (cfg && cfg.yandexMapsApiKey) {
+                apiKey = cfg.yandexMapsApiKey;
+            }
+        } catch {
+            // Используем резервный ключ
+        }
+
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = `https://api-maps.yandex.ru/v3/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`;
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Не удалось загрузить Яндекс Карты API 3.0'));
+            document.head.appendChild(script);
+        });
+
+        await window.ymaps3.ready;
+        return window.ymaps3;
+    })();
+
+    return ymapsScriptPromise;
+}
+
 const ApiService = {
+    async getPublicConfig() {
+        const res = await fetch(`${API_BASE}/api/config/public`, {
+            credentials: 'include'
+        });
+        if (!res.ok) return { yandexMapsApiKey: DEFAULT_YANDEX_KEY };
+        return res.json();
+    },
+
     async checkEmailTaken(email) {
         const res = await fetch(`${API_BASE}/api/users/check-email?email=${encodeURIComponent(email)}`, {
             credentials: 'include'

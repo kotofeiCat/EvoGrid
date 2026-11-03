@@ -2,7 +2,11 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
+  secret: ${JWT_SECRET}
+
+yandex:
+  maps:
+    api-key: ${YANDEX_MAPS_API_KEY}
 
 spring:
   application:

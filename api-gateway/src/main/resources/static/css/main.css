@@ -73,7 +73,7 @@ body {
 }
 
 /* ==========================================================================
-   КАРТА МИРА
+   КАРТА МИРА (YANDEX MAPS API 3.0)
    ========================================================================== */
 .fullscreen-map-wrap {
     position: relative;
@@ -90,8 +90,66 @@ body {
     background: #e2e8f0;
 }
 
-.leaflet-tile-pane {
-    filter: saturate(0.92) contrast(0.97) brightness(1.01);
+.floating-map-controls {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    padding: 8px 14px;
+    border-radius: 99px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    max-width: calc(100vw - 24px);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.fighter-pill-text {
+    color: #0f172a;
+    white-space: nowrap;
+}
+
+.walk-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    color: #475569;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.recenter-gps-btn {
+    border: 1px solid #bae6fd;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 5px 11px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+
+.recenter-gps-btn:hover {
+    background: #bae6fd;
+    transform: translateY(-1px);
+}
+
+.ymap-trainer-pin-wrap {
+    transform: translate(-50%, -50%);
+    pointer-events: none;
 }
 
 .trainer-map-pin {
@@ -121,6 +179,7 @@ body {
 
 .spawn-marker-wrapper {
     position: relative;
+    cursor: pointer;
 }
 
 .wild-map-badge {
@@ -137,38 +196,9 @@ body {
     align-items: center;
     gap: 6px;
     white-space: nowrap;
+    cursor: pointer;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.wild-map-badge .elem-svg-icon {
-    display: inline-flex;
-    color: #0284c7;
-}
-
-.wild-map-badge[data-elem="FIRE"] .elem-svg-icon { color: #e11d48; }
-.wild-map-badge[data-elem="WATER"] .elem-svg-icon { color: #0284c7; }
-.wild-map-badge[data-elem="FOREST"] .elem-svg-icon { color: #059669; }
-
-.wild-map-badge .dist-label {
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.wild-map-badge.in-range {
-    border-color: #10b981;
-    background: #f0fdf4;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
-}
-
-.wild-map-badge.in-range .dist-label {
-    color: #059669;
-    font-weight: 800;
-}
-
-.wild-map-badge:hover {
-    transform: translate(-50%, -54%) scale(1.05);
 }
 
 /* ==========================================================================
