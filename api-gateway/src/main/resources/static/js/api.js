@@ -140,8 +140,8 @@ const ApiService = {
         return res.json();
     },
 
-    async attackBattle(battleId) {
-        const res = await fetch(`${API_BASE}/api/battles/${battleId}/attack`, {
+    async attackBattle(battleId, slot = 1) {
+        const res = await fetch(`${API_BASE}/api/battles/${battleId}/attack?slot=${encodeURIComponent(slot)}`, {
             method: 'POST',
             credentials: 'include'
         });

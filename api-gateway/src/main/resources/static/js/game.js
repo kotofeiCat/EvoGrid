@@ -270,9 +270,83 @@ async function confirmStartBattle() {
     }
 }
 
+function renderStatusBadges(statuses = []) {
+    if (!statuses || statuses.length === 0) {
+        return `<span class="status-badge empty-status">Нет эффектов</span>`;
+    }
+    return statuses.map(st => {
+        const isNegative = /Горение|Яд|Сон|Оглушен|Замедлен|Ослеплен/i.test(st);
+        return `<span class="status-badge ${isNegative ? 'debuff' : 'buff'}">${st}</span>`;
+    }).join('');
+}
+
+function formatAbilityMetaBadge(ab) {
+    if (ab.category === 'DEFENSE') {
+        return ab.blockPercent > 0 ? `Блок ${ab.blockPercent}%` : `Уворот ${ab.evasionChancePercent}%`;
+    }
+    if (ab.category === 'UTILITY') {
+        return ab.healPercentMaxHp > 0 ? `Хил +${ab.healPercentMaxHp}%` : 'Спец-прием';
+    }
+    const stabLabel = ab.stab ? ' • STAB' : '';
+    return `Pwr ${ab.power}${stabLabel}`;
+}
+
+function renderAbilitiesGrid(abilities = [], isBattleOver = false) {
+    const grid = document.getElementById('battle-abilities-grid');
+    if (!grid) return;
+
+    // Фоллбэк на случай старого формата ответа
+    if (!abilities || abilities.length === 0) {
+        grid.innerHTML = `
+            <button class="uiv-btn primary" style="grid-column: 1 / -1" ${isBattleOver ? 'disabled' : ''} onclick="doAttack(1)">
+                <span class="button_top">Атаковать</span>
+            </button>
+        `;
+        return;
+    }
+
+    grid.innerHTML = abilities.map(ab => {
+        const onCooldown = (ab.currentCooldown || 0) > 0;
+        const disabled = isBattleOver || onCooldown;
+        const elemAttr = ab.category === 'DEFENSE'
+            ? 'DEFENSE'
+            : (ab.category === 'UTILITY' ? 'UTILITY' : (ab.element || 'NEUTRAL'));
+
+        const cdBadge = onCooldown
+            ? `<span class="cd-pill active-cd">КД: ${ab.currentCooldown} х.</span>`
+            : (ab.maxCooldown > 0 ? `<span class="cd-pill">КД ${ab.maxCooldown}</span>` : `<span class="cd-pill ready-cd">Готово</span>`);
+
+        return `
+            <button class="uiv-btn ability-btn"
+                    data-ability-theme="${elemAttr}"
+                    ${disabled ? 'disabled' : ''}
+                    onclick="doAttack(${ab.slot})">
+                <span class="button_top ability-top">
+                    <span class="ability-header-row">
+                        <span class="ability-name">${ab.slot}. ${ab.name}</span>
+                        ${cdBadge}
+                    </span>
+                    <span class="ability-desc">${ab.description || ''}</span>
+                    <span class="ability-meta-row">
+                        <span class="ability-type-tag">${formatAbilityMetaBadge(ab)}</span>
+                    </span>
+                </span>
+            </button>
+        `;
+    }).join('');
+}
+
 function renderBattleState() {
     const b = currentBattle;
     document.getElementById('battle-status-title').textContent = `Ход ${b.turnNumber} • ${b.status}`;
+
+    const playerSpdVal = b.playerEffectiveSpeed !== undefined && b.playerEffectiveSpeed !== b.playerSpeed
+        ? `${b.playerEffectiveSpeed} (${b.playerSpeed})`
+        : b.playerSpeed;
+
+    const enemySpdVal = b.enemyEffectiveSpeed !== undefined && b.enemyEffectiveSpeed !== b.enemySpeed
+        ? `${b.enemyEffectiveSpeed} (${b.enemySpeed})`
+        : b.enemySpeed;
 
     const playerCardObj = {
         name: b.playerPokemonName,
@@ -281,7 +355,7 @@ function renderBattleState() {
         maxHp: `${b.playerCurrentHp}/${b.playerMaxHp}`,
         attack: b.playerAttack,
         defense: b.playerDefense,
-        speed: b.playerSpeed
+        speed: playerSpdVal
     };
     const enemyCardObj = {
         name: b.enemyPokemonName,
@@ -290,30 +364,43 @@ function renderBattleState() {
         maxHp: `${b.enemyCurrentHp}/${b.enemyMaxHp}`,
         attack: b.enemyAttack,
         defense: b.enemyDefense,
-        speed: b.enemySpeed
+        speed: enemySpdVal
     };
 
     document.getElementById('battle-player-card').innerHTML = UiComponents.createPokemonLandscapeCard(playerCardObj);
     document.getElementById('battle-enemy-card').innerHTML = UiComponents.createPokemonLandscapeCard(enemyCardObj);
 
+    const playerStatusesEl = document.getElementById('battle-player-statuses');
+    if (playerStatusesEl) {
+        playerStatusesEl.innerHTML = renderStatusBadges(b.playerActiveStatuses);
+    }
+    const enemyStatusesEl = document.getElementById('battle-enemy-statuses');
+    if (enemyStatusesEl) {
+        enemyStatusesEl.innerHTML = renderStatusBadges(b.enemyActiveStatuses);
+    }
+
     const logBox = document.getElementById('battle-log-container');
     logBox.innerHTML = (b.combatLog || [])
-        .map(line => `<div>${line.replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, '')}</div>`)
+        .map(line => `<div>${line.replace(/[^\p{L}\p{N}\p{P}\p{Z}\p{S}]/gu, '')}</div>`)
         .join('');
     logBox.scrollTop = logBox.scrollHeight;
 
     const isOver = b.status !== 'IN_PROGRESS';
-    document.getElementById('btn-do-attack').disabled = isOver;
-    document.getElementById('btn-do-catch').disabled = isOver;
+    renderAbilitiesGrid(b.playerAbilities, isOver);
+
+    const catchBtn = document.getElementById('btn-do-catch');
+    if (catchBtn) catchBtn.disabled = isOver;
 }
 
-async function doAttack() {
-    currentBattle = await ApiService.attackBattle(currentBattle.battleId);
+async function doAttack(slot = 1) {
+    if (!currentBattle) return;
+    currentBattle = await ApiService.attackBattle(currentBattle.battleId, slot);
     renderBattleState();
     await checkBattleEnd();
 }
 
 async function doCatch() {
+    if (!currentBattle) return;
     currentBattle = await ApiService.catchPokemon(currentBattle.battleId);
     renderBattleState();
     await checkBattleEnd();

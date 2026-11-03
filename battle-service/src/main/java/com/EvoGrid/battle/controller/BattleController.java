@@ -27,11 +27,12 @@ public class BattleController {
     }
 
     @PostMapping("/{battleId}/attack")
-    @Operation(summary = "Атаковать")
+    @Operation(summary = "Выполнить способность (слот 1..4)")
     public BattleStateDto attack(
             @PathVariable Long battleId,
+            @RequestParam(name = "slot", required = false, defaultValue = "1") Integer slot,
             @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
-        return battleService.attackTurn(battleId, authUserId);
+        return battleService.attackTurn(battleId, authUserId, slot);
     }
 
     @PostMapping("/{battleId}/catch")

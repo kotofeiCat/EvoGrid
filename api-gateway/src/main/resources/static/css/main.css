@@ -90,7 +90,6 @@ body {
     background: #e2e8f0;
 }
 
-/* Мягкая стилизация стандартной карты OSM под игровой интерфейс */
 .leaflet-tile-pane {
     filter: saturate(0.92) contrast(0.97) brightness(1.01);
 }
@@ -187,7 +186,6 @@ body {
     gap: 20px;
 }
 
-/* Шапка профиля */
 .profile-card-hero {
     background: var(--surface);
     backdrop-filter: blur(16px);
@@ -263,7 +261,6 @@ body {
     margin-top: 2px;
 }
 
-/* Полоса опыта XP */
 .xp-progress-wrap {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -302,7 +299,6 @@ body {
     transition: width 0.4s ease;
 }
 
-/* Сетка показателей 2x2 / 4x1 */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -470,13 +466,13 @@ body {
     padding: 24px;
     max-width: 640px;
     width: 100%;
-    max-height: 90dvh;
+    max-height: 92dvh;
     overflow-y: auto;
     box-shadow: 0 28px 60px rgba(15, 23, 42, 0.22);
 }
 
 .battle-modal-window {
-    max-width: 700px;
+    max-width: 720px;
 }
 
 .battle-header {
@@ -550,10 +546,54 @@ body {
 
 .battle-arena-row {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
     gap: 10px;
-    margin: 16px 0;
+    margin: 14px 0 12px;
+}
+
+.battle-fighter-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.status-badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    min-height: 24px;
+    width: 100%;
+}
+
+.status-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.status-badge.buff {
+    background: #dcfce7;
+    color: #047857;
+    border: 1px solid #86efac;
+}
+
+.status-badge.debuff {
+    background: #ffe4e6;
+    color: #be123c;
+    border: 1px solid #fda4af;
+}
+
+.status-badge.empty-status {
+    background: #f1f5f9;
+    color: #94a3b8;
+    font-weight: 600;
 }
 
 .vs-badge {
@@ -567,19 +607,145 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: center;
 }
 
 .combat-log-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
-    height: 115px;
+    height: 105px;
     overflow-y: auto;
     padding: 10px 14px;
     font-size: 12.5px;
     line-height: 1.55;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: #334155;
+}
+
+/* ==========================================================================
+   АДАПТИВНАЯ СЕТКА 4 СПОСОБНОСТЕЙ ПОКЕМОНА
+   ========================================================================== */
+.abilities-section-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.abilities-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+    width: 100%;
+}
+
+.ability-btn {
+    width: 100%;
+    text-align: left;
+    --button_color: #f8fafc;
+    --button_outline_color: #334155;
+}
+
+.ability-btn[data-ability-theme="FIRE"] {
+    --button_color: #fff1f2;
+    --button_outline_color: #e11d48;
+}
+
+.ability-btn[data-ability-theme="WATER"] {
+    --button_color: #f0f9ff;
+    --button_outline_color: #0284c7;
+}
+
+.ability-btn[data-ability-theme="FOREST"] {
+    --button_color: #ecfdf5;
+    --button_outline_color: #059669;
+}
+
+.ability-btn[data-ability-theme="DEFENSE"] {
+    --button_color: #eef2ff;
+    --button_outline_color: #4f46e5;
+}
+
+.ability-btn[data-ability-theme="UTILITY"] {
+    --button_color: #fffbeb;
+    --button_outline_color: #d97706;
+}
+
+.ability-btn .ability-top {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 5px;
+    padding: 10px 12px;
+    min-height: 78px;
+    text-align: left;
+}
+
+.ability-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+}
+
+.ability-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.cd-pill {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: rgba(15, 23, 42, 0.08);
+    color: #334155;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.cd-pill.ready-cd {
+    background: rgba(16, 185, 129, 0.16);
+    color: #047857;
+}
+
+.cd-pill.active-cd {
+    background: #be123c;
+    color: #ffffff;
+}
+
+.ability-desc {
+    font-size: 11px;
+    font-weight: 500;
+    color: #475569;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ability-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 2px;
+}
+
+.ability-type-tag {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.9;
 }
 
 .modal-actions-row {
@@ -692,17 +858,59 @@ body {
     }
 
     .modal-window {
-        padding: 18px 14px;
+        padding: 16px 12px;
         border-radius: 22px;
     }
 
     .battle-arena-row {
         gap: 6px;
+        margin: 10px 0;
     }
 
     .vs-badge {
         width: 26px;
         height: 26px;
         font-size: 11px;
+    }
+
+    .combat-log-box {
+        height: 88px;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .abilities-grid {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .ability-btn .ability-top {
+        padding: 8px 9px;
+        min-height: 68px;
+        gap: 3px;
+    }
+
+    .ability-name {
+        font-size: 11.5px;
+    }
+
+    .ability-desc {
+        font-size: 10px;
+    }
+
+    .cd-pill {
+        font-size: 9px;
+        padding: 2px 5px;
+    }
+}
+
+/* Сверхкомпактные экраны (до 390px) */
+@media (max-width: 390px) {
+    .abilities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ability-btn .ability-top {
+        min-height: 56px;
     }
 }

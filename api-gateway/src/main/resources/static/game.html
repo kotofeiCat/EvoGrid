@@ -45,20 +45,31 @@
     <div class="modal-window battle-modal-window">
         <div class="battle-header">
             <h3 id="battle-status-title">Ход 1</h3>
-            <span class="battle-rules-hint">FIRE &gt; FOREST &gt; WATER (x1.5)</span>
+            <span class="battle-rules-hint">FIRE &gt; FOREST &gt; WATER (x1.5) • STAB x1.25</span>
         </div>
+
         <div class="battle-arena-row">
-            <div id="battle-player-card"></div>
+            <div class="battle-fighter-col">
+                <div id="battle-player-card"></div>
+                <div id="battle-player-statuses" class="status-badges-row"></div>
+            </div>
             <div class="vs-badge">VS</div>
-            <div id="battle-enemy-card"></div>
+            <div class="battle-fighter-col">
+                <div id="battle-enemy-card"></div>
+                <div id="battle-enemy-statuses" class="status-badges-row"></div>
+            </div>
         </div>
+
         <div id="battle-log-container" class="combat-log-box"></div>
+
+        <!-- Панель выбора из 4 способностей покемона -->
+        <div class="abilities-section-title">Выберите способность на этот раунд:</div>
+        <div id="battle-abilities-grid" class="abilities-grid"></div>
+
+        <!-- Дополнительные действия (Покебол и Выход) -->
         <div class="modal-actions-row">
-            <button id="btn-do-attack" class="uiv-btn primary" style="flex:1" onclick="doAttack()">
-                <span class="button_top">Атаковать</span>
-            </button>
-            <button id="btn-do-catch" class="uiv-btn" style="flex:1" onclick="doCatch()">
-                <span class="button_top">Поймать</span>
+            <button id="btn-do-catch" class="uiv-btn primary" style="flex:1" onclick="doCatch()">
+                <span class="button_top">Бросить Покебол</span>
             </button>
             <button class="uiv-btn" onclick="closeBattleWindow()">
                 <span class="button_top">Выйти</span>
