@@ -57,7 +57,7 @@ const ApiService = {
             body: JSON.stringify({ email, password })
         });
         if (!res.ok) {
-            throw new Error('Неверный логин или пароль.');
+            throw new Error('Неверный email или пароль.');
         }
         return res.json();
     },
@@ -101,6 +101,15 @@ const ApiService = {
 
     async getStarters() {
         const res = await fetch(`${API_BASE}/api/pokemons/starters`, { credentials: 'include' });
+        return res.json();
+    },
+
+    async getPokemonAbilities(speciesId, name = '') {
+        const query = name ? `?name=${encodeURIComponent(name)}` : '';
+        const res = await fetch(`${API_BASE}/api/battles/abilities/${encodeURIComponent(speciesId || 1)}${query}`, {
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Не удалось загрузить способности');
         return res.json();
     },
 

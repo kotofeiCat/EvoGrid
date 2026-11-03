@@ -42,10 +42,10 @@ body {
 .cards-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 20px;
     justify-content: center;
     width: 100%;
-    max-width: 820px;
+    max-width: 920px;
 }
 
 .section-header {
@@ -73,7 +73,7 @@ body {
 }
 
 /* ==========================================================================
-   КАРТА И МАРКЕРЫ
+   КАРТА МИРА
    ========================================================================== */
 .fullscreen-map-wrap {
     position: relative;
@@ -172,10 +172,10 @@ body {
 }
 
 /* ==========================================================================
-   РАБОЧАЯ ОБЛАСТЬ: ПРОФИЛЬ, ПАЧКА, ПОКЕДЕКС
+   РАБОЧАЯ ОБЛАСТЬ ПРОФИЛЯ И ОТРЯДА
    ========================================================================== */
 .workspace-page {
-    max-width: 1040px;
+    max-width: 1140px;
     margin: 0 auto;
     padding: 28px 20px 120px;
 }
@@ -365,25 +365,33 @@ body {
 }
 
 /* ==========================================================================
-   СЕТКА ОТРЯДА И КОЛЛЕКЦИИ / ПОКЕДЕКСА
+   ОТРЯД И КАРТОЧНАЯ СЕТКА
    ========================================================================== */
 .party-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 20px;
     width: 100%;
 }
 
 .slot-pillar {
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.95);
     border-radius: 24px;
-    padding: 16px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+}
+
+.slot-actions-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 265px;
 }
 
 .card-click-area {
@@ -410,7 +418,7 @@ body {
 
 .slot-empty-box {
     width: 100%;
-    min-height: 240px;
+    min-height: 330px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -420,7 +428,7 @@ body {
     font-size: 13px;
     font-weight: 700;
     border: 2px dashed #cbd5e1;
-    border-radius: 18px;
+    border-radius: 20px;
     text-align: center;
     padding: 20px;
     background: rgba(248, 250, 252, 0.6);
@@ -434,8 +442,8 @@ body {
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+    gap: 20px;
     width: 100%;
 }
 
@@ -445,7 +453,7 @@ body {
 }
 
 /* ==========================================================================
-   МОДАЛЬНЫЕ ОКНА И АРЕНА БОЯ
+   МОДАЛЬНЫЕ ОКНА И БОЕВАЯ АРЕНА
    ========================================================================== */
 .modal-backdrop {
     position: fixed;
@@ -463,16 +471,20 @@ body {
 .modal-window {
     background: #ffffff;
     border-radius: 26px;
-    padding: 24px;
-    max-width: 640px;
+    padding: 26px;
+    max-width: 720px;
     width: 100%;
     max-height: 92dvh;
     overflow-y: auto;
     box-shadow: 0 28px 60px rgba(15, 23, 42, 0.22);
 }
 
+.dossier-modal-window {
+    max-width: 820px;
+}
+
 .battle-modal-window {
-    max-width: 720px;
+    max-width: 800px;
 }
 
 .battle-header {
@@ -495,14 +507,14 @@ body {
 .inspector-layout {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    align-items: center;
+    gap: 24px;
+    align-items: flex-start;
     justify-content: center;
 }
 
 .inspector-details {
     flex: 1;
-    min-width: 240px;
+    min-width: 280px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -548,8 +560,8 @@ body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: start;
-    gap: 10px;
-    margin: 14px 0 12px;
+    gap: 14px;
+    margin: 16px 0 14px;
 }
 
 .battle-fighter-col {
@@ -601,8 +613,8 @@ body {
     font-weight: 800;
     color: #64748b;
     background: #f1f5f9;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -624,7 +636,7 @@ body {
 }
 
 /* ==========================================================================
-   АДАПТИВНАЯ СЕТКА 4 СПОСОБНОСТЕЙ ПОКЕМОНА
+   СПОСОБНОСТИ (БЕЗ ЦВЕТНОЙ ПОДСВЕТКИ) И ДОСЬЕ НАВЫКОВ
    ========================================================================== */
 .abilities-section-title {
     font-size: 12px;
@@ -635,7 +647,8 @@ body {
     margin-bottom: 8px;
 }
 
-.abilities-grid {
+.abilities-grid,
+.dossier-abilities-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -643,36 +656,17 @@ body {
     width: 100%;
 }
 
+/* Единый нейтральный стиль кнопок способностей без цветной подсветки */
 .ability-btn {
     width: 100%;
     text-align: left;
+    --button_color: #ffffff;
+    --button_outline_color: #cbd5e1;
+}
+
+.ability-btn:hover:not(:disabled) {
     --button_color: #f8fafc;
-    --button_outline_color: #334155;
-}
-
-.ability-btn[data-ability-theme="FIRE"] {
-    --button_color: #fff1f2;
-    --button_outline_color: #e11d48;
-}
-
-.ability-btn[data-ability-theme="WATER"] {
-    --button_color: #f0f9ff;
-    --button_outline_color: #0284c7;
-}
-
-.ability-btn[data-ability-theme="FOREST"] {
-    --button_color: #ecfdf5;
-    --button_outline_color: #059669;
-}
-
-.ability-btn[data-ability-theme="DEFENSE"] {
-    --button_color: #eef2ff;
-    --button_outline_color: #4f46e5;
-}
-
-.ability-btn[data-ability-theme="UTILITY"] {
-    --button_color: #fffbeb;
-    --button_outline_color: #d97706;
+    --button_outline_color: #475569;
 }
 
 .ability-btn .ability-top {
@@ -684,6 +678,25 @@ body {
     padding: 10px 12px;
     min-height: 78px;
     text-align: left;
+    color: #0f172a;
+}
+
+.dossier-ability-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.ability-loading {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+    color: #64748b;
+    padding: 8px 0;
 }
 
 .ability-header-row {
@@ -706,19 +719,19 @@ body {
     font-weight: 800;
     padding: 2px 7px;
     border-radius: 99px;
-    background: rgba(15, 23, 42, 0.08);
+    background: #e2e8f0;
     color: #334155;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .cd-pill.ready-cd {
-    background: rgba(16, 185, 129, 0.16);
-    color: #047857;
+    background: #e2e8f0;
+    color: #334155;
 }
 
 .cd-pill.active-cd {
-    background: #be123c;
+    background: #475569;
     color: #ffffff;
 }
 
@@ -726,11 +739,7 @@ body {
     font-size: 11px;
     font-weight: 500;
     color: #475569;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.35;
 }
 
 .ability-meta-row {
@@ -745,7 +754,7 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    opacity: 0.9;
+    color: #475569;
 }
 
 .modal-actions-row {
@@ -754,163 +763,21 @@ body {
     gap: 10px;
 }
 
-/* ==========================================================================
-   АДАПТИВНОСТЬ: ПЛАНШЕТЫ (до 960px)
-   ========================================================================== */
 @media (max-width: 960px) {
     .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-
     .party-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        grid-template-columns: 1fr;
     }
 }
 
-/* ==========================================================================
-   АДАПТИВНОСТЬ: ТЕЛЕФОНЫ (до 640px)
-   ========================================================================== */
 @media (max-width: 640px) {
     .workspace-page {
         padding: 16px 12px 104px;
     }
-
-    .section-header h2 {
-        font-size: 20px;
-    }
-
-    .section-header p {
-        font-size: 12.5px;
-    }
-
-    .profile-card-hero {
-        padding: 18px 16px;
-        border-radius: 22px;
-        gap: 16px;
-    }
-
-    .profile-hero-top {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .logout-btn {
-        width: 100%;
-    }
-
-    .hero-avatar {
-        width: 54px;
-        height: 54px;
-        font-size: 22px;
-        border-radius: 16px;
-    }
-
-    .hero-text h1 {
-        font-size: 17px;
-    }
-
-    .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .metric-tile {
-        padding: 14px 12px;
-        border-radius: 18px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .metric-icon-box {
-        width: 38px;
-        height: 38px;
-        border-radius: 11px;
-    }
-
-    .metric-icon-box svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .metric-value {
-        font-size: 20px;
-    }
-
-    .party-grid {
+    .abilities-grid,
+    .dossier-abilities-grid {
         grid-template-columns: 1fr;
-        gap: 14px;
-    }
-
-    .slot-pillar {
-        padding: 14px;
-    }
-
-    .slot-empty-box {
-        min-height: 120px;
-        padding: 16px;
-    }
-
-    .cards-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-    }
-
-    .modal-window {
-        padding: 16px 12px;
-        border-radius: 22px;
-    }
-
-    .battle-arena-row {
-        gap: 6px;
-        margin: 10px 0;
-    }
-
-    .vs-badge {
-        width: 26px;
-        height: 26px;
-        font-size: 11px;
-    }
-
-    .combat-log-box {
-        height: 88px;
-        padding: 8px 10px;
-        font-size: 11.5px;
-    }
-
-    .abilities-grid {
-        gap: 8px;
-        margin-bottom: 10px;
-    }
-
-    .ability-btn .ability-top {
-        padding: 8px 9px;
-        min-height: 68px;
-        gap: 3px;
-    }
-
-    .ability-name {
-        font-size: 11.5px;
-    }
-
-    .ability-desc {
-        font-size: 10px;
-    }
-
-    .cd-pill {
-        font-size: 9px;
-        padding: 2px 5px;
-    }
-}
-
-/* Сверхкомпактные экраны (до 390px) */
-@media (max-width: 390px) {
-    .abilities-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .ability-btn .ability-top {
-        min-height: 56px;
     }
 }

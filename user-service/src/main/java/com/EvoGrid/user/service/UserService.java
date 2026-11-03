@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
@@ -24,6 +25,22 @@ public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
+    private static final Map<Long, String> CLEAN_SPECIES_NAMES = Map.ofEntries(
+            Map.entry(1L, "Серый грызун"),
+            Map.entry(2L, "Красная панда"),
+            Map.entry(3L, "Огнеборец"),
+            Map.entry(4L, "Пеплоух"),
+            Map.entry(5L, "Пиромандра"),
+            Map.entry(6L, "Речная выдра"),
+            Map.entry(7L, "Сэр Сомуэль"),
+            Map.entry(8L, "Плескан"),
+            Map.entry(9L, "Касторакс"),
+            Map.entry(10L, "Лесной страж"),
+            Map.entry(11L, "Лесной вепрь"),
+            Map.entry(12L, "Ворон-сыщик"),
+            Map.entry(13L, "Культурный медведь")
+    );
 
     private final UserAccountRepository userRepository;
     private final OwnedPokemonRepository pokemonRepository;
@@ -51,13 +68,12 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Некорректный формат email");
         }
         if (req.password() == null || req.password().length() < 4) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароль должен быть не менее 4 символов");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароль должен быть не короче 4 символов");
         }
         String normalizedEmail = req.email().trim().toLowerCase();
         if (userRepository.findByEmailIgnoreCase(normalizedEmail).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email уже занят");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email уже зарегистрирован");
         }
-
         double lat = req.latitude() != null ? req.latitude() : 55.7558;
         double lon = req.longitude() != null ? req.longitude() : 37.6173;
 
@@ -84,7 +100,6 @@ public class UserService {
         UserAccount user = userRepository.findByEmailIgnoreCase(req.email().trim())
                 .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный email или пароль"));
-
         return buildProfileDto(user, activeSlot);
     }
 
@@ -108,14 +123,11 @@ public class UserService {
         UserAccount user = findUserOrThrow(userId);
         OwnedPokemon target = pokemonRepository.findById(req.ownedPokemonId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Покемон не найден"));
-
         if (!target.getUser().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Чужой покемон");
         }
-
         pokemonRepository.findByUserIdAndPartySlot(userId, req.slot())
                 .ifPresent(occupant -> occupant.setPartySlot(null));
-
         target.setPartySlot(req.slot());
         return buildProfileDto(user, activeSlot);
     }
@@ -131,8 +143,9 @@ public class UserService {
         }
         if (req.captured()) {
             Integer freeSlot = findFirstFreePartySlot(userId);
+            String cleanName = CLEAN_SPECIES_NAMES.getOrDefault(req.speciesId(), req.name());
             pokemonRepository.save(new OwnedPokemon(
-                    user, req.speciesId(), req.name(), req.element(), req.archetype(),
+                    user, req.speciesId(), cleanName, req.element(), req.archetype(),
                     req.maxHp(), req.attack(), req.defense(), req.speed(), freeSlot
             ));
         }
@@ -143,9 +156,9 @@ public class UserService {
         try {
             return pokemonClient.getSpeciesById(speciesId);
         } catch (Exception t) {
-            log.warn("pokemon-service недоступен ({}). Выдаём резервного стартера!", t.getMessage());
-            return new PokemonSpeciesDto(2L, "Резервный Стартер", "FIRE", "Атака",
-                    "Fallback-покемон", 70, 35, 20, 25, true);
+            log.warn("pokemon-service недоступен ({}). Используется Fallback-стартер!", t.getMessage());
+            return new PokemonSpeciesDto(2L, "Красная панда", "FIRE", "Атакующий",
+                    "Fallback-стартер", 70, 35, 20, 25, true);
         }
     }
 
@@ -166,12 +179,10 @@ public class UserService {
     private UserProfileDto buildProfileDto(UserAccount user, int activeSlot) {
         List<OwnedPokemonDto> collection = pokemonRepository.findByUserIdOrderByIdAsc(user.getId())
                 .stream().map(this::toPokemonDto).toList();
-
         List<OwnedPokemonDto> party = collection.stream()
                 .filter(p -> p.partySlot() != null)
                 .sorted(Comparator.comparingInt(OwnedPokemonDto::partySlot))
                 .toList();
-
         return new UserProfileDto(
                 user.getId(), user.getEmail(), user.getLevel(), user.getExperience(),
                 user.getPokeballs(), activeSlot, user.getLatitude(), user.getLongitude(),
@@ -180,8 +191,9 @@ public class UserService {
     }
 
     private OwnedPokemonDto toPokemonDto(OwnedPokemon p) {
+        String cleanName = CLEAN_SPECIES_NAMES.getOrDefault(p.getSpeciesId(), p.getName());
         return new OwnedPokemonDto(
-                p.getId(), p.getSpeciesId(), p.getName(), p.getElement(), p.getArchetype(),
+                p.getId(), p.getSpeciesId(), cleanName, p.getElement(), p.getArchetype(),
                 p.getMaxHp(), p.getAttack(), p.getDefense(), p.getSpeed(), p.getPartySlot()
         );
     }

@@ -12,151 +12,151 @@ import java.util.Map;
 @Component
 public class AbilityCatalog {
 
-    // Базовый крип: Слепой крысеныш / Крысюк (ID = 1)
-    private static final List<AbilityDto> RAT_CREEP = List.of(
-            attack(1, "RAT_BITE", "Укус крысы", "Быстрый нейтральный укус без перезарядки.",
+    // ID = 1 (NEUTRAL) — Серый грызун
+    private static final List<AbilityDto> GRAY_RODENT = List.of(
+            attack(1, "QUICK_BITE", "Быстрый укус", "Резкий выпад острыми резцами.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "RAT_LUNGE", "Яростный наскок", "Усиленный прыжок на врага.",
+            attack(2, "SWIFT_LUNGE", "Стремительный рывок", "Разгоняется и таранит цель (точность 95%).",
                     AbilityCategory.SPECIAL, "NEUTRAL", 18, 95, 2, false, StatusEffectType.NONE, 0, 0),
-            defense(3, "RAT_DODGE", "Крысиный перекат", "Уворот: 65% шанс избежать следующей атаки.",
+            defense(3, "NIMBLE_DODGE", "Юркий кувырок", "Уклонение: 65% шанс полностью избежать следующей атаки.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "RAT_SNACK", "Полевой перекус", "Восстанавливает 20% от макс. HP.",
+            utility(4, "FIELD_SNACK", "Запас зёрен", "Восстанавливает 20% от макс. HP.",
                     3, 20, false, 0, StatusEffectType.NONE, 0, 0, StatusEffectType.NONE, 0)
     );
 
-    // 1. Красная панда (ID = 2, FIRE)
+    // ID = 2 (FIRE) — Красная панда
     private static final List<AbilityDto> RED_PANDA = List.of(
-            attack(1, "HOT_CLAW", "Горячий коготь", "Обычная атака когтями.",
+            attack(1, "HOT_CLAW", "Раскалённый коготь", "Быстрый удар горящей лапой.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "FIRE_ARC", "Огненная дуга", "Огненная STAB-атака. Накладывает Горение (2 хода).",
+            attack(2, "FIRE_ARC", "Пламенная дуга", "Огненный STAB-удар, накладывающий Ожог (2 хода).",
                     AbilityCategory.SPECIAL, "FIRE", 16, 100, 2, true, StatusEffectType.BURN, 100, 2),
-            defense(3, "SPARK_DASH", "Искрящийся рывок", "Уворот: 65% шанс промаха врага на этом ходу.",
+            defense(3, "SPARK_DASH", "Искровой рывок", "Уклонение: 65% шанс избежать атаки.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "VOLCANO_WARMTH", "Тепло вулкана", "Бафф атаки (+30%) и огненные шипы (10% урона обратно) на 2 хода.",
+            utility(4, "VOLCANO_WARMTH", "Тепло вулкана", "Повышает Атаку (+30%) и даёт Огненные шипы (10% возврата урона) на 2 хода.",
                     3, 0, false, 0, StatusEffectType.ATK_UP, 100, 2, StatusEffectType.THORNS, 2)
     );
 
-    // 2. Пихач (ID = 3, FIRE)
-    private static final List<AbilityDto> PIHACH = List.of(
-            attack(1, "DIRECT_JAB", "Прямой джеб", "Тяжелый прямой удар кулаком.",
+    // ID = 3 (FIRE) — Огнеборец
+    private static final List<AbilityDto> FIRE_BRAWLER = List.of(
+            attack(1, "DIRECT_JAB", "Прямой джеб", "Тяжёлый пробивной удар кулаком.",
                     AbilityCategory.BASIC, "NEUTRAL", 12, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "FOUR_ARM_BARRAGE", "Четырехрукий шквал", "Мощная серия огненных ударов (STAB).",
+            attack(2, "FOUR_ARM_BARRAGE", "Шквал четырёх рук", "Сокрушительная серия огненных ударов (STAB).",
                     AbilityCategory.SPECIAL, "FIRE", 22, 100, 2, true, StatusEffectType.NONE, 0, 0),
-            defense(3, "CROSS_BLOCK", "Крестовой блок", "Блок четырех рук: снижает входящий урон на 70%.",
+            defense(3, "CROSS_BLOCK", "Перекрёстный блок", "Снижает входящий урон на 70%.",
                     3, 70, 0, StatusEffectType.BLOCK, 1),
-            utility(4, "VOLCANIC_RAGE", "Вулканический раж", "Жертвует 10% HP: удваивает скорость (x2) и пробивает блок 2 хода.",
+            utility(4, "VOLCANIC_RAGE", "Вулканический напор", "Жертвует 10% HP: удваивает Скорость (x2) и пробивает блоки (2 хода).",
                     3, 0, false, 10, StatusEffectType.RAGE_SPEED_PIERCE, 100, 2, StatusEffectType.NONE, 0)
     );
 
-    // 3. Синдерхут (ID = 4, FIRE)
+    // ID = 4 (FIRE) — Пеплоух
     private static final List<AbilityDto> CINDERHOOT = List.of(
-            attack(1, "TALON_GRIP", "Когтистый хват", "Стремительный удар когтями.",
+            attack(1, "TALON_GRIP", "Хватка когтей", "Резкий удар когтями с налёту.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "SMOLDER_SWEEP", "Тлеющий взмах", "Огненная STAB-атака. Ослепляет врага (-35% точности на 2 хода).",
+            attack(2, "SMOLDER_SWEEP", "Пепельный вихрь", "Огненный STAB-удар, ослепляющий цель (-35% точности на 2 хода).",
                     AbilityCategory.SPECIAL, "FIRE", 16, 100, 2, true, StatusEffectType.BLIND, 100, 2),
-            defense(3, "SMOKE_SCREEN", "Дымовая завеса", "Уворот в дыму: 65% шанс промаха врага.",
+            defense(3, "SMOKE_SCREEN", "Дымовая завеса", "Уклонение: 65% шанс избежать следующей атаки.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "ASH_SECOND_WIND", "Второе дыхание из пепла", "Лечит 22% HP (удвоенное лечение 44%, если HP ниже 25%).",
+            utility(4, "ASH_SECOND_WIND", "Второе дыхание пепла", "Восстанавливает 22% HP (или 44%, если HP ниже 25%).",
                     4, 22, true, 0, StatusEffectType.NONE, 0, 0, StatusEffectType.NONE, 0)
     );
 
-    // 4. Шаломандра (ID = 5, FIRE)
-    private static final List<AbilityDto> SHALOMANDRA = List.of(
-            attack(1, "WHIP_TAIL", "Хлесткий хвост", "Базовый удар тяжелым хвостом.",
+    // ID = 5 (FIRE) — Пиромандра
+    private static final List<AbilityDto> PYROMANDRA = List.of(
+            attack(1, "WHIP_TAIL", "Хлесткий хвост", "Размашистый удар тяжёлым хвостом.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "MAGMA_SPLASH", "Магматический всплеск", "Огненная STAB-атака. Замедляет цель (-35% скорости на 2 хода).",
+            attack(2, "MAGMA_SPLASH", "Всплеск магмы", "Огненный STAB-удар, замедляющий врага (-35% скорости на 2 хода).",
                     AbilityCategory.SPECIAL, "FIRE", 16, 100, 2, true, StatusEffectType.SLOW, 100, 2),
-            defense(3, "BASALT_SCALES", "Базальтовая чешуя", "Каменный панцирь: уменьшает урон на 60%.",
+            defense(3, "BASALT_SCALES", "Базальтовая чешуя", "Каменная броня снижает входящий урон на 60%.",
                     3, 60, 0, StatusEffectType.BLOCK, 1),
-            utility(4, "LAVA_BATH", "Лавовое купание", "Лечит 22% HP и заряжает следующий удар гарантированным Горением.",
+            utility(4, "LAVA_BATH", "Лавовый прогрев", "Восстанавливает 22% HP и заряжает следующую атаку гарантированным Ожогом.",
                     3, 22, false, 0, StatusEffectType.NEXT_HIT_BURN, 100, 2, StatusEffectType.NONE, 0)
     );
 
-    // 5. Выдрочка (ID = 6, WATER)
-    private static final List<AbilityDto> VYDROCHKA = List.of(
-            attack(1, "WATER_SLAP", "Водный шлепок", "Базовая водная атака с бонусом STAB.",
+    // ID = 6 (WATER) — Речная выдра
+    private static final List<AbilityDto> RIVER_OTTER = List.of(
+            attack(1, "WATER_SLAP", "Водный всплеск", "Быстрый водный удар с бонусом STAB.",
                     AbilityCategory.BASIC, "WATER", 10, 100, 0, true, StatusEffectType.NONE, 0, 0),
-            attack(2, "WAVE_WHIP", "Волновой хлыст", "Водная STAB-атака. Сбивает с ног (Оглушение на 1 ход).",
+            attack(2, "WAVE_WHIP", "Приливная волна", "Мощный водный STAB-удар, оглушающий противника (1 ход).",
                     AbilityCategory.SPECIAL, "WATER", 16, 100, 3, true, StatusEffectType.STUN, 100, 1),
-            defense(3, "WATER_SURFACE", "Водная гладь", "Скольжение по воде: 65% шанс уворота.",
+            defense(3, "WATER_SURFACE", "Водная гладь", "Уклонение: 65% шанс уйти под воду от атаки.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "SHELL_BARRIER", "Ракушечный барьер", "Полностью поглощает урон от следующего удара противника.",
+            utility(4, "SHELL_BARRIER", "Ракушечный щит", "Полностью блокирует следующую вражескую атаку (0 урона).",
                     4, 0, false, 0, StatusEffectType.SHELL_BARRIER, 100, 1, StatusEffectType.NONE, 0)
     );
 
-    // 6. Сэр Сомуэль (ID = 7, WATER)
+    // ID = 7 (WATER) — Сэр Сомуэль
     private static final List<AbilityDto> SIR_SOMUEL = List.of(
             attack(1, "CANE_STRIKE", "Удар тростью", "Точный фехтовальный выпад тростью.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "PIPE_GEYSER", "Гейзер из трубки", "Мощный поток кипятка под давлением (STAB).",
+            attack(2, "PIPE_GEYSER", "Напорный гейзер", "Мощный выброс водяной струи под давлением (STAB).",
                     AbilityCategory.SPECIAL, "WATER", 18, 100, 2, true, StatusEffectType.NONE, 0, 0),
-            defense(3, "HAT_WARD", "Шляпный заслон", "Блок 45% урона + иммунитет к критическим ударам на 2 хода.",
+            defense(3, "HAT_WARD", "Защита цилиндра", "Снижает урон на 45% и даёт иммунитет к критам (2 хода).",
                     3, 45, 0, StatusEffectType.CRIT_IMMUNE, 2),
-            utility(4, "AROMATIC_TEA", "Ароматный чай", "Снимает все дебаффы и восстанавливает по 10% HP в течение 3 ходов.",
+            utility(4, "AROMATIC_TEA", "Ароматный чай", "Восстанавливает 10% HP, снимает все дебаффы и даёт Регенерацию (3 хода).",
                     4, 10, false, 0, StatusEffectType.CLEANSE, 100, 1, StatusEffectType.REGEN, 3)
     );
 
-    // 7. Сплэшикан (ID = 8, WATER)
+    // ID = 8 (WATER) — Плескан
     private static final List<AbilityDto> SPLASHICAN = List.of(
-            attack(1, "WING_CLAP", "Хлопок крылом", "Размашистый удар крылом.",
+            attack(1, "WING_CLAP", "Хлопок крылом", "Широкий удар мощными крыльями.",
                     AbilityCategory.BASIC, "NEUTRAL", 11, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "WATER_VOLLEY", "Водяной залп", "Залп морской водой из клюва (STAB).",
+            attack(2, "WATER_VOLLEY", "Водяной залп", "Прицельный гидроудар с высоты (STAB).",
                     AbilityCategory.SPECIAL, "WATER", 20, 100, 2, true, StatusEffectType.NONE, 0, 0),
-            defense(3, "AIR_SOMERSAULT", "Воздушный кульбит", "Уворот в воздухе: 65% шанс промаха врага.",
+            defense(3, "AIR_SOMERSAULT", "Воздушный вираж", "Уклонение: 65% шанс избежать атаки в воздухе.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "LIVING_RESERVOIR", "Живой резервуар", "Лечит 20% HP и усиливает следующую водную атаку на +35%.",
+            utility(4, "LIVING_RESERVOIR", "Водный резервуар", "Восстанавливает 20% HP и усиливает следующую водную атаку на +35%.",
                     3, 20, false, 0, StatusEffectType.WATER_BOOST, 100, 2, StatusEffectType.NONE, 0)
     );
 
-    // 8. Касторакс (ID = 9, WATER)
+    // ID = 9 (WATER) — Касторакс
     private static final List<AbilityDto> CASTORAX = List.of(
-            attack(1, "INCISOR_STRIKE", "Удар резцами", "Мощный укус крепкими резцами.",
+            attack(1, "INCISOR_STRIKE", "Удар резцами", "Крепкий укус, способный перегрызть ствол дерева.",
                     AbilityCategory.BASIC, "NEUTRAL", 12, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "DAM_SMASH", "Удар плотиной", "Сокрушительный водный удар хвостом-веслом (STAB).",
+            attack(2, "DAM_SMASH", "Прорыв плотины", "Сокрушительная волна водной стихии (STAB).",
                     AbilityCategory.SPECIAL, "WATER", 21, 100, 2, true, StatusEffectType.NONE, 0, 0),
-            defense(3, "LOG_SHIELD", "Бревенчатый щит", "Блок бревном: снижает входящий урон на 55%.",
+            defense(3, "LOG_SHIELD", "Бревенчатый щит", "Плотина снижает входящий урон на 55%.",
                     3, 55, 0, StatusEffectType.BLOCK, 1),
-            utility(4, "EXPRESS_REPAIR", "Экспресс-ремонт", "Лечит 25% HP и дает иммунитет к контролю и дебаффам на 2 хода.",
+            utility(4, "EXPRESS_REPAIR", "Срочный ремонт", "Восстанавливает 25% HP и даёт иммунитет к контролю (2 хода).",
                     3, 25, false, 0, StatusEffectType.CC_IMMUNE, 100, 2, StatusEffectType.NONE, 0)
     );
 
-    // 9. Хранитель Леса / Рогатый Куколд (ID = 10, FOREST)
+    // ID = 10 (FOREST) — Лесной страж
     private static final List<AbilityDto> FOREST_GUARDIAN = List.of(
-            attack(1, "HOOF_STRIKE", "Удар копытцем", "Стремительный наскок копытами.",
+            attack(1, "HOOF_STRIKE", "Удар копытом", "Быстрый и точный выпад передними копытами.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "FERN_WHIRLWIND", "Папоротниковый вихрь", "Режущий лесной шквал (STAB).",
+            attack(2, "FERN_WHIRLWIND", "Листопадный вихрь", "Шквал острых листьев и ветвей (STAB).",
                     AbilityCategory.SPECIAL, "FOREST", 19, 100, 2, true, StatusEffectType.NONE, 0, 0),
-            defense(3, "FOREST_STEP", "Лесной шаг", "Уворот среди листвы: 65% шанс промаха врага.",
+            defense(3, "FOREST_STEP", "Лесная поступь", "Уклонение: 65% шанс раствориться среди листвы.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "ANTLER_BLOOM", "Цветение рогов", "Лечит 18% HP, снимает дебаффы и с шансом 55% усыпляет врага на 1 ход.",
+            utility(4, "ANTLER_BLOOM", "Цветение кроны", "Восстанавливает 18% HP, очищает дебаффы и с шансом 55% усыпляет врага.",
                     4, 18, false, 0, StatusEffectType.SLEEP, 55, 1, StatusEffectType.CLEANSE, 1)
     );
 
-    // 10. Свинохрюк (ID = 11, FOREST)
-    private static final List<AbilityDto> SVINOHRYUK = List.of(
-            attack(1, "TUSK_RAM", "Таран бивнями", "Прямой таран массивными клыками.",
+    // ID = 11 (FOREST) — Лесной вепрь
+    private static final List<AbilityDto> FOREST_BOAR = List.of(
+            attack(1, "TUSK_RAM", "Таран клыками", "Мощный наскок с разбега.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "SPORE_VOLLEY", "Споровый залп", "Лесная STAB-атака. Отравляет врага Ядом на 3 хода.",
+            attack(2, "SPORE_VOLLEY", "Споровый залп", "Лесной STAB-удар, отравляющий противника Ядом (3 хода).",
                     AbilityCategory.SPECIAL, "FOREST", 15, 100, 2, true, StatusEffectType.POISON, 100, 3),
-            defense(3, "MOSS_ARMOR", "Мшистая броня", "Плотный мох: снижает входящий урон на 50%.",
+            defense(3, "MOSS_ARMOR", "Моховая броня", "Плотный слой мха снижает входящий урон на 50%.",
                     3, 50, 0, StatusEffectType.BLOCK, 1),
-            utility(4, "TRUFFLE_SNACK", "Трюфельный перекус", "Сильное исцеление: восстанавливает 35% от макс. HP.",
+            utility(4, "TRUFFLE_SNACK", "Лесной трюфель", "Находит редкий корень и восстанавливает 35% от макс. HP.",
                     4, 35, false, 0, StatusEffectType.NONE, 0, 0, StatusEffectType.NONE, 0)
     );
 
-    // 11. Арсен Воронян (ID = 12, FOREST)
-    private static final List<AbilityDto> ARSEN_VORONYAN = List.of(
-            attack(1, "DIVE_PECK", "Клевок с пике", "Молниеносный удар клювом сверху.",
+    // ID = 12 (FOREST) — Ворон-сыщик
+    private static final List<AbilityDto> DETECTIVE_RAVEN = List.of(
+            attack(1, "DIVE_PECK", "Пикирующий клевок", "Стремительная атака клювом с разворота.",
                     AbilityCategory.BASIC, "NEUTRAL", 10, 100, 0, false, StatusEffectType.NONE, 0, 0),
-            attack(2, "BRAMBLE_TRAP", "Ежевичный капкан", "Лесная STAB-атака. Замедляет врага (-35% скорости на 2 хода).",
+            attack(2, "BRAMBLE_TRAP", "Терновая ловушка", "Лесной STAB-удар, опутывающий и замедляющий цель (-35% скорости на 2 хода).",
                     AbilityCategory.SPECIAL, "FOREST", 16, 100, 2, true, StatusEffectType.SLOW, 100, 2),
-            defense(3, "SHADOW_FLAP", "Теневой взмах", "Уход в тень: 65% шанс уворота от следующей атаки.",
+            defense(3, "SHADOW_FLAP", "Взмах в тени", "Уклонение: 65% шанс скрыться в тени ветвей.",
                     3, 0, 65, StatusEffectType.EVASION, 1),
-            utility(4, "MONOCLE_ANALYSIS", "Анализ монокля", "Вычисляет уязвимость: следующий удар нанесет гарантированный крит (x1.5).",
+            utility(4, "MONOCLE_ANALYSIS", "Дедукция монокля", "Находит уязвимость: следующая атака нанесёт гарантированный крит (x1.5).",
                     3, 0, false, 0, StatusEffectType.GUARANTEED_CRIT, 100, 2, StatusEffectType.NONE, 0)
     );
 
-    // 12. Культурный медведь (ID = 13, FOREST)
+    // ID = 13 (FOREST) — Культурный медведь
     private static final List<AbilityDto> CULTURED_BEAR = List.of(
             attack(1, "HEAVY_PAW", "Тяжелая лапа", "Размашистый удар медвежьей лапой.",
                     AbilityCategory.BASIC, "NEUTRAL", 12, 100, 0, false, StatusEffectType.NONE, 0, 0),
@@ -169,20 +169,24 @@ public class AbilityCatalog {
     );
 
     private static final Map<Long, List<AbilityDto>> BY_SPECIES_ID = Map.ofEntries(
-            Map.entry(1L, RAT_CREEP),
+            Map.entry(1L, GRAY_RODENT),
             Map.entry(2L, RED_PANDA),
-            Map.entry(3L, PIHACH),
+            Map.entry(3L, FIRE_BRAWLER),
             Map.entry(4L, CINDERHOOT),
-            Map.entry(5L, SHALOMANDRA),
-            Map.entry(6L, VYDROCHKA),
+            Map.entry(5L, PYROMANDRA),
+            Map.entry(6L, RIVER_OTTER),
             Map.entry(7L, SIR_SOMUEL),
             Map.entry(8L, SPLASHICAN),
             Map.entry(9L, CASTORAX),
             Map.entry(10L, FOREST_GUARDIAN),
-            Map.entry(11L, SVINOHRYUK),
-            Map.entry(12L, ARSEN_VORONYAN),
+            Map.entry(11L, FOREST_BOAR),
+            Map.entry(12L, DETECTIVE_RAVEN),
             Map.entry(13L, CULTURED_BEAR)
     );
+
+    public Map<Long, List<AbilityDto>> getAllAbilitiesMap() {
+        return BY_SPECIES_ID;
+    }
 
     public List<AbilityDto> getAbilitiesForPokemon(Long speciesId, String pokemonName) {
         if (speciesId != null && BY_SPECIES_ID.containsKey(speciesId)) {
@@ -190,20 +194,20 @@ public class AbilityCatalog {
         }
         if (pokemonName != null) {
             String norm = pokemonName.trim().toLowerCase(Locale.ROOT);
-            if (norm.contains("панда") || norm.contains("пиролис") || norm.contains("лис")) return RED_PANDA;
-            if (norm.contains("пихач")) return PIHACH;
-            if (norm.contains("синдерхут")) return CINDERHOOT;
-            if (norm.contains("шаломандра")) return SHALOMANDRA;
-            if (norm.contains("выдрочка")) return VYDROCHKA;
+            if (norm.contains("панда")) return RED_PANDA;
+            if (norm.contains("огнеборец")) return FIRE_BRAWLER;
+            if (norm.contains("пеплоух")) return CINDERHOOT;
+            if (norm.contains("пиромандра")) return PYROMANDRA;
+            if (norm.contains("выдра")) return RIVER_OTTER;
             if (norm.contains("сомуэль")) return SIR_SOMUEL;
-            if (norm.contains("сплэшикан")) return SPLASHICAN;
+            if (norm.contains("плескан")) return SPLASHICAN;
             if (norm.contains("касторакс")) return CASTORAX;
-            if (norm.contains("хранитель") || norm.contains("куколд")) return FOREST_GUARDIAN;
-            if (norm.contains("свинохрюк")) return SVINOHRYUK;
-            if (norm.contains("воронян") || norm.contains("арсен")) return ARSEN_VORONYAN;
+            if (norm.contains("страж")) return FOREST_GUARDIAN;
+            if (norm.contains("вепрь")) return FOREST_BOAR;
+            if (norm.contains("ворон")) return DETECTIVE_RAVEN;
             if (norm.contains("медведь")) return CULTURED_BEAR;
         }
-        return RAT_CREEP;
+        return GRAY_RODENT;
     }
 
     public AbilityDto getAbilityBySlot(Long speciesId, String pokemonName, int slot) {

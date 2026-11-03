@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Service
 public class WorldSpawnService {
@@ -33,21 +36,32 @@ public class WorldSpawnService {
 
     @Transactional
     public List<WorldSpawnDto> getOrGenerateSpawnsNear(double lat, double lon) {
-        List<WorldSpawn> existing = spawnRepository.findByActiveTrueAndLatitudeBetweenAndLongitudeBetween(
+        List<PokemonSpeciesDto> catalog = fetchCatalog();
+        Set<String> validNames = catalog.stream()
+                .map(PokemonSpeciesDto::name)
+                .collect(Collectors.toSet());
+
+        List<WorldSpawn> rawExisting = spawnRepository.findByActiveTrueAndLatitudeBetweenAndLongitudeBetween(
                 lat - SEARCH_RADIUS_DEG, lat + SEARCH_RADIUS_DEG,
                 lon - SEARCH_RADIUS_DEG, lon + SEARCH_RADIUS_DEG
         );
 
+        List<WorldSpawn> existing = new ArrayList<>();
+        for (WorldSpawn sp : rawExisting) {
+            if (!validNames.contains(sp.getName())) {
+                spawnRepository.delete(sp);
+            } else {
+                existing.add(sp);
+            }
+        }
+
         int missingCount = MIN_NEARBY_SPAWNS - existing.size();
         if (missingCount > 0) {
-            List<PokemonSpeciesDto> catalog = fetchCatalog();
             ThreadLocalRandom random = ThreadLocalRandom.current();
-
             for (int i = 0; i < missingCount; i++) {
                 PokemonSpeciesDto s = catalog.get(random.nextInt(catalog.size()));
                 double randomLat = lat + random.nextDouble(-SPAWN_OFFSET_DEG, SPAWN_OFFSET_DEG);
                 double randomLon = lon + random.nextDouble(-SPAWN_OFFSET_DEG, SPAWN_OFFSET_DEG);
-
                 existing.add(spawnRepository.save(new WorldSpawn(
                         s.id(), s.name(), s.element(), s.archetype(),
                         s.baseHp(), s.baseAttack(), s.baseDefense(), s.baseSpeed(),
@@ -73,10 +87,10 @@ public class WorldSpawnService {
         try {
             return pokemonClient.getAllSpecies();
         } catch (Exception t) {
-            log.warn("pokemon-service недоступен ({}). Используем Fallback!", t.getMessage());
+            log.warn("pokemon-service недоступен ({}). Используется Fallback!", t.getMessage());
             return List.of(new PokemonSpeciesDto(
-                    1L, "Резервный Покемон (Fallback)", "NEUTRAL", "Баланс",
-                    "Резервный вид", 75, 25, 25, 25, false
+                    1L, "Серый грызун", "NEUTRAL", "Баланс",
+                    "Резервный покемон", 75, 25, 25, 25, false
             ));
         }
     }

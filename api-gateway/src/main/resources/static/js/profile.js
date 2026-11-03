@@ -36,8 +36,10 @@ async function reloadProfileData() {
     document.getElementById('prof-name').textContent = profileData.email;
     document.getElementById('prof-level').textContent = profileData.level;
     document.getElementById('prof-xp').textContent = xp;
+
     const xpTile = document.getElementById('prof-xp-tile');
     if (xpTile) xpTile.textContent = xp;
+
     const xpBar = document.getElementById('prof-xp-bar');
     if (xpBar) xpBar.style.width = `${xpPercent}%`;
 
@@ -63,15 +65,21 @@ function renderPartySlots() {
             const isMain = activeSlot === slot;
             pillar.innerHTML = `
                 <span class="slot-tag ${isMain ? 'active-tag' : ''}">
-                    Слот #${slot} ${isMain ? '• Активный в бою' : ''}
+                    Слот #${slot} ${isMain ? '• Активен' : ''}
                 </span>
                 <div class="card-click-area">${UiComponents.createPokemonLandscapeCard(p, isMain)}</div>
-                <button class="uiv-btn ${isMain ? 'primary' : ''}" style="width:100%" data-slot="${slot}">
-                    <span class="button_top">${isMain ? 'Выбран для боя' : 'Сделать активным'}</span>
-                </button>
+                <div class="slot-actions-col">
+                    <button class="uiv-btn ${isMain ? 'primary' : ''} btn-select-slot" style="width:100%" data-slot="${slot}">
+                        <span class="button_top">${isMain ? 'Активный боец' : 'Сделать основным'}</span>
+                    </button>
+                    <button class="uiv-btn btn-inspect-abilities" style="width:100%">
+                        <span class="button_top">Способности</span>
+                    </button>
+                </div>
             `;
             pillar.querySelector('.card-click-area').onclick = () => openDossierModal(p, true);
-            pillar.querySelector('button').onclick = async () => {
+            pillar.querySelector('.btn-inspect-abilities').onclick = () => openDossierModal(p, true);
+            pillar.querySelector('.btn-select-slot').onclick = async () => {
                 profileData = await ApiService.selectActiveSlot(slot);
                 renderPartySlots();
             };
@@ -84,7 +92,7 @@ function renderPartySlots() {
                         <line x1="12" y1="8" x2="12" y2="16"/>
                         <line x1="8" y1="12" x2="16" y2="12"/>
                     </svg>
-                    <span>Свободный слот отряда</span>
+                    <span>Слот свободен</span>
                     <small>Выберите покемона из коллекции ниже</small>
                 </div>
             `;
@@ -118,7 +126,18 @@ function renderFullPokedex() {
     });
 }
 
-function openDossierModal(pokeObj, isOwned) {
+function formatDossierAbilityMeta(ab) {
+    if (ab.category === 'DEFENSE') {
+        return ab.blockPercent > 0 ? `БЛОК ${ab.blockPercent}%` : `УКЛОНЕНИЕ ${ab.evasionChancePercent}%`;
+    }
+    if (ab.category === 'UTILITY') {
+        return ab.healPercentMaxHp > 0 ? `ХИЛ +${ab.healPercentMaxHp}%` : 'УСИЛЕНИЕ';
+    }
+    const stabLabel = ab.stab ? ' • STAB' : '';
+    return `PWR ${ab.power}${stabLabel}`;
+}
+
+async function openDossierModal(pokeObj, isOwned) {
     inspectedPokemon = isOwned ? pokeObj : null;
     const speciesId = pokeObj.speciesId ?? pokeObj.id;
     const species = allSpecies.find(s => s.id === speciesId) || pokeObj;
@@ -126,10 +145,33 @@ function openDossierModal(pokeObj, isOwned) {
     document.getElementById('detail-card-box').innerHTML = UiComponents.createPokemonLandscapeCard(pokeObj);
     document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.archetype}`;
     document.getElementById('detail-poke-lore').textContent =
-        species.description || 'Существо мира EvoGrid.';
-
+        species.description || 'Обитатель мира EvoGrid.';
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);
+
+    const abilitiesListEl = document.getElementById('detail-poke-abilities-list');
+    abilitiesListEl.innerHTML = `<div class="ability-loading">Загрузка способностей...</div>`;
     document.getElementById('modal-poke-details').classList.remove('hidden');
+
+    try {
+        const abilities = await ApiService.getPokemonAbilities(speciesId, pokeObj.name);
+        abilitiesListEl.innerHTML = abilities.map(ab => {
+            const cdText = ab.maxCooldown > 0 ? `КД ${ab.maxCooldown}` : 'Без КД';
+            return `
+                <div class="dossier-ability-card">
+                    <div class="ability-header-row">
+                        <span class="ability-name">${ab.slot}. ${ab.name}</span>
+                        <span class="cd-pill">${cdText}</span>
+                    </div>
+                    <div class="ability-desc">${ab.description || ''}</div>
+                    <div class="ability-meta-row">
+                        <span class="ability-type-tag">${formatDossierAbilityMeta(ab)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch {
+        abilitiesListEl.innerHTML = `<div class="ability-loading">Не удалось получить список способностей</div>`;
+    }
 }
 
 async function assignToSlot(slotNumber) {

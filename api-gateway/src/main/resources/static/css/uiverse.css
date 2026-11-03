@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. БЕЛАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ
+   1. НИЖНИЙ ДОК
    ========================================================================== */
 ul {
     list-style: none;
@@ -147,7 +147,7 @@ ul {
 }
 
 /* ==========================================================================
-   3. ФОРМЫ АВТОРИЗАЦИИ И ПОЛЯ ВВОДА
+   3. ФОРМЫ АВТОРИЗАЦИИ
    ========================================================================== */
 .form-box {
     width: 100%;
@@ -255,19 +255,21 @@ ul {
 }
 
 /* ==========================================================================
-   4. КАРТОЧКИ ПОКЕМОНОВ (ИСПРАВЛЕННАЯ ВЕРСТКА И ТИПОГРАФИКА)
+   4. КАРТОЧКИ ПОКЕМОНОВ (РАСШИРЕННЫЕ)
    ========================================================================== */
 .poke-card {
     display: flex;
     flex-direction: column;
     position: relative;
     width: 100%;
-    max-width: 220px;
-    height: 310px;
-    border-radius: 20px;
+    min-width: 245px;
+    max-width: 265px;
+    height: 330px;
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     background-color: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.8);
     cursor: pointer;
     transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
@@ -284,7 +286,7 @@ ul {
 .landscape-section {
     position: relative;
     width: 100%;
-    height: 62%;
+    height: 60%;
     overflow: hidden;
 }
 
@@ -338,109 +340,101 @@ ul {
 
 .hill-1 { right: -25%; bottom: 20%; width: 150px; height: 40px; border-radius: 50%; background-color: #e6b29d; }
 .hill-2 { right: -36%; bottom: 10%; width: 150px; height: 80px; border-radius: 50%; background-color: #c29182; }
-.hill-3 { left: -100%; bottom: -28%; width: 350px; height: 150px; border-radius: 50%; background-color: #b77873; z-index: 3; }
-.hill-4 { right: -100%; bottom: -40%; width: 350px; height: 150px; border-radius: 50%; background-color: #a16773; z-index: 3; }
+.hill-3 { left: -80%; bottom: -28%; width: 380px; height: 150px; border-radius: 50%; background-color: #b77873; z-index: 3; }
+.hill-4 { right: -80%; bottom: -40%; width: 380px; height: 150px; border-radius: 50%; background-color: #a16773; z-index: 3; }
 
-.poke-card[data-element="WATER"] .hill-3,
-.poke-card[data-element="WATER"] .hill-4 { background-color: #075985; }
-.poke-card[data-element="FOREST"] .hill-3,
-.poke-card[data-element="FOREST"] .hill-4 { background-color: #065f46; }
+.poke-card[data-element="WATER"] .hill-3, .poke-card[data-element="WATER"] .hill-4 { background-color: #075985; }
+.poke-card[data-element="FOREST"] .hill-3, .poke-card[data-element="FOREST"] .hill-4 { background-color: #065f46; }
 
-.tree-1 { bottom: 20%; left: 3%; width: 42px; height: 58px; z-index: 3; }
-.tree-2 { bottom: 14%; left: 24%; width: 42px; height: 58px; z-index: 3; }
-.tree-3 { bottom: 10%; right: 2%; width: 52px; height: 66px; z-index: 3; }
+.tree-1 { bottom: 20%; left: 4%; width: 42px; height: 58px; z-index: 3; }
+.tree-2 { bottom: 14%; left: 25%; width: 42px; height: 58px; z-index: 3; }
+.tree-3 { bottom: 10%; right: 4%; width: 52px; height: 66px; z-index: 3; }
 
 .filter {
     inset: 0;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.18) 0%, rgba(15, 23, 42, 0.05) 45%, rgba(15, 23, 42, 0.68) 100%);
-    z-index: 5;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.16) 0%, rgba(15, 23, 42, 0.06) 45%, rgba(15, 23, 42, 0.68) 100%);
+    z-index: 4;
 }
 
-/* Верхний ряд плашек: Стихия слева, HP справа */
 .card-top-badges {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 10;
+    top: 12px;
+    left: 12px;
+    right: 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 8px;
+    z-index: 10;
 }
 
 .elem-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(15, 23, 42, 0.42);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 4px 8px;
+    gap: 5px;
+    padding: 4px 10px;
     border-radius: 99px;
+    background: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
     letter-spacing: 0.03em;
 }
 
 .elem-pill .elem-svg-icon {
     display: inline-flex;
-    align-items: center;
+    width: 14px;
+    height: 14px;
 }
 
-.elem-pill svg {
-    width: 13px;
-    height: 13px;
+.elem-pill .elem-svg-icon svg {
+    width: 14px;
+    height: 14px;
 }
 
 .hp-pill {
-    background: rgba(255, 255, 255, 0.92);
-    color: #0f172a;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 9px;
+    padding: 4px 10px;
     border-radius: 99px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    background: rgba(255, 255, 255, 0.94);
+    color: #0f172a;
+    font-size: 11.5px;
+    font-weight: 800;
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
 }
 
-/* Заголовок покемона в нижней части иллюстрации */
 .card-hero-title {
     position: absolute;
-    bottom: 10px;
-    left: 12px;
-    right: 12px;
+    bottom: 12px;
+    left: 14px;
+    right: 14px;
     z-index: 10;
     color: #ffffff;
     text-align: left;
 }
 
 .poke-name-line {
-    font-size: 14px;
+    font-size: 15.5px;
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.01em;
-    text-shadow: 0 2px 6px rgba(15, 23, 42, 0.5);
+    text-shadow: 0 2px 6px rgba(15, 23, 42, 0.45);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .poke-arch-line {
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.88);
+    color: rgba(255, 255, 255, 0.86);
     margin-top: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-/* Нижняя секция характеристик */
 .content-section {
     width: 100%;
-    height: 38%;
+    height: 40%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -453,7 +447,7 @@ ul {
     justify-content: space-evenly;
     height: 100%;
     width: 100%;
-    padding: 8px 14px;
+    padding: 10px 18px;
 }
 
 .stat-row {
@@ -461,23 +455,21 @@ ul {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    font-size: 12px;
+    font-size: 12.5px;
 }
 
 .stat-label {
     color: #64748b;
     font-weight: 600;
-    white-space: nowrap;
 }
 
 .stat-val {
     color: #0f172a;
     font-weight: 800;
     background: #f1f5f9;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11.5px;
+    padding: 2px 9px;
+    border-radius: 8px;
+    font-size: 12px;
 }
 
 .separator {
@@ -487,17 +479,16 @@ ul {
 }
 
 /* ==========================================================================
-   5. УВЕДОМЛЕНИЯ (ТОСТЫ)
+   5. УВЕДОМЛЕНИЯ (TOAST ALERTS)
    ========================================================================== */
 .toast-stack {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 22px;
+    right: 22px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 320px;
-    max-width: calc(100vw - 32px);
     z-index: 9999;
     pointer-events: none;
 }
@@ -508,17 +499,11 @@ ul {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    min-height: 56px;
-    border-radius: 14px;
-    background-color: #0f172a;
+    min-height: 58px;
+    border-radius: 12px;
+    background-color: #1e293b;
     padding: 10px 12px;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
-    animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes toastSlideIn {
-    from { opacity: 0; transform: translateY(-10px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
 }
 
 .error-alert-left {
@@ -539,22 +524,21 @@ ul {
 }
 
 .error-alert-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
 .error-alert-title {
     color: #ffffff;
     font-size: 12.5px;
     font-weight: 700;
-    margin: 0 0 2px 0;
+    margin-bottom: 2px;
 }
 
 .error-alert-desc {
     color: #cbd5e1;
     font-size: 11.5px;
-    margin: 0;
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
 .error-alert-close {
@@ -565,86 +549,9 @@ ul {
     border-radius: 6px;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .error-alert-close svg {
     width: 18px;
     height: 18px;
-}
-
-/* Адаптация карточек под мобильные экраны */
-@media (max-width: 640px) {
-    .example-1 {
-        width: min(300px, calc(100vw - 24px));
-        height: 60px;
-        padding: 6px 12px;
-    }
-
-    .example-1 .icon-content .link {
-        width: 44px;
-        height: 44px;
-    }
-
-    .example-1 .icon-content .tooltip {
-        display: none;
-    }
-
-    .poke-card {
-        max-width: 100%;
-        height: 280px;
-        border-radius: 18px;
-    }
-
-    .card-top-badges {
-        top: 8px;
-        left: 8px;
-        right: 8px;
-    }
-
-    .elem-pill {
-        font-size: 9px;
-        padding: 3px 7px;
-    }
-
-    .hp-pill {
-        font-size: 10px;
-        padding: 3px 7px;
-    }
-
-    .card-hero-title {
-        bottom: 8px;
-        left: 10px;
-        right: 10px;
-    }
-
-    .poke-name-line {
-        font-size: 13px;
-    }
-
-    .poke-arch-line {
-        font-size: 10.5px;
-    }
-
-    .forecast {
-        padding: 6px 10px;
-    }
-
-    .stat-row {
-        font-size: 11px;
-    }
-
-    .stat-val {
-        font-size: 10.5px;
-        padding: 1px 6px;
-    }
-
-    .battle-arena-row .poke-card {
-        height: 250px;
-    }
-
-    .battle-arena-row .stat-label {
-        font-size: 10px;
-    }
 }
