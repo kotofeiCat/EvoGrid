@@ -17,7 +17,7 @@ public class JwtService {
     private final SecretKey secretKey;
 
     public JwtService(
-            @Value("${jwt.secret:EvoGridSuperSecretKeyForJwtSigning2026 CloudMvpProject!}") String secret) {
+            @Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 

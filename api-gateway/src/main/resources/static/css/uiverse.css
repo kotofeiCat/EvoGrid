@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. НИЖНЕЕ МЕНЮ НАВИГАЦИИ (From Uiverse.io by firemonste_8052)
+   1. НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ — БЕЛАЯ ТЕМА (Адаптивная)
    ========================================================================== */
 ul {
     list-style: none;
@@ -7,79 +7,88 @@ ul {
 
 .bottom-dock-wrap {
     position: fixed;
-    bottom: 24px;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 2500;
+    width: auto;
+    max-width: calc(100vw - 24px);
 }
 
 .example-1 {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    font-weight: bolder;
-    background-color: #0b0f19;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.95);
     border-radius: 30px;
-    padding: 20px;
-    height: 70px;
+    padding: 10px 18px;
+    height: 68px;
     width: 320px;
-    box-shadow: 0 20px 40px rgba(2, 132, 199, 0.22);
+    max-width: 100%;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(2, 132, 199, 0.08);
 }
 
 .example-1 .icon-content {
-    margin: 0 10px;
+    margin: 0 6px;
     position: relative;
-    font-weight: bolder;
+    font-weight: 700;
 }
 
 .example-1 .icon-content .tooltip {
     position: absolute;
-    top: -30px;
+    top: -32px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #ffffff;
-    color: #0b0f19;
+    background-color: #0f172a;
+    color: #ffffff;
     padding: 6px 12px;
     border-radius: 8px;
     opacity: 0;
     visibility: hidden;
-    font-size: 13px;
+    font-size: 12px;
     white-space: nowrap;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     font-weight: 700;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
     pointer-events: none;
 }
 
 .example-1 .icon-content:hover .tooltip {
     opacity: 1;
     visibility: visible;
-    top: -48px;
+    top: -46px;
 }
 
 .example-1 .icon-content .link {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    color: #ffffff;
-    background-color: #0b0f19;
-    transition: all 0.3s ease-in-out;
-    font-weight: bolder;
-    border: none;
+    color: #64748b;
+    background-color: #f8fafc;
+    transition: all 0.25s ease-in-out;
+    font-weight: 700;
+    border: 1px solid transparent;
     cursor: pointer;
     text-decoration: none;
 }
 
-.example-1 .icon-content .link.active-nav {
-    background-color: #1e293b;
+.example-1 .icon-content .link:hover {
+    background-color: #f1f5f9;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    transform: translateY(-2px);
 }
 
-.example-1 .icon-content .link:hover {
-    box-shadow: 3px 2px 45px 0px rgb(0 0 0 / 12%);
-    transform: translateY(-2px);
+.example-1 .icon-content .link.active-nav {
+    background-color: #e0f2fe;
+    border-color: rgba(2, 132, 199, 0.25);
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.16);
 }
 
 .example-1 .icon-content .link svg {
@@ -90,26 +99,26 @@ ul {
 
 .example-1 .icon-content .link[data-social="spotify"]:hover,
 .example-1 .icon-content .link[data-social="spotify"].active-nav {
-    color: #00a2ff;
+    color: #0284c7;
 }
 
 .example-1 .icon-content .link[data-social="pinterest"]:hover,
 .example-1 .icon-content .link[data-social="pinterest"].active-nav {
-    color: #ff009d;
+    color: #e11d48;
 }
 
 .example-1 .icon-content .link[data-social="dribbble"]:hover,
 .example-1 .icon-content .link[data-social="dribbble"].active-nav {
-    color: #38bdf8;
+    color: #0284c7;
 }
 
 .example-1 .icon-content .link[data-social="telegram"]:hover,
 .example-1 .icon-content .link[data-social="telegram"].active-nav {
-    color: #23b100;
+    color: #059669;
 }
 
 /* ==========================================================================
-   2. КНОПКА (From Uiverse.io by Voxybuns)
+   2. КНОПКИ (From Uiverse.io by Voxybuns)
    ========================================================================== */
 .uiv-btn {
     --button_radius: 0.75em;
@@ -124,6 +133,7 @@ ul {
     padding: 0;
     display: inline-block;
     text-decoration: none;
+    touch-action: manipulation;
 }
 
 .uiv-btn.primary {
@@ -140,11 +150,12 @@ ul {
     box-sizing: border-box;
     border: 2px solid var(--button_outline_color);
     border-radius: var(--button_radius);
-    padding: 0.65em 1.35em;
+    padding: 0.65em 1.25em;
     background: var(--button_color);
     color: var(--button_outline_color);
     transform: translateY(-0.2em);
     transition: transform 0.1s ease;
+    text-align: center;
 }
 
 .uiv-btn:hover .button_top {
@@ -161,11 +172,11 @@ ul {
 }
 
 /* ==========================================================================
-   3. ФОРМА АВТОРИЗАЦИИ (From Uiverse.io by alexruix) — БЕЗ ЛИШНИХ РАМОК
+   3. ФОРМЫ АВТОРИЗАЦИИ (From Uiverse.io by alexruix)
    ========================================================================== */
 .form-box {
     width: 100%;
-    max-width: 360px;
+    max-width: 380px;
     background: #f1f7fe;
     overflow: hidden;
     border-radius: 22px;
@@ -177,14 +188,14 @@ ul {
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 36px 28px 26px;
+    padding: 32px 24px 24px;
     gap: 16px;
     text-align: center;
 }
 
 .form .title {
     font-weight: 800;
-    font-size: 1.6rem;
+    font-size: 1.55rem;
     letter-spacing: -0.02em;
 }
 
@@ -217,7 +228,7 @@ ul {
 }
 
 /* ==========================================================================
-   4. ТЕКСТОВЫЕ ПОЛЯ (From Uiverse.io by Satwinder04)
+   4. ПОЛЯ ВВОДА (From Uiverse.io by Satwinder04)
    ========================================================================== */
 .input-container {
     position: relative;
@@ -272,7 +283,7 @@ ul {
 }
 
 /* ==========================================================================
-   5. ПЕЙЗАЖНАЯ КАРТОЧКА ПОКЕМОНА (From Uiverse.io by KSAplay) — БЕЗ РАМОК
+   5. КАРТОЧКИ ПОКЕМОНОВ (From Uiverse.io by KSAplay)
    ========================================================================== */
 .poke-card {
     display: flex;
@@ -280,13 +291,14 @@ ul {
     align-items: center;
     position: relative;
     width: 220px;
-    height: 350px;
+    height: 340px;
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
     background-color: white;
     cursor: pointer;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+    margin: 0 auto;
 }
 
 .poke-card:hover {
@@ -301,7 +313,7 @@ ul {
 .landscape-section {
     position: relative;
     width: 100%;
-    height: 68%;
+    height: 66%;
     overflow: hidden;
 }
 
@@ -336,7 +348,6 @@ ul {
     left: 23%;
     filter: drop-shadow(0px 0px 10px white);
 }
-
 .sun::after {
     position: absolute;
     content: "";
@@ -346,7 +357,6 @@ ul {
     background-color: white;
     opacity: 0.5;
 }
-
 .sun::before {
     position: absolute;
     content: "";
@@ -364,7 +374,6 @@ ul {
     height: 28%;
     background: linear-gradient(0deg, rgba(241, 192, 125, 1) 0%, rgba(247, 218, 150, 1) 100%);
 }
-
 .poke-card[data-element="WATER"] .ocean { background: linear-gradient(0deg, #0369a1 0%, #38bdf8 100%); }
 .poke-card[data-element="FOREST"] .ocean { background: linear-gradient(0deg, #047857 0%, #34d399 100%); }
 
@@ -383,8 +392,10 @@ ul {
 .hill-3 { left: -100%; bottom: -28%; width: 350px; height: 150px; border-radius: 50%; background-color: #b77873; z-index: 3; }
 .hill-4 { right: -100%; bottom: -40%; width: 350px; height: 150px; border-radius: 50%; background-color: #a16773; z-index: 3; }
 
-.poke-card[data-element="WATER"] .hill-3, .poke-card[data-element="WATER"] .hill-4 { background-color: #075985; }
-.poke-card[data-element="FOREST"] .hill-3, .poke-card[data-element="FOREST"] .hill-4 { background-color: #065f46; }
+.poke-card[data-element="WATER"] .hill-3,
+.poke-card[data-element="WATER"] .hill-4 { background-color: #075985; }
+.poke-card[data-element="FOREST"] .hill-3,
+.poke-card[data-element="FOREST"] .hill-4 { background-color: #065f46; }
 
 .tree-1 { bottom: 20%; left: 3%; width: 50px; height: 70px; z-index: 3; }
 .tree-2 { bottom: 14%; left: 25%; width: 50px; height: 70px; z-index: 3; }
@@ -400,7 +411,7 @@ ul {
 
 .content-section {
     width: 100%;
-    height: 32%;
+    height: 34%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -414,7 +425,7 @@ ul {
     top: 0;
     left: 0;
     width: 100%;
-    padding: 14px 16px 0;
+    padding: 12px 14px 0;
     color: white;
     z-index: 10;
 }
@@ -424,15 +435,8 @@ ul {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    font-size: 9.5pt;
+    font-size: 9pt;
     font-weight: 700;
-}
-
-.weather-info .icon img {
-    width: 28px;
-    height: 28px;
-    position: static;
-    filter: brightness(0) invert(1);
 }
 
 .weather-info .right-side {
@@ -440,6 +444,7 @@ ul {
     flex-direction: column;
     align-items: flex-end;
     text-align: right;
+    max-width: 70%;
 }
 
 .weather-info .location {
@@ -449,15 +454,16 @@ ul {
 }
 
 .weather-info .location span {
-    font-size: 10.5pt;
+    font-size: 10pt;
     font-weight: 800;
     text-transform: uppercase;
+    word-break: break-word;
 }
 
 .temperature {
-    font-size: 16pt;
+    font-size: 15pt;
     font-weight: 800;
-    line-height: 24px;
+    line-height: 22px;
 }
 
 .forecast {
@@ -467,7 +473,7 @@ ul {
     justify-content: space-evenly;
     height: 100%;
     width: 100%;
-    padding: 8px 22px;
+    padding: 6px 18px;
 }
 
 .forecast > div {
@@ -476,7 +482,7 @@ ul {
     align-items: center;
     justify-content: space-between;
     color: #475569;
-    font-size: 9pt;
+    font-size: 8.8pt;
     font-weight: 600;
 }
 
@@ -487,16 +493,17 @@ ul {
 }
 
 /* ==========================================================================
-   6. УВЕДОМЛЕНИЕ ОБ ОШИБКЕ (From Uiverse.io by seyed-mohsen-mousavi)
+   6. ТОСТЫ-УВЕДОМЛЕНИЯ (From Uiverse.io by seyed-mohsen-mousavi)
    ========================================================================== */
 .toast-stack {
     position: fixed;
-    top: 22px;
-    right: 22px;
+    top: 16px;
+    right: 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 310px;
+    width: 320px;
+    max-width: calc(100vw - 32px);
     z-index: 9999;
     pointer-events: none;
 }
@@ -509,10 +516,10 @@ ul {
     justify-content: space-between;
     width: 100%;
     min-height: 58px;
-    border-radius: 10px;
-    background-color: #232531;
+    border-radius: 12px;
+    background-color: #1e293b;
     padding: 10px 12px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25);
     animation: toastSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -534,8 +541,8 @@ ul {
 }
 
 .error-alert-icon {
-    color: #d65563;
-    background: rgba(255, 255, 255, 0.06);
+    color: #f43f5e;
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
     padding: 6px;
     border-radius: 8px;
@@ -546,8 +553,8 @@ ul {
 }
 
 .error-alert-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
 }
 
 .error-alert-title {
@@ -558,14 +565,14 @@ ul {
 }
 
 .error-alert-desc {
-    color: #9ca3af;
+    color: #cbd5e1;
     font-size: 11.5px;
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.35;
 }
 
 .error-alert-close {
-    color: #6b7280;
+    color: #94a3b8;
     background: transparent;
     border: none;
     padding: 4px;
@@ -587,9 +594,9 @@ ul {
     height: 20px;
 }
 
-/* Иконки Google Material Symbols внутри карточек и маркеров */
+/* Google Material Symbols */
 .weather-info .icon .material-symbols-outlined {
-    font-size: 30px;
+    font-size: 28px;
     color: #ffffff;
     position: static;
 }
@@ -602,4 +609,54 @@ ul {
 .metric-tile .metric-head .material-symbols-outlined {
     font-size: 22px;
     color: #0284c7;
+}
+
+/* Адаптация карточек и нижней панели для телефонов */
+@media (max-width: 640px) {
+    .example-1 {
+        width: min(320px, calc(100vw - 24px));
+        height: 62px;
+        padding: 8px 12px;
+    }
+
+    .example-1 .icon-content .link {
+        width: 44px;
+        height: 44px;
+    }
+
+    .example-1 .icon-content .tooltip {
+        display: none;
+    }
+
+    .poke-card {
+        width: 100%;
+        max-width: 230px;
+        height: 310px;
+    }
+
+    .battle-arena-row .poke-card {
+        width: 148px;
+        height: 245px;
+    }
+
+    .battle-arena-row .weather-info {
+        padding: 8px 10px 0;
+    }
+
+    .battle-arena-row .weather-info .location span {
+        font-size: 8.5pt;
+    }
+
+    .battle-arena-row .temperature {
+        font-size: 12pt;
+        line-height: 18px;
+    }
+
+    .battle-arena-row .forecast {
+        padding: 4px 10px;
+    }
+
+    .battle-arena-row .forecast > div {
+        font-size: 7.5pt;
+    }
 }

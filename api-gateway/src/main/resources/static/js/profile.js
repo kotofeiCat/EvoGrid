@@ -68,8 +68,8 @@ function renderPartySlots() {
         } else {
             pillar.innerHTML = `
                 <span class="slot-tag">Слот #${slot}</span>
-                <div style="width:220px;height:350px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;font-weight:600">
-                    Свободный слот
+                <div class="slot-empty-box">
+                    Свободный слот отряда
                 </div>
             `;
         }

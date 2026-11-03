@@ -65,7 +65,8 @@ public class UserService {
                 new UserAccount(normalizedEmail, passwordEncoder.encode(req.password()), lat, lon)
         );
 
-        Long starterId = req.starterSpeciesId() != null ? req.starterSpeciesId() : 2L;
+        Long starterId = (req.starterSpeciesId() != null && List.of(2L, 6L, 10L).contains(req.starterSpeciesId()))
+                ? req.starterSpeciesId() : 2L;
         PokemonSpeciesDto starter = fetchStarter(starterId);
 
         pokemonRepository.save(new OwnedPokemon(

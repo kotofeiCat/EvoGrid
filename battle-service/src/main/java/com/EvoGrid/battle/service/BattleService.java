@@ -22,6 +22,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BattleService {
 
     private static final Logger log = LoggerFactory.getLogger(BattleService.class);
+    private static final double MAX_BATTLE_DISTANCE_METERS = 100.0; // 70м радиус + запас на погрешность GPS
+
     private static final Set<String> ADVANTAGE_PAIRS = Set.of(
             "FIRE->FOREST", "FOREST->WATER", "WATER->FIRE"
     );
@@ -39,17 +41,32 @@ public class BattleService {
     }
 
     @Transactional
-    public BattleStateDto startBattle(StartBattleRequest req) {
-        UserProfileDto user = fetchUser(req.userId());
+    public BattleStateDto startBattle(StartBattleRequest req, Long authUserId) {
+        Long effectiveUserId = authUserId != null ? authUserId : req.userId();
+        if (effectiveUserId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Требуется авторизация");
+        }
+
+        UserProfileDto user = fetchUser(effectiveUserId);
         WorldSpawnDto spawn = fetchSpawn(req.spawnId());
 
         if (!spawn.active()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Этот покемон уже пойман или недоступен!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Этот покемон уже пойман или скрылся!");
+        }
+
+        double distance = calculateDistanceMeters(
+                user.latitude(), user.longitude(),
+                spawn.latitude(), spawn.longitude()
+        );
+        if (distance > MAX_BATTLE_DISTANCE_METERS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Покемон слишком далеко (" + Math.round(distance) + " м). Подойдите ближе!");
         }
 
         OwnedPokemonDto fighter = chooseFighterFromParty(user, req.partySlot());
+
         String startLog = String.format(
-                "Тренер %s выставляет [%s (%s, SPD:%d)] против дикого [%s (%s, SPD:%d)].",
+                "Бой начался! Тренер %s выпустил [%s (%s, SPD:%d)] против дикого [%s (%s, SPD:%d)].",
                 user.email(), fighter.name(), fighter.element(), fighter.speed(),
                 spawn.name(), spawn.element(), spawn.speed()
         );
@@ -61,17 +78,21 @@ public class BattleService {
                 spawn.maxHp(), spawn.attack(), spawn.defense(), spawn.speed(),
                 startLog
         ));
+
         return toDto(session);
     }
 
     @Transactional
-    public BattleStateDto attackTurn(Long battleId) {
+    public BattleStateDto attackTurn(Long battleId, Long authUserId) {
         BattleSession b = findBattleOrThrow(battleId);
+        verifyBattleOwnership(b, authUserId);
+
         if (b.getStatus() != BattleStatus.IN_PROGRESS) {
             return toDto(b);
         }
 
         b.appendLog("--- Ход " + b.getTurnNumber() + " ---");
+
         if (b.getPlayerSpeed() >= b.getEnemySpeed()) {
             executePlayerStrike(b);
             if (b.getEnemyCurrentHp() > 0) executeEnemyStrike(b);
@@ -96,10 +117,17 @@ public class BattleService {
     }
 
     @Transactional
-    public BattleStateDto throwPokeball(Long battleId) {
+    public BattleStateDto throwPokeball(Long battleId, Long authUserId) {
         BattleSession b = findBattleOrThrow(battleId);
+        verifyBattleOwnership(b, authUserId);
+
         if (b.getStatus() != BattleStatus.IN_PROGRESS) {
             return toDto(b);
+        }
+
+        UserProfileDto user = fetchUser(b.getUserId());
+        if (user.pokeballs() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "У вас закончились покеболы!");
         }
 
         double hpRatio = (double) b.getEnemyCurrentHp() / b.getEnemyMaxHp();
@@ -119,7 +147,7 @@ public class BattleService {
                     b.getEnemyMaxHp(), b.getEnemyAttack(), b.getEnemyDefense(), b.getEnemySpeed()
             ));
         } else {
-            b.appendLog("Промах! " + b.getEnemyPokemonName() + " вырвался из покебола!");
+            b.appendLog("Неудача! " + b.getEnemyPokemonName() + " вырвался из покебола!");
             giveXpReward(b.getUserId(), 0, true);
             executeEnemyStrike(b);
             if (b.getPlayerCurrentHp() <= 0) {
@@ -132,8 +160,27 @@ public class BattleService {
         return toDto(b);
     }
 
-    public BattleStateDto getBattleState(Long battleId) {
-        return toDto(findBattleOrThrow(battleId));
+    public BattleStateDto getBattleState(Long battleId, Long authUserId) {
+        BattleSession b = findBattleOrThrow(battleId);
+        verifyBattleOwnership(b, authUserId);
+        return toDto(b);
+    }
+
+    private void verifyBattleOwnership(BattleSession b, Long authUserId) {
+        if (authUserId != null && !b.getUserId().equals(authUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Доступ к чужому бою запрещен!");
+        }
+    }
+
+    private double calculateDistanceMeters(double lat1, double lon1, double lat2, double lon2) {
+        double r = 6371000.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return r * c;
     }
 
     private void handlePlayerDefeat(BattleSession b, boolean pokeballUsed) {
@@ -147,7 +194,7 @@ public class BattleService {
         double mult = getElementMultiplier(b.getPlayerElement(), b.getEnemyElement());
         int dmg = calculateDamage(b.getPlayerAttack(), b.getEnemyDefense(), mult);
         b.setEnemyCurrentHp(Math.max(0, b.getEnemyCurrentHp() - dmg));
-        b.appendLog(String.format(" [SPD %d] %s атакует (%s -> %s, x%.2f) на %d урона (осталось %d/%d HP)",
+        b.appendLog(String.format("[SPD %d] %s атакует (%s -> %s, x%.2f) на %d урона (У врага %d/%d HP)",
                 b.getPlayerSpeed(), b.getPlayerPokemonName(), b.getPlayerElement(), b.getEnemyElement(),
                 mult, dmg, b.getEnemyCurrentHp(), b.getEnemyMaxHp()));
     }
@@ -156,7 +203,7 @@ public class BattleService {
         double mult = getElementMultiplier(b.getEnemyElement(), b.getPlayerElement());
         int dmg = calculateDamage(b.getEnemyAttack(), b.getPlayerDefense(), mult);
         b.setPlayerCurrentHp(Math.max(0, b.getPlayerCurrentHp() - dmg));
-        b.appendLog(String.format(" [SPD %d] Дикий %s атакует (%s -> %s, x%.2f) на %d урона (осталось %d/%d HP)",
+        b.appendLog(String.format("[SPD %d] Дикий %s контратакует (%s -> %s, x%.2f) на %d урона (У вас %d/%d HP)",
                 b.getEnemySpeed(), b.getEnemyPokemonName(), b.getEnemyElement(), b.getPlayerElement(),
                 mult, dmg, b.getPlayerCurrentHp(), b.getPlayerMaxHp()));
     }
@@ -175,7 +222,7 @@ public class BattleService {
     private OwnedPokemonDto chooseFighterFromParty(UserProfileDto user, Integer slot) {
         List<OwnedPokemonDto> party = user.party();
         if (party == null || party.isEmpty()) {
-            return new OwnedPokemonDto(0L, 2L, "Резервный Боец", "FIRE", "Атака", 70, 35, 20, 25, 1);
+            return new OwnedPokemonDto(0L, 2L, "Резервный Лис", "FIRE", "Дамагер", 70, 35, 20, 25, 1);
         }
         if (slot != null) {
             return party.stream().filter(p -> slot.equals(p.partySlot())).findFirst().orElse(party.get(0));
@@ -187,9 +234,9 @@ public class BattleService {
         try {
             return userClient.getUserProfile(userId);
         } catch (Exception t) {
-            log.warn("user-service недоступен ({}). Используем Fallback-профиль!", t.getMessage());
+            log.warn("user-service недоступен ({}). Используется Fallback-профиль!", t.getMessage());
             List<OwnedPokemonDto> backup = List.of(
-                    new OwnedPokemonDto(1L, 2L, "Резервный Боец (Fallback)", "FIRE", "Атака", 70, 35, 20, 25, 1)
+                    new OwnedPokemonDto(1L, 2L, "Пиролис (Fallback)", "FIRE", "Дамагер", 70, 35, 20, 25, 1)
             );
             return new UserProfileDto(userId, "trainer@evogrid.local", 1, 0, 10, 1, 55.7558, 37.6173, backup, backup);
         }
@@ -199,8 +246,8 @@ public class BattleService {
         try {
             return worldClient.getSpawnById(spawnId);
         } catch (Exception t) {
-            log.warn("world-service недоступен ({}). Используем Fallback-спавн!", t.getMessage());
-            return new WorldSpawnDto(spawnId, 1L, "Дикий Покемон (Fallback)", "NEUTRAL", "Баланс",
+            log.warn("world-service недоступен ({}). Используется Fallback-спавн!", t.getMessage());
+            return new WorldSpawnDto(spawnId, 1L, "Эквилибр (Fallback)", "NEUTRAL", "Баланс",
                     75, 75, 25, 25, 25, 55.7558, 37.6173, true);
         }
     }

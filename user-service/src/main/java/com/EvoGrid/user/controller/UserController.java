@@ -93,20 +93,33 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/location")
-    @Operation(summary = "Обновление GPS-координат")
     public UserProfileDto updateLocation(
             @PathVariable Long userId,
             @RequestParam double lat,
             @RequestParam double lon,
+            @RequestHeader(name = "X-User-Id", required = false) Long gatewayUserId,
+            @CookieValue(name = JWT_COOKIE, required = false) String jwtCookie,
             @CookieValue(name = SLOT_COOKIE, defaultValue = "1") int activeSlot) {
+        Long authUserId = resolveUserId(gatewayUserId, jwtCookie);
+        if (!authUserId.equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Доступ к чужому профилю запрещен");
+        }
+        if (Double.isNaN(lat) || Double.isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Некорректные координаты");
+        }
         return userService.updateLocation(userId, lat, lon, activeSlot);
     }
 
     @PutMapping("/{userId}/party")
-    @Operation(summary = "Назначение покемона в слот команды (1, 2 или 3)")
     public ResponseEntity<UserProfileDto> assignPartySlot(
             @PathVariable Long userId,
+            @RequestHeader(name = "X-User-Id", required = false) Long gatewayUserId,
+            @CookieValue(name = JWT_COOKIE, required = false) String jwtCookie,
             @RequestBody PartySlotRequest request) {
+        Long authUserId = resolveUserId(gatewayUserId, jwtCookie);
+        if (!authUserId.equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Доступ к чужой команде запрещен");
+        }
         UserProfileDto profile = userService.assignPartySlot(userId, request, request.slot());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, createCookie(SLOT_COOKIE, String.valueOf(request.slot()), 7))

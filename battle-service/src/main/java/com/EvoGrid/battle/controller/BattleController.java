@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/battles")
-@Tag(name = "Battle & Catch API", description = "Пошаговая боевая система EvoGrid (скорость, стихии 1.5x/0.67x) и поимка покемонов")
+@Tag(name = "Battle & Catch API")
 public class BattleController {
 
     private final BattleService battleService;
@@ -19,26 +19,34 @@ public class BattleController {
     }
 
     @PostMapping("/start")
-    @Operation(summary = "Начать бой с диким покемоном на карте")
-    public BattleStateDto startBattle(@RequestBody StartBattleRequest request) {
-        return battleService.startBattle(request);
+    @Operation(summary = "Начать бой")
+    public BattleStateDto startBattle(
+            @RequestBody StartBattleRequest request,
+            @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
+        return battleService.startBattle(request, authUserId);
     }
 
     @PostMapping("/{battleId}/attack")
-    @Operation(summary = "Выполнить ход атаки (быстрый по скорости бьет первым + учет стихий)")
-    public BattleStateDto attack(@PathVariable Long battleId) {
-        return battleService.attackTurn(battleId);
+    @Operation(summary = "Атаковать")
+    public BattleStateDto attack(
+            @PathVariable Long battleId,
+            @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
+        return battleService.attackTurn(battleId, authUserId);
     }
 
     @PostMapping("/{battleId}/catch")
-    @Operation(summary = "Бросить покебол для поимки дикого покемона")
-    public BattleStateDto catchPokemon(@PathVariable Long battleId) {
-        return battleService.throwPokeball(battleId);
+    @Operation(summary = "Бросить покебол")
+    public BattleStateDto catchPokemon(
+            @PathVariable Long battleId,
+            @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
+        return battleService.throwPokeball(battleId, authUserId);
     }
 
     @GetMapping("/{battleId}")
-    @Operation(summary = "Получить текущее состояние и лог боя")
-    public BattleStateDto getBattle(@PathVariable Long battleId) {
-        return battleService.getBattleState(battleId);
+    @Operation(summary = "Состояние боя")
+    public BattleStateDto getBattle(
+            @PathVariable Long battleId,
+            @RequestHeader(name = "X-User-Id", required = false) Long authUserId) {
+        return battleService.getBattleState(battleId, authUserId);
     }
 }
