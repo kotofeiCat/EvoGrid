@@ -19,29 +19,45 @@ let watchId = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock('map');
+
+    // 1. ПРОВЕРКА АВТОРИЗАЦИИ: только при 401 Unauthorized выкидываем на index.html
     try {
-        [currentUser, speciesCatalog] = await Promise.all([
-            ApiService.getCurrentUser(),
-            ApiService.getAllSpecies()
-        ]);
-
+        currentUser = await ApiService.getCurrentUser();
         updateActiveFighterLabel();
+    } catch (authErr) {
+        console.warn('Требуется авторизация:', authErr);
+        window.location.href = 'index.html';
+        return;
+    }
 
-        const startLat = currentUser.latitude || 55.7558;
-        const startLon = currentUser.longitude || 37.6173;
-        renderedLat = startLat;
-        renderedLon = startLon;
-        lastServerSyncLat = startLat;
-        lastServerSyncLon = startLon;
-        lastServerSyncTime = Date.now();
-        lastGpsFixTime = Date.now();
+    const startLat = currentUser.latitude || 55.7558;
+    const startLon = currentUser.longitude || 37.6173;
+    renderedLat = startLat;
+    renderedLon = startLon;
+    lastServerSyncLat = startLat;
+    lastServerSyncLon = startLon;
+    lastServerSyncTime = Date.now();
+    lastGpsFixTime = Date.now();
 
+    // 2. ЗАГРУЗКА СПРАВОЧНИКА ПОКЕМОНОВ
+    try {
+        speciesCatalog = await ApiService.getAllSpecies();
+    } catch (e) {
+        console.error('Не удалось загрузить каталог покемонов:', e);
+        speciesCatalog = [];
+    }
+
+    // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ ЯНДЕКСА
+    try {
         await initYandexGameMap(startLat, startLon);
         await loadNearbySpawns(startLat, startLon);
         startLiveGpsTracking();
-    } catch (err) {
-        console.error(err);
-        window.location.href = 'index.html';
+    } catch (mapErr) {
+        console.error('Ошибка инициализации Яндекс Карт 3.0:', mapErr);
+        UiComponents.showErrorAlert(
+            'Ошибка загрузки карты',
+            'Не удалось загрузить карту Яндекса. Проверьте ключ API, ограничения Referer или отключите AdBlock.'
+        );
     }
 });
 
