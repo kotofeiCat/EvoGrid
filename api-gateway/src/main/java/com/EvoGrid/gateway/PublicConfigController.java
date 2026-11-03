@@ -14,7 +14,7 @@ public class PublicConfigController {
     private final String yandexMapsApiKey;
 
     public PublicConfigController(
-            @Value("${yandex.maps.api-key") String yandexMapsApiKey) {
+            @Value("${yandex.maps.api-key}") String yandexMapsApiKey) {
         this.yandexMapsApiKey = yandexMapsApiKey;
     }
 

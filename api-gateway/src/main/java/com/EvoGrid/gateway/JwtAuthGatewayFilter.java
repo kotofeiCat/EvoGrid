@@ -39,7 +39,7 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
     private final SecretKey secretKey;
 
     public JwtAuthGatewayFilter(
-            @Value("${jwt.secret") String secret) {
+            @Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
