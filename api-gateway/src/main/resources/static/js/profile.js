@@ -29,10 +29,18 @@ async function reloadProfileData() {
         ApiService.getAllSpecies()
     ]);
 
+    const xp = profileData.experience || 0;
+    const xpPercent = Math.min(100, Math.max(0, xp % 100));
+
     document.getElementById('prof-avatar').textContent = profileData.email.charAt(0).toUpperCase();
     document.getElementById('prof-name').textContent = profileData.email;
     document.getElementById('prof-level').textContent = profileData.level;
-    document.getElementById('prof-xp').textContent = profileData.experience;
+    document.getElementById('prof-xp').textContent = xp;
+    const xpTile = document.getElementById('prof-xp-tile');
+    if (xpTile) xpTile.textContent = xp;
+    const xpBar = document.getElementById('prof-xp-bar');
+    if (xpBar) xpBar.style.width = `${xpPercent}%`;
+
     document.getElementById('prof-balls').textContent = profileData.pokeballs;
     document.getElementById('prof-total-count').textContent = (profileData.collection || []).length;
 
@@ -54,10 +62,12 @@ function renderPartySlots() {
         if (p) {
             const isMain = activeSlot === slot;
             pillar.innerHTML = `
-                <span class="slot-tag">Слот #${slot} ${isMain ? '• Активный в бою' : ''}</span>
+                <span class="slot-tag ${isMain ? 'active-tag' : ''}">
+                    Слот #${slot} ${isMain ? '• Активный в бою' : ''}
+                </span>
                 <div class="card-click-area">${UiComponents.createPokemonLandscapeCard(p, isMain)}</div>
-                <button class="uiv-btn ${isMain ? 'primary' : ''}" data-slot="${slot}">
-                    <span class="button_top">${isMain ? 'Выбран для боя' : 'Сделать основным'}</span>
+                <button class="uiv-btn ${isMain ? 'primary' : ''}" style="width:100%" data-slot="${slot}">
+                    <span class="button_top">${isMain ? 'Выбран для боя' : 'Сделать активным'}</span>
                 </button>
             `;
             pillar.querySelector('.card-click-area').onclick = () => openDossierModal(p, true);
@@ -69,7 +79,13 @@ function renderPartySlots() {
             pillar.innerHTML = `
                 <span class="slot-tag">Слот #${slot}</span>
                 <div class="slot-empty-box">
-                    Свободный слот отряда
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="9" stroke-dasharray="4 4"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    <span>Свободный слот отряда</span>
+                    <small>Выберите покемона из коллекции ниже</small>
                 </div>
             `;
         }
@@ -82,6 +98,7 @@ function renderOwnedCollection() {
     colContainer.innerHTML = '';
     (profileData.collection || []).forEach(p => {
         const wrapper = document.createElement('div');
+        wrapper.className = 'grid-card-item';
         wrapper.innerHTML = UiComponents.createPokemonLandscapeCard(p, Boolean(p.partySlot));
         wrapper.onclick = () => openDossierModal(p, true);
         colContainer.appendChild(wrapper);
@@ -94,6 +111,7 @@ function renderFullPokedex() {
     allSpecies.forEach(sp => {
         const caught = (profileData.collection || []).some(c => c.speciesId === sp.id);
         const wrapper = document.createElement('div');
+        wrapper.className = 'grid-card-item';
         wrapper.innerHTML = UiComponents.createPokemonLandscapeCard(sp, caught);
         wrapper.onclick = () => openDossierModal(sp, false);
         dexContainer.appendChild(wrapper);
@@ -108,7 +126,8 @@ function openDossierModal(pokeObj, isOwned) {
     document.getElementById('detail-card-box').innerHTML = UiComponents.createPokemonLandscapeCard(pokeObj);
     document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.archetype}`;
     document.getElementById('detail-poke-lore').textContent =
-        species.description || 'Существо из мира EvoGrid.';
+        species.description || 'Существо мира EvoGrid.';
+
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);
     document.getElementById('modal-poke-details').classList.remove('hidden');
 }

@@ -2,23 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EvoGrid — Карта мира</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/uiverse.css">
 </head>
 <body>
-
 <div class="fullscreen-map-wrap">
-    <div class="floating-map-pill">
-        <span id="active-fighter-indicator">Активный боец: 1</span>
-    </div>
     <div id="map"></div>
 </div>
 
+<!-- Белая нижняя навигация -->
 <div id="dock-mount"></div>
 
+<!-- Модальное окно осмотра дикого покемона -->
 <div id="modal-wild-inspect" class="modal-backdrop hidden">
     <div class="modal-window">
         <div class="inspector-layout">
@@ -26,15 +24,15 @@
             <div class="inspector-details">
                 <h2 id="wild-title">Дикий покемон</h2>
                 <div id="wild-lore" class="lore-box"></div>
-                <p style="font-size:13px;color:#64748b">
-                    Боец из твоей пачки: <b id="wild-active-slot-label" style="color:#0f172a">Слот 1</b>
+                <p class="active-slot-hint">
+                    Ваш активный боец: <b id="wild-active-slot-label">Слот #1</b>
                 </p>
-                <div style="display:flex;gap:12px;margin-top:8px">
+                <div class="modal-actions-row">
                     <button class="uiv-btn primary" style="flex:1" onclick="confirmStartBattle()">
-                        <span class="button_top">Начать бой</span>
+                        <span class="button_top">В бой</span>
                     </button>
                     <button class="uiv-btn" onclick="closeWildModal()">
-                        <span class="button_top">Отмена</span>
+                        <span class="button_top">Закрыть</span>
                     </button>
                 </div>
             </div>
@@ -42,32 +40,28 @@
     </div>
 </div>
 
+<!-- Модальное окно боя -->
 <div id="modal-battle" class="modal-backdrop hidden">
-    <div class="modal-window" style="max-width:720px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-            <h3 id="battle-status-title">Раунд 1</h3>
-            <span style="font-size:12px;color:#64748b;font-weight:600">
-                    FIRE &gt; FOREST &gt; WATER (x1.5)
-                </span>
+    <div class="modal-window battle-modal-window">
+        <div class="battle-header">
+            <h3 id="battle-status-title">Ход 1</h3>
+            <span class="battle-rules-hint">FIRE &gt; FOREST &gt; WATER (x1.5)</span>
         </div>
-
         <div class="battle-arena-row">
             <div id="battle-player-card"></div>
-            <div style="font-size:20px;font-weight:800;color:#94a3b8">VS</div>
+            <div class="vs-badge">VS</div>
             <div id="battle-enemy-card"></div>
         </div>
-
         <div id="battle-log-container" class="combat-log-box"></div>
-
-        <div style="display:flex;gap:12px">
+        <div class="modal-actions-row">
             <button id="btn-do-attack" class="uiv-btn primary" style="flex:1" onclick="doAttack()">
                 <span class="button_top">Атаковать</span>
             </button>
             <button id="btn-do-catch" class="uiv-btn" style="flex:1" onclick="doCatch()">
-                <span class="button_top">Бросить покебол</span>
+                <span class="button_top">Поймать</span>
             </button>
             <button class="uiv-btn" onclick="closeBattleWindow()">
-                <span class="button_top">Покинуть бой</span>
+                <span class="button_top">Выйти</span>
             </button>
         </div>
     </div>

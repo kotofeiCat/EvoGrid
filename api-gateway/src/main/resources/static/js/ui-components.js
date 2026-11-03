@@ -1,8 +1,5 @@
 const UiComponents = {
-    /**
-     * Показывает всплывающее уведомление об ошибке (From Uiverse.io by seyed-mohsen-mousavi)
-     */
-    showErrorAlert(title = 'Попробуйте снова', description = 'Проверьте введенные данные') {
+    showErrorAlert(title = 'Ошибка', description = 'Попробуйте снова') {
         let stack = document.getElementById('uiv-toast-stack');
         if (!stack) {
             stack = document.createElement('div');
@@ -16,7 +13,7 @@ const UiComponents = {
         alertEl.innerHTML = `
             <div class="error-alert-left">
                 <div class="error-alert-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
                     </svg>
                 </div>
@@ -26,7 +23,7 @@ const UiComponents = {
                 </div>
             </div>
             <button class="error-alert-close" aria-label="Закрыть">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
                 </svg>
             </button>
@@ -42,9 +39,6 @@ const UiComponents = {
         }, 4500);
     },
 
-    /**
-     * Генерирует карточку покемона (Uiverse by KSAplay) с иконками Google Fonts
-     */
     createPokemonLandscapeCard(poke, isSelected = false) {
         const hp = poke.maxHp ?? poke.baseHp ?? 75;
         const atk = poke.attack ?? poke.baseAttack ?? 25;
@@ -70,73 +64,69 @@ const UiComponents = {
                 <div class="tree-2" style="color:#475569">${VECTOR_PATHS.TREE}</div>
                 <div class="tree-3" style="color:#334155">${VECTOR_PATHS.TREE}</div>
                 <div class="filter"></div>
+
+                <!-- Верхние контрастные плашки стихии и HP -->
+                <div class="card-top-badges">
+                    <span class="elem-pill">
+                        ${renderGoogleIcon(elem)}
+                        <span>${elem}</span>
+                    </span>
+                    <span class="hp-pill">${hp} HP</span>
+                </div>
+
+                <!-- Название покемона и класс снизу пейзажа -->
+                <div class="card-hero-title">
+                    <div class="poke-name-line">${poke.name}</div>
+                    <div class="poke-arch-line">${poke.archetype || 'Базовый вид'}</div>
+                </div>
             </section>
 
             <section class="content-section">
-                <div class="weather-info">
-                    <div class="left-side">
-                        <div class="icon">
-                            ${renderGoogleIcon(elem)}
-                        </div>
-                        <p>${elem}</p>
-                    </div>
-                    <div class="right-side">
-                        <div class="location">
-                            ${VECTOR_PATHS.PIN}
-                            <span>${poke.name}</span>
-                        </div>
-                        <p>${poke.archetype || 'Боец'}</p>
-                        <p class="temperature">${hp} HP</p>
-                    </div>
-                </div>
                 <div class="forecast">
-                    <div>
-                        <p>Атака (ATK)</p>
-                        <p>${atk}</p>
+                    <div class="stat-row">
+                        <span class="stat-label">Атака (ATK)</span>
+                        <span class="stat-val">${atk}</span>
                     </div>
                     <div class="separator"></div>
-                    <div>
-                        <p>Защита (DEF)</p>
-                        <p>${def}</p>
+                    <div class="stat-row">
+                        <span class="stat-label">Защита (DEF)</span>
+                        <span class="stat-val">${def}</span>
                     </div>
                     <div class="separator"></div>
-                    <div>
-                        <p>Скорость (SPD)</p>
-                        <p>${spd}</p>
+                    <div class="stat-row">
+                        <span class="stat-label">Скорость (SPD)</span>
+                        <span class="stat-val">${spd}</span>
                     </div>
                 </div>
             </section>
         </div>`;
     },
 
-    /**
-     * Нижнее меню навигации (Uiverse by firemonste_8052) с иконками Google Fonts
-     */
     renderBottomDock(activeTab) {
         return `
         <nav class="bottom-dock-wrap">
             <ul class="example-1">
                 <li class="icon-content">
                     <a href="game.html" data-social="spotify" class="link ${activeTab === 'map' ? 'active-nav' : ''}" aria-label="Карта">
-                        <span class="material-symbols-outlined">explore</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                     </a>
                     <div class="tooltip">Карта</div>
                 </li>
                 <li class="icon-content">
-                    <a href="profile.html#party" data-social="pinterest" class="link ${activeTab === 'party' ? 'active-nav' : ''}" aria-label="Пачка">
-                        <span class="material-symbols-outlined">shield</span>
+                    <a href="profile.html#party" data-social="pinterest" class="link ${activeTab === 'party' ? 'active-nav' : ''}" aria-label="Отряд">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </a>
-                    <div class="tooltip">Пачка</div>
+                    <div class="tooltip">Отряд</div>
                 </li>
                 <li class="icon-content">
                     <a href="profile.html#pokedex" data-social="dribbble" class="link ${activeTab === 'pokedex' ? 'active-nav' : ''}" aria-label="Покедекс">
-                        <span class="material-symbols-outlined">menu_book</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     </a>
                     <div class="tooltip">Покедекс</div>
                 </li>
                 <li class="icon-content">
                     <a href="profile.html#profile" data-social="telegram" class="link ${activeTab === 'profile' ? 'active-nav' : ''}" aria-label="Профиль">
-                        <span class="material-symbols-outlined">person</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </a>
                     <div class="tooltip">Профиль</div>
                 </li>

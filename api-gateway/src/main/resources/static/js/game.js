@@ -1,47 +1,20 @@
 let currentUser = null;
 let speciesCatalog = [];
 let map = null;
-let currentTileLayer = null;
-let currentStyleIndex = 0;
 
 let playerMarker = null;
 let radarCircle = null;
-let accuracyCircle = null;
 
-// Хранилище маркеров по spawnId без моргания DOM
 const spawnMarkersMap = new Map();
 
 let selectedWildSpawn = null;
 let currentBattle = null;
 
-// Состояние гео-трекинга и плавного перемещения
-let isAutoFollow = true;
 let animFrameId = null;
 let lastServerSyncLat = 0;
 let lastServerSyncLon = 0;
 let lastServerSyncTime = 0;
 let watchId = null;
-
-const MAP_STYLES = [
-    {
-        name: 'Voyager HD',
-        url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 20
-    },
-    {
-        name: 'Детальная OSM',
-        url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; OpenStreetMap',
-        maxZoom: 19
-    },
-    {
-        name: 'Спутник Esri',
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        attribution: '&copy; Esri',
-        maxZoom: 19
-    }
-];
 
 window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock('map');
@@ -50,7 +23,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             ApiService.getCurrentUser(),
             ApiService.getAllSpecies()
         ]);
-        updateActiveFighterLabel();
 
         const startLat = currentUser.latitude || 55.7558;
         const startLon = currentUser.longitude || 37.6173;
@@ -61,20 +33,10 @@ window.addEventListener('DOMContentLoaded', async () => {
         initGameMap(startLat, startLon);
         await loadNearbySpawns(startLat, startLon);
         startLiveGpsTracking();
-        initKeyboardWalk();
     } catch {
         window.location.href = 'index.html';
     }
 });
-
-function updateActiveFighterLabel() {
-    const slot = currentUser.activePartySlot || 1;
-    const fighter = (currentUser.party || []).find(p => p.partySlot === slot) || (currentUser.party || [])[0];
-    const label = fighter
-        ? `Боец: ${fighter.name} (#${fighter.partySlot}) • Радар ${CATCH_RADIUS_METERS} м`
-        : `Слот #${slot} • Радар ${CATCH_RADIUS_METERS} м`;
-    document.getElementById('active-fighter-indicator').textContent = label;
-}
 
 function initGameMap(lat, lon) {
     map = L.map('map', {
@@ -82,12 +44,11 @@ function initGameMap(lat, lon) {
         preferCanvas: true
     }).setView([lat, lon], 18);
 
-    applyMapStyle(0);
-
-    // Если пользователь сдвинул карту руками — ставим автоследование на паузу
-    map.on('dragstart', () => {
-        setAutoFollow(false);
-    });
+    // Официальный бесплатный слой OpenStreetMap (работает без API-ключей)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
 
     const trainerIcon = L.divIcon({
         className: '',
@@ -96,20 +57,11 @@ function initGameMap(lat, lon) {
         iconAnchor: [11, 11]
     });
 
-    accuracyCircle = L.circle([lat, lon], {
-        radius: 0,
-        color: '#38bdf8',
-        fillColor: '#38bdf8',
-        fillOpacity: 0.08,
-        weight: 1,
-        dashArray: '4, 4'
-    }).addTo(map);
-
     radarCircle = L.circle([lat, lon], {
         radius: CATCH_RADIUS_METERS,
         color: '#0284c7',
         fillColor: '#38bdf8',
-        fillOpacity: 0.14,
+        fillOpacity: 0.12,
         weight: 2
     }).addTo(map);
 
@@ -118,66 +70,12 @@ function initGameMap(lat, lon) {
         zIndexOffset: 1000
     }).addTo(map);
 
-    // Перемещение по клику / тапу
-    map.on('click', (e) => {
-        const walkToggle = document.getElementById('click-walk-toggle');
-        if (walkToggle && walkToggle.checked) {
-            setGpsStatus('Режим тапа', 'gps-warn');
-            moveTrainerTo(e.latlng.lat, e.latlng.lng, null, false);
-        }
-    });
-
     window.addEventListener('resize', () => {
         if (map) map.invalidateSize();
     });
 }
 
-function applyMapStyle(index) {
-    const style = MAP_STYLES[index];
-    if (currentTileLayer) {
-        map.removeLayer(currentTileLayer);
-    }
-    currentTileLayer = L.tileLayer(style.url, {
-        maxZoom: style.maxZoom,
-        attribution: style.attribution
-    }).addTo(map);
-}
-
-function switchMapStyle() {
-    currentStyleIndex = (currentStyleIndex + 1) % MAP_STYLES.length;
-    applyMapStyle(currentStyleIndex);
-}
-
-function setAutoFollow(enabled) {
-    isAutoFollow = enabled;
-    const btn = document.getElementById('btn-follow-me');
-    if (btn) {
-        btn.classList.toggle('active-follow', enabled);
-    }
-}
-
-function centerOnTrainer() {
-    setAutoFollow(true);
-    if (map && currentUser) {
-        map.flyTo([currentUser.latitude, currentUser.longitude], Math.max(map.getZoom(), 18), {
-            animate: true,
-            duration: 0.6
-        });
-    }
-}
-
-function setGpsStatus(text, stateClass = '') {
-    const badge = document.getElementById('gps-status-badge');
-    const label = document.getElementById('gps-status-text');
-    if (!badge || !label) return;
-    badge.className = `gps-badge ${stateClass}`;
-    label.textContent = text;
-}
-
-/**
- * Плавная интерполяция маркера тренера и круга радара
- */
-function animateMarkerTo(targetLat, targetLon, durationMs = 320) {
+function animateMarkerTo(targetLat, targetLon, durationMs = 350) {
     if (!playerMarker || !radarCircle) return;
     if (animFrameId) cancelAnimationFrame(animFrameId);
 
@@ -188,13 +86,12 @@ function animateMarkerTo(targetLat, targetLon, durationMs = 320) {
 
     function step(now) {
         const progress = Math.min(1, (now - startTime) / durationMs);
-        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const eased = 1 - Math.pow(1 - progress, 3);
         const curLat = startLat + (targetLat - startLat) * eased;
         const curLon = startLon + (targetLon - startLon) * eased;
 
         playerMarker.setLatLng([curLat, curLon]);
         radarCircle.setLatLng([curLat, curLon]);
-        if (accuracyCircle) accuracyCircle.setLatLng([curLat, curLon]);
 
         if (progress < 1) {
             animFrameId = requestAnimationFrame(step);
@@ -204,7 +101,7 @@ function animateMarkerTo(targetLat, targetLon, durationMs = 320) {
     animFrameId = requestAnimationFrame(step);
 }
 
-async function moveTrainerTo(lat, lon, accuracy = null, fromGps = false) {
+async function moveTrainerTo(lat, lon) {
     const stepDist = calculateDistanceMeters(
         currentUser.latitude || lat,
         currentUser.longitude || lon,
@@ -212,28 +109,18 @@ async function moveTrainerTo(lat, lon, accuracy = null, fromGps = false) {
         lon
     );
 
-    // Фильтрация мелкого GPS-шума (< 1.5 м)
-    if (fromGps && stepDist < 1.5) {
-        return;
-    }
+    if (stepDist < 1.5) return;
 
     currentUser.latitude = lat;
     currentUser.longitude = lon;
 
     animateMarkerTo(lat, lon);
-
-    if (accuracyCircle) {
-        accuracyCircle.setRadius(accuracy && accuracy < 150 ? accuracy : 0);
+    if (map) {
+        map.panTo([lat, lon], { animate: true, duration: 0.5 });
     }
 
-    if (isAutoFollow && map) {
-        map.panTo([lat, lon], { animate: true, duration: 0.45 });
-    }
-
-    // Мгновенно обновляем дистанции до существующих покемонов без перерисовки
     refreshSpawnDistances();
 
-    // Синхронизируем с сервером при смещении >= 10 м или раз в 7 секунд
     const distFromLastSync = calculateDistanceMeters(lastServerSyncLat, lastServerSyncLon, lat, lon);
     const now = Date.now();
     if (distFromLastSync >= 10 || now - lastServerSyncTime >= 7000) {
@@ -246,10 +133,7 @@ async function moveTrainerTo(lat, lon, accuracy = null, fromGps = false) {
 }
 
 function startLiveGpsTracking() {
-    if (!navigator.geolocation) {
-        setGpsStatus('GPS недоступен', 'gps-warn');
-        return;
-    }
+    if (!navigator.geolocation) return;
 
     if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
@@ -257,49 +141,24 @@ function startLiveGpsTracking() {
 
     watchId = navigator.geolocation.watchPosition(
         (pos) => {
-            const acc = Math.round(pos.coords.accuracy || 0);
-            setGpsStatus(`GPS ±${acc} м`, 'gps-active');
-            moveTrainerTo(pos.coords.latitude, pos.coords.longitude, acc, true);
+            moveTrainerTo(pos.coords.latitude, pos.coords.longitude);
         },
-        () => {
-            setGpsStatus('Ходьба тапом', 'gps-warn');
-        },
+        () => {},
         {
             enableHighAccuracy: true,
-            maximumAge: 2000,
+            maximumAge: 2500,
             timeout: 10000
         }
     );
 }
 
-/**
- * Поддержка перемещения с клавиатуры (WASD / Стрелки) для удобного теста
- */
-function initKeyboardWalk() {
-    window.addEventListener('keydown', (e) => {
-        if (!currentUser || !document.getElementById('modal-battle').classList.contains('hidden')) return;
-        const step = 0.00012; // ~13 метров
-        let dLat = 0;
-        let dLon = 0;
-
-        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') dLat = step;
-        else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') dLat = -step;
-        else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф') dLon = -step;
-        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.key === 'в' || e.key === 'В') dLon = step;
-        else return;
-
-        e.preventDefault();
-        moveTrainerTo(currentUser.latitude + dLat, currentUser.longitude + dLon, null, false);
-    });
-}
-
 function buildSpawnBadgeHtml(sp, dist) {
     const inRange = dist <= CATCH_RADIUS_METERS;
     return `
-        <div class="wild-map-badge ${inRange ? 'in-range' : ''}">
+        <div class="wild-map-badge ${inRange ? 'in-range' : ''}" data-elem="${sp.element}">
             ${renderGoogleIcon(sp.element)}
-            <span>${sp.name}</span>
-            <span class="dist-label" style="color:#64748b">${dist} м</span>
+            <span class="spawn-name">${sp.name}</span>
+            <span class="dist-label">${dist} м</span>
         </div>
     `;
 }
@@ -339,13 +198,12 @@ async function loadNearbySpawns(lat, lon) {
         );
 
         if (spawnMarkersMap.has(sp.spawnId)) {
-            const existing = spawnMarkersMap.get(sp.spawnId);
-            existing.spawn = sp;
+            spawnMarkersMap.get(sp.spawnId).spawn = sp;
         } else {
             const icon = L.divIcon({
-                className: '',
+                className: 'spawn-marker-wrapper',
                 html: buildSpawnBadgeHtml(sp, dist),
-                iconAnchor: [55, 16]
+                iconSize: [0, 0]
             });
             const marker = L.marker([sp.latitude, sp.longitude], { icon }).addTo(map);
             marker.on('click', () => {
@@ -356,7 +214,6 @@ async function loadNearbySpawns(lat, lon) {
         }
     });
 
-    // Удаляем только неактивные или исчезнувшие спавны
     Array.from(spawnMarkersMap.keys()).forEach((id) => {
         if (!activeIds.has(id)) {
             map.removeLayer(spawnMarkersMap.get(id).marker);
@@ -376,8 +233,8 @@ function tryInspectWildPokemon(spawn) {
     );
     if (distance > CATCH_RADIUS_METERS) {
         UiComponents.showErrorAlert(
-            'Вне радиуса 70 м',
-            `Подойдите ближе! До ${spawn.name} сейчас ${Math.round(distance)} м.`
+            'Слишком далеко',
+            `Подойдите ближе! До ${spawn.name} сейчас ${Math.round(distance)} м (нужно ≤ ${CATCH_RADIUS_METERS} м).`
         );
         return;
     }
@@ -465,7 +322,6 @@ async function doCatch() {
 async function checkBattleEnd() {
     if (currentBattle.status !== 'IN_PROGRESS') {
         currentUser = await ApiService.getCurrentUser();
-        updateActiveFighterLabel();
         await loadNearbySpawns(currentUser.latitude, currentUser.longitude);
     }
 }
