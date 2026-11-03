@@ -1,5 +1,8 @@
 name: Build and Deploy EvoGrid
 
+# Собираем проект прямо на сервере: по сети идёт только git pull (несколько сотен КБ),
+# а не ~400 МБ jar-файлов через scp, на котором деплой зависал.
+
 on:
   push:
     branches:
@@ -7,49 +10,40 @@ on:
       - master
   workflow_dispatch:
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build all microservices with Maven
-        run: mvn clean package -DskipTests -T 1C
-
-      - name: Prepare deployment archive
-        run: |
-          mkdir -p deploy_pkg/init-scripts
-          cp docker-compose.yml Dockerfile .dockerignore deploy_pkg/
-          cp -r init-scripts/* deploy_pkg/init-scripts/
-
-          for service in config-server discovery-server api-gateway user-service pokemon-service world-service battle-service; do
-            mkdir -p "deploy_pkg/$service/target"
-            cp "$service/target/$service-1.0.0.jar" "deploy_pkg/$service/target/"
-          done
-
-          tar -czf deploy.tar.gz -C deploy_pkg .
-
-      - name: Prepare server and Swap memory
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy on server (git pull + build + docker compose)
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          BRANCH: ${{ github.ref_name }}
+          YANDEX_MAPS_API_KEY: ${{ secrets.YANDEX_MAPS_API_KEY }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 49351
           timeout: 60s
-          command_timeout: 3m
+          command_timeout: 35m
+          envs: REPO_URL,BRANCH,YANDEX_MAPS_API_KEY
           script: |
-            # Создаем 4GB Swap, если его еще нет, чтобы Java-сервисы не вешали сервер
+            set -e
+
+            # Папка, куда репозиторий склонирован на сервере (поменяйте, если путь другой)
+            APP_DIR=/var/www/EvoGrid
+            # Имя compose-проекта = имя папки в нижнем регистре,
+            # как при ручном запуске `docker compose up` из папки EvoGrid (том evogrid_postgres_data)
+            PROJECT=evogrid
+
+            # 0. Swap, чтобы сборка и 7 JVM не вешали сервер
             if [ ! -f /swapfile ]; then
               fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
               chmod 600 /swapfile
@@ -57,43 +51,29 @@ jobs:
               swapon /swapfile
               echo '/swapfile none swap sw 0 0' >> /etc/fstab
             else
-              swapon /swapfile || true
+              swapon /swapfile 2>/dev/null || true
             fi
 
-            mkdir -p /var/www/EboGrid
+            # 1. Получаем свежий код
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+            git fetch --depth 1 origin "$BRANCH"
+            git reset --hard FETCH_HEAD
+            git clean -fdx -e .env
+            echo "Деплой коммита: $(git log -1 --format='%h %s')"
 
-      - name: Upload archive to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 49351
-          timeout: 90s
-          source: "deploy.tar.gz"
-          target: "/var/www/EboGrid"
+            # 2. Сборка Maven внутри Docker (Maven/JDK на сервере не нужны).
+            #    Зависимости кэшируются в томе evogrid-m2, повторные сборки быстрые.
+            docker run --rm \
+              -v "$APP_DIR":/build -w /build \
+              -v evogrid-m2:/root/.m2 \
+              -e MAVEN_OPTS="-Xmx768m" \
+              maven:3.9-eclipse-temurin-17 \
+              mvn -B -q clean package -DskipTests
 
-      - name: Extract and start Docker containers
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 49351
-          timeout: 60s
-          command_timeout: 15m
-          script: |
-            set -e
-            cd /var/www/EboGrid
-
-            # 1. Сначала распаковываем свежие файлы (включая docker-compose.yml)
-            tar -xzf deploy.tar.gz
-            rm -f deploy.tar.gz
-
-            # 2. Удаляем старые контейнеры, если они остались от прошлых запусков
-            docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service api-gateway evogrid-postgres 2>/dev/null || true
-
-            # 3. Генерируем .env файл (кавычки вокруг EOF — чтобы bash ничего не подставлял)
+            # 3. .env (кавычки вокруг EOF — bash ничего не подставляет)
             cat <<'EOF' > .env
             POSTGRES_USER=postgres
             POSTGRES_PASSWORD=postgres
@@ -104,24 +84,24 @@ jobs:
             BATTLE_DB_NAME=battle_db
             JWT_SECRET=EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!
             EOF
-            echo "YANDEX_MAPS_API_KEY=${{ secrets.YANDEX_MAPS_API_KEY }}" >> .env
+            echo "YANDEX_MAPS_API_KEY=${YANDEX_MAPS_API_KEY}" >> .env
 
-            # 4. Собираем образы и запускаем всё одной командой.
-            #    Порядок старта задают depends_on + healthcheck в docker-compose.yml,
-            #    --wait ждёт, пока сервисы с healthcheck станут healthy.
-            docker compose build
-            if ! docker compose up -d --remove-orphans --wait --wait-timeout 420; then
+            # 4. Убираем старые контейнеры и поднимаем всё заново
+            docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service api-gateway evogrid-postgres 2>/dev/null || true
+
+            docker compose -p "$PROJECT" build
+            if ! docker compose -p "$PROJECT" up -d --remove-orphans --wait --wait-timeout 420; then
               echo "::error::Сервисы не поднялись. Последние логи:"
-              docker compose ps -a
+              docker compose -p "$PROJECT" ps -a
               for s in discovery-server config-server pokemon-service user-service world-service battle-service api-gateway; do
                 echo "===== $s ====="
-                docker compose logs --tail=60 "$s" || true
+                docker compose -p "$PROJECT" logs --tail=60 "$s" || true
               done
               exit 1
             fi
 
             docker image prune -f
-            docker compose ps
+            docker compose -p "$PROJECT" ps
 
             # 5. Проверяем, что шлюз отвечает
             for i in $(seq 1 30); do
@@ -129,5 +109,5 @@ jobs:
               sleep 5
             done
             echo "::error::api-gateway не отвечает на :8080"
-            docker compose logs --tail=100 api-gateway
+            docker compose -p "$PROJECT" logs --tail=100 api-gateway
             exit 1

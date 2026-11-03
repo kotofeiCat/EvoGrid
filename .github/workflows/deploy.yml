@@ -84,7 +84,7 @@ jobs:
           command_timeout: 10m
           script: |
             set -e
-            cd /var/www/EboGrid
+            cd /var/www/EvoGrid
 
             # 1. Сначала распаковываем свежие файлы (включая docker-compose.yml)
             tar -xzf deploy.tar.gz

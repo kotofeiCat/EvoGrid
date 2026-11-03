@@ -84,17 +84,17 @@ const UiComponents = {
             <section class="content-section">
                 <div class="forecast">
                     <div class="stat-row">
-                        <span class="stat-label">Атака (ATK)</span>
+                        <span class="stat-label">Атака</span>
                         <span class="stat-val">${atk}</span>
                     </div>
                     <div class="separator"></div>
                     <div class="stat-row">
-                        <span class="stat-label">Защита (DEF)</span>
+                        <span class="stat-label">Защита</span>
                         <span class="stat-val">${def}</span>
                     </div>
                     <div class="separator"></div>
                     <div class="stat-row">
-                        <span class="stat-label">Скорость (SPD)</span>
+                        <span class="stat-label">Скорость</span>
                         <span class="stat-val">${spd}</span>
                     </div>
                 </div>

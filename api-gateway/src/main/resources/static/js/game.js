@@ -120,7 +120,7 @@ async function initYandexGameMap(lat, lon) {
     // Клик по карте для передвижения
     map.events.add('click', (e) => {
         const walkToggle = document.getElementById('click-walk-toggle');
-        if (walkToggle && walkToggle.checked) {
+        if (!walkToggle || walkToggle.checked) {
             const coords = e.get('coords');
             if (Array.isArray(coords)) {
                 moveTrainerTo(coords[0], coords[1], true);

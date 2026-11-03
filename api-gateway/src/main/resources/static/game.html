@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#13231b">
+    <meta name="theme-color" content="#1f5eff">
     <title>EvoGrid — Карта мира</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/uiverse.css">
@@ -11,21 +11,13 @@
 <body>
 
 <div class="fullscreen-map-wrap">
-    <!-- Плавающая панель управления геопозицией -->
-    <div class="floating-map-controls">
-        <span id="active-fighter-indicator" class="fighter-pill-text">Слот #1 • Радар 70 м</span>
-        <label class="walk-toggle-label" title="Позволяет перемещаться кликом по Яндекс Карте">
-            <input type="checkbox" id="click-walk-toggle" checked>
-            <span>Ходьба<span class="walk-text-long"> кликом</span></span>
-        </label>
-        <button type="button" class="recenter-gps-btn" onclick="centerOnTrainerGps()" title="Центрировать на моей геопозиции" aria-label="Центрировать на моей геопозиции">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-            <span class="btn-text">Где я</span>
-        </button>
-    </div>
-
     <div id="map"></div>
 </div>
+
+<!-- Кнопка «Где я» -->
+<button type="button" class="map-fab" onclick="centerOnTrainerGps()" title="Показать, где я" aria-label="Показать, где я">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+</button>
 
 <!-- Нижний док -->
 <div id="dock-mount"></div>

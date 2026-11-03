@@ -6,18 +6,18 @@
    чернила, бирюзовый радар и янтарный акцент для главного действия.
    ========================================================================== */
 :root {
-    --paper: #eef3ec;
-    --paper-deep: #e1eadf;
+    --paper: #f3f6fc;
+    --paper-deep: #e3ebf8;
     --surface: #ffffff;
-    --surface-soft: #f6f9f4;
-    --ink: #13231b;
-    --ink-soft: #4b5d53;
-    --ink-faint: #8a998f;
-    --line: #d5dfd3;
-    --radar: #0e7c66;
-    --radar-soft: #d9efe8;
-    --amber: #f2a93b;
-    --amber-deep: #b86e05;
+    --surface-soft: #f6f8fd;
+    --ink: #0f1f3d;
+    --ink-soft: #4a5878;
+    --ink-faint: #8b97b0;
+    --line: #dbe3f0;
+    --radar: #1f5eff;
+    --radar-soft: #e3ebff;
+    --amber: #ffc93c;
+    --amber-deep: #9a6400;
     --danger: #c8372d;
     --danger-soft: #fde7e4;
     --ok: #1d7a43;
@@ -29,15 +29,15 @@
     --r-lg: 24px;
     --r-md: 16px;
     --r-sm: 10px;
-    --shadow-1: 0 1px 2px rgba(19, 35, 27, 0.06), 0 6px 18px rgba(19, 35, 27, 0.06);
-    --shadow-2: 0 2px 6px rgba(19, 35, 27, 0.08), 0 22px 48px rgba(19, 35, 27, 0.16);
+    --shadow-1: 0 1px 2px rgba(15, 31, 61, 0.06), 0 6px 18px rgba(15, 31, 61, 0.06);
+    --shadow-2: 0 2px 6px rgba(15, 31, 61, 0.08), 0 22px 48px rgba(15, 31, 61, 0.16);
 
     --gutter: clamp(16px, 4vw, 28px);
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
 
     /* Топографические горизонтали как фон страницы */
-    --contours: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520'%3E%3Cg fill='none' stroke='%2313231b' stroke-opacity='0.07' stroke-width='1.2'%3E%3Cpath d='M-20 120c80-60 160-40 230 10s150 70 240 10 120-40 90-40'/%3E%3Cpath d='M-20 160c90-50 170-30 240 20s140 60 230 0 110-30 90-30'/%3E%3Cpath d='M-20 205c95-40 175-20 245 25s135 50 220-5 100-25 95-25'/%3E%3Cpath d='M-20 330c70 30 150 60 230 20s140-70 230-30 100 40 100 40'/%3E%3Cpath d='M-20 372c75 25 155 50 235 12s135-60 225-25 100 35 100 35'/%3E%3Cpath d='M-20 418c80 20 160 40 240 5s130-50 220-20 100 30 100 30'/%3E%3Cellipse cx='380' cy='100' rx='60' ry='34'/%3E%3Cellipse cx='380' cy='100' rx='34' ry='18'/%3E%3Cellipse cx='110' cy='470' rx='70' ry='30'/%3E%3C/g%3E%3C/svg%3E");
+    --contours: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520'%3E%3Cg fill='none' stroke='%231f5eff' stroke-opacity='0.07' stroke-width='1.2'%3E%3Cpath d='M-20 120c80-60 160-40 230 10s150 70 240 10 120-40 90-40'/%3E%3Cpath d='M-20 160c90-50 170-30 240 20s140 60 230 0 110-30 90-30'/%3E%3Cpath d='M-20 205c95-40 175-20 245 25s135 50 220-5 100-25 95-25'/%3E%3Cpath d='M-20 330c70 30 150 60 230 20s140-70 230-30 100 40 100 40'/%3E%3Cpath d='M-20 372c75 25 155 50 235 12s135-60 225-25 100 35 100 35'/%3E%3Cpath d='M-20 418c80 20 160 40 240 5s130-50 220-20 100 30 100 30'/%3E%3Cellipse cx='380' cy='100' rx='60' ry='34'/%3E%3Cellipse cx='380' cy='100' rx='34' ry='18'/%3E%3Cellipse cx='110' cy='470' rx='70' ry='30'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 *, *::before, *::after {
@@ -336,7 +336,7 @@ h1, h2, h3 {
 }
 
 .recenter-gps-btn:hover {
-    background: #0b6a57;
+    background: #164ad6;
 }
 
 .ymap-trainer-pin-wrap {
@@ -351,7 +351,7 @@ h1, h2, h3 {
     background: var(--radar);
     border: 4px solid #ffffff;
     border-radius: 50%;
-    box-shadow: 0 2px 10px rgba(14, 124, 102, 0.55);
+    box-shadow: 0 2px 10px rgba(31, 94, 255, 0.55);
 }
 
 .trainer-map-pin::after {
@@ -382,14 +382,14 @@ h1, h2, h3 {
     font-family: 'Manrope', system-ui, sans-serif;
     font-size: 12px;
     font-weight: 700;
-    color: #13231b;
-    border: 1.5px solid #d5dfd3;
+    color: #0f1f3d;
+    border: 1.5px solid #dbe3f0;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     white-space: nowrap;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(19, 35, 27, 0.16);
+    box-shadow: 0 6px 16px rgba(15, 31, 61, 0.16);
 }
 
 .wild-map-badge .elem-svg-icon {
@@ -400,7 +400,7 @@ h1, h2, h3 {
     align-items: center;
     justify-content: center;
     color: #fff;
-    background: #4b5d53;
+    background: #4a5878;
 }
 
 .wild-map-badge .elem-svg-icon svg { width: 14px; height: 14px; }
@@ -409,17 +409,17 @@ h1, h2, h3 {
 .wild-map-badge[data-elem="FOREST"] .elem-svg-icon { background: #2f8a4c; }
 
 .wild-map-badge .dist-label {
-    color: #8a998f;
+    color: #8b97b0;
     font-weight: 600;
 }
 
 .wild-map-badge.in-range {
-    border-color: #f2a93b;
-    box-shadow: 0 0 0 3px rgba(242, 169, 59, 0.35), 0 6px 16px rgba(19, 35, 27, 0.18);
+    border-color: #ffc93c;
+    box-shadow: 0 0 0 3px rgba(255, 201, 60, 0.35), 0 6px 16px rgba(15, 31, 61, 0.18);
 }
 
 .wild-map-badge.in-range .dist-label {
-    color: #b86e05;
+    color: #9a6400;
 }
 
 /* ==========================================================================
@@ -438,7 +438,7 @@ h1, h2, h3 {
 }
 
 .profile-card-hero {
-    background: var(--ink);
+    background: linear-gradient(135deg, #1f5eff 0%, #1442c4 100%);
     color: #fff;
     border-radius: var(--r-lg);
     padding: clamp(20px, 4vw, 30px);
@@ -457,8 +457,8 @@ h1, h2, h3 {
     inset: 0;
     background-image: var(--contours);
     background-size: 420px 420px;
-    filter: invert(1);
-    opacity: 0.9;
+    filter: brightness(0) invert(1);
+    opacity: 0.18;
     z-index: -1;
 }
 
@@ -513,7 +513,7 @@ h1, h2, h3 {
 }
 
 .hero-text p {
-    color: rgba(255, 255, 255, 0.62);
+    color: rgba(255, 255, 255, 0.78);
     font-size: 13px;
     margin-top: 2px;
 }
@@ -536,7 +536,7 @@ h1, h2, h3 {
     align-items: baseline;
     gap: 12px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .xp-progress-labels b {
@@ -548,7 +548,7 @@ h1, h2, h3 {
 .xp-progress-track {
     width: 100%;
     height: 12px;
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.22);
     border-radius: 999px;
     overflow: hidden;
 }
@@ -593,7 +593,7 @@ h1, h2, h3 {
 }
 
 .metric-icon-box.blue { background: var(--radar-soft); color: var(--radar); }
-.metric-icon-box.amber { background: #fdf0d9; color: var(--amber-deep); }
+.metric-icon-box.amber { background: #fff4d6; color: var(--amber-deep); }
 .metric-icon-box.rose { background: var(--danger-soft); color: var(--danger); }
 .metric-icon-box.emerald { background: var(--ok-soft); color: var(--ok); }
 
@@ -673,9 +673,9 @@ h1, h2, h3 {
 }
 
 .slot-tag.active-tag {
-    color: var(--ink);
-    background: var(--amber);
-    border-color: var(--amber);
+    color: #ffffff;
+    background: var(--radar);
+    border-color: var(--radar);
 }
 
 .slot-empty-box {
@@ -733,7 +733,7 @@ h1, h2, h3 {
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(19, 35, 27, 0.5);
+    background: rgba(15, 31, 61, 0.5);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     display: flex;
@@ -919,8 +919,8 @@ h1, h2, h3 {
 }
 
 .combat-log-box {
-    background: var(--ink);
-    color: #dfe8e1;
+    background: #0f1f3d;
+    color: #dbe4f5;
     border-radius: var(--r-sm);
     height: 112px;
     overflow-y: auto;
@@ -1179,10 +1179,157 @@ h1, h2, h3 {
     }
 }
 
+/* ==========================================================================
+   КНОПКА «ГДЕ Я» НА КАРТЕ (вместо верхней плашки)
+   ========================================================================== */
+.map-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(92px + var(--safe-bottom));
+    z-index: 2400;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--radar);
+    box-shadow: var(--shadow-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.map-fab svg {
+    width: 24px;
+    height: 24px;
+}
+
+.map-fab:active {
+    transform: scale(0.94);
+}
+
+/* ==========================================================================
+   КОМПАКТНЫЕ СЕТКИ: ПОКЕДЕКС, КОЛЛЕКЦИЯ, ОТРЯД
+   Карточки меньше и идут сеткой, а не одна под другой.
+   ========================================================================== */
+.cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.grid-card-item {
+    display: block;
+}
+
+.party-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.slot-pillar {
+    padding: 12px;
+    gap: 10px;
+}
+
+.slot-actions-col {
+    max-width: none;
+}
+
+.slot-empty-box {
+    max-width: none;
+    min-height: 260px;
+}
+
+@media (max-width: 960px) {
+    .party-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* Телефон: отряд — три строки «карточка слева, кнопки справа»,
+   покедекс и коллекция — по две карточки в ряд */
+@media (max-width: 720px) {
+    .party-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .slot-pillar {
+        display: grid;
+        grid-template-columns: 128px minmax(0, 1fr);
+        grid-template-areas:
+            "card tag"
+            "card actions";
+        grid-template-rows: auto 1fr;
+        align-items: start;
+        column-gap: 12px;
+        row-gap: 8px;
+        padding: 10px;
+    }
+    .slot-pillar .slot-tag {
+        grid-area: tag;
+        justify-self: start;
+    }
+    .slot-pillar .card-click-area {
+        grid-area: card;
+    }
+    .slot-pillar .slot-actions-col {
+        grid-area: actions;
+        align-self: end;
+    }
+    .slot-pillar .slot-empty-box {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-height: 96px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        padding: 14px;
+    }
+    .slot-pillar .slot-empty-box small {
+        flex-basis: 100%;
+    }
+
+    .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* ==========================================================================
+   КНОПКИ СПОСОБНОСТЕЙ: одинаковая высота, метка КД не вылезает
+   ========================================================================== */
+.uiv-btn.ability-btn {
+    display: flex;
+    align-items: stretch;
+}
+
+.uiv-btn.ability-btn .ability-top {
+    flex: 1;
+    justify-content: flex-start;
+}
+
+.ability-btn .ability-header-row,
+.dossier-ability-card .ability-header-row {
+    flex-wrap: wrap;
+    row-gap: 4px;
+}
+
+.ability-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+
+.ability-btn .ability-meta-row {
+    margin-top: auto;
+    padding-top: 2px;
 }

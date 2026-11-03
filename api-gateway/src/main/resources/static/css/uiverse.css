@@ -18,12 +18,13 @@ ul {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     align-items: center;
-    background-color: rgba(19, 35, 27, 0.94);
+    background-color: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line, #dbe3f0);
     border-radius: 999px;
     padding: 6px;
-    box-shadow: 0 2px 6px rgba(19, 35, 27, 0.2), 0 18px 40px rgba(19, 35, 27, 0.28);
+    box-shadow: 0 2px 6px rgba(15, 31, 61, 0.08), 0 18px 40px rgba(15, 31, 61, 0.16);
 }
 
 .example-1 .icon-content {
@@ -37,7 +38,7 @@ ul {
     top: -34px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #13231b;
+    background-color: #0f1f3d;
     color: #ffffff;
     padding: 5px 10px;
     border-radius: 8px;
@@ -68,7 +69,7 @@ ul {
     min-width: 64px;
     height: 52px;
     border-radius: 999px;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--ink-faint, #8b97b0);
     transition: background-color 0.15s ease, color 0.15s ease;
     cursor: pointer;
     text-decoration: none;
@@ -86,12 +87,12 @@ ul {
 }
 
 .example-1 .icon-content .link:hover {
-    color: #ffffff;
+    color: var(--radar, #1f5eff);
 }
 
 .example-1 .icon-content .link.active-nav {
-    background-color: var(--amber, #f2a93b);
-    color: #13231b;
+    background-color: var(--radar, #1f5eff);
+    color: #ffffff;
 }
 
 /* Подпись уже есть под иконкой — всплывашка не нужна */
@@ -105,8 +106,8 @@ ul {
 .uiv-btn {
     --button_radius: 12px;
     --button_color: #ffffff;
-    --button_outline_color: var(--ink, #13231b);
-    --button_text: var(--ink, #13231b);
+    --button_outline_color: var(--ink, #0f1f3d);
+    --button_text: var(--ink, #0f1f3d);
     font-family: var(--font-body, system-ui);
     font-size: 14px;
     font-weight: 800;
@@ -122,9 +123,9 @@ ul {
 }
 
 .uiv-btn.primary {
-    --button_color: var(--amber, #f2a93b);
-    --button_outline_color: var(--ink, #13231b);
-    --button_text: var(--ink, #13231b);
+    --button_color: var(--radar, #1f5eff);
+    --button_outline_color: var(--ink, #0f1f3d);
+    --button_text: #ffffff;
 }
 
 .uiv-btn .button_top {
@@ -161,7 +162,7 @@ ul {
 }
 
 .uiv-btn:focus-visible {
-    outline: 3px solid var(--amber, #f2a93b);
+    outline: 3px solid var(--amber, #ffc93c);
     outline-offset: 3px;
 }
 
@@ -172,10 +173,10 @@ ul {
     width: 100%;
     max-width: 400px;
     background: var(--surface, #fff);
-    border: 1px solid var(--line, #d5dfd3);
+    border: 1px solid var(--line, #dbe3f0);
     overflow: hidden;
     border-radius: var(--r-lg, 24px);
-    color: var(--ink, #13231b);
+    color: var(--ink, #0f1f3d);
     box-shadow: var(--shadow-2);
 }
 
@@ -196,7 +197,7 @@ ul {
 
 .form .subtitle {
     font-size: 14px;
-    color: var(--ink-soft, #4b5d53);
+    color: var(--ink-soft, #4a5878);
     margin-top: -6px;
 }
 
@@ -208,15 +209,15 @@ ul {
 .form-section {
     padding: 16px;
     font-size: 14px;
-    background-color: var(--surface-soft, #f6f9f4);
-    border-top: 1px solid var(--line, #d5dfd3);
+    background-color: var(--surface-soft, #f6f8fd);
+    border-top: 1px solid var(--line, #dbe3f0);
     text-align: center;
-    color: var(--ink-soft, #4b5d53);
+    color: var(--ink-soft, #4a5878);
 }
 
 .form-section a {
     font-weight: 800;
-    color: var(--radar, #0e7c66);
+    color: var(--radar, #1f5eff);
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -233,11 +234,11 @@ ul {
     font-size: 16px;
     width: 100%;
     border: none;
-    border-bottom: 2px solid var(--line, #d5dfd3);
+    border-bottom: 2px solid var(--line, #dbe3f0);
     padding: 8px 0;
     background-color: transparent;
     outline: none;
-    color: var(--ink, #13231b);
+    color: var(--ink, #0f1f3d);
     border-radius: 0;
 }
 
@@ -245,7 +246,7 @@ ul {
     position: absolute;
     top: 8px;
     left: 0;
-    color: var(--ink-faint, #8a998f);
+    color: var(--ink-faint, #8b97b0);
     transition: all 0.2s ease;
     pointer-events: none;
     font-size: 15px;
@@ -255,7 +256,7 @@ ul {
 .input-container input:valid ~ .label {
     top: -16px;
     font-size: 12.5px;
-    color: var(--radar, #0e7c66);
+    color: var(--radar, #1f5eff);
     font-weight: 700;
 }
 
@@ -265,7 +266,7 @@ ul {
     left: 0;
     height: 2px;
     width: 100%;
-    background-color: var(--radar, #0e7c66);
+    background-color: var(--radar, #1f5eff);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.25s ease;
@@ -288,7 +289,7 @@ ul {
     border-radius: 20px;
     overflow: hidden;
     background-color: #ffffff;
-    border: 1px solid var(--line, #d5dfd3);
+    border: 1px solid var(--line, #dbe3f0);
     box-shadow: var(--shadow-1);
     cursor: pointer;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -302,8 +303,8 @@ ul {
 }
 
 .poke-card.selected-card {
-    border-color: var(--ink, #13231b);
-    box-shadow: 0 0 0 3px var(--amber, #f2a93b), var(--shadow-1);
+    border-color: var(--radar, #1f5eff);
+    box-shadow: 0 0 0 3px var(--radar, #1f5eff), var(--shadow-1);
 }
 
 .landscape-section {
@@ -369,7 +370,7 @@ ul {
 
 .filter {
     inset: 0;
-    background: linear-gradient(180deg, rgba(19, 35, 27, 0.18) 0%, rgba(19, 35, 27, 0.04) 45%, rgba(19, 35, 27, 0.72) 100%);
+    background: linear-gradient(180deg, rgba(15, 31, 61, 0.18) 0%, rgba(15, 31, 61, 0.04) 45%, rgba(15, 31, 61, 0.72) 100%);
     z-index: 4;
 }
 
@@ -391,7 +392,7 @@ ul {
     gap: 5px;
     padding: 4px 9px;
     border-radius: 999px;
-    background: rgba(19, 35, 27, 0.55);
+    background: rgba(15, 31, 61, 0.55);
     backdrop-filter: blur(6px);
     color: #ffffff;
     font-size: 11px;
@@ -411,7 +412,7 @@ ul {
     padding: 4px 9px;
     border-radius: 999px;
     background: #ffffff;
-    color: var(--ink, #13231b);
+    color: var(--ink, #0f1f3d);
     font-size: 11.5px;
     font-weight: 800;
     white-space: nowrap;
@@ -432,7 +433,7 @@ ul {
     font-size: 16px;
     font-weight: 700;
     line-height: 1.2;
-    text-shadow: 0 2px 6px rgba(19, 35, 27, 0.45);
+    text-shadow: 0 2px 6px rgba(15, 31, 61, 0.45);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -473,17 +474,18 @@ ul {
 }
 
 .stat-label {
-    color: var(--ink-soft, #4b5d53);
+    color: var(--ink-soft, #4a5878);
     font-weight: 600;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .stat-val {
-    color: var(--ink, #13231b);
+    color: var(--ink, #0f1f3d);
     font-weight: 800;
-    background: var(--paper, #eef3ec);
+    background: var(--paper, #f3f6fc);
     padding: 2px 9px;
     border-radius: 8px;
     font-size: 12.5px;
@@ -493,7 +495,7 @@ ul {
 .separator {
     width: 100%;
     height: 1px;
-    background-color: #edf1ec;
+    background-color: #eef2f9;
 }
 
 /* Компактная карточка в бою: две карточки помещаются рядом даже на 320px */
@@ -584,7 +586,7 @@ ul {
     width: 100%;
     min-height: 58px;
     border-radius: 14px;
-    background-color: var(--ink, #13231b);
+    background-color: var(--ink, #0f1f3d);
     padding: 10px 12px;
     box-shadow: var(--shadow-2);
     animation: toastIn 0.2s ease-out;
@@ -603,7 +605,7 @@ ul {
 }
 
 .error-alert-icon {
-    color: var(--amber, #f2a93b);
+    color: var(--amber, #ffc93c);
     background: rgba(255, 255, 255, 0.08);
     padding: 6px;
     border-radius: 8px;
@@ -626,13 +628,13 @@ ul {
 }
 
 .error-alert-desc {
-    color: #c9d6cd;
+    color: #c5d0e6;
     font-size: 12.5px;
     line-height: 1.35;
 }
 
 .error-alert-close {
-    color: #8a998f;
+    color: #8b97b0;
     background: transparent;
     border: none;
     padding: 6px;
@@ -653,5 +655,95 @@ ul {
         right: 12px;
         width: auto;
         top: calc(64px + env(safe-area-inset-top, 0px));
+    }
+}
+
+/* ==========================================================================
+   6. КОМПАКТНАЯ КАРТОЧКА (покедекс, коллекция, отряд)
+   ========================================================================== */
+.cards-grid .poke-card,
+.slot-pillar .poke-card {
+    max-width: none;
+    height: auto;
+}
+
+.cards-grid .landscape-section,
+.slot-pillar .landscape-section {
+    height: auto;
+    aspect-ratio: 4 / 3;
+}
+
+.cards-grid .content-section,
+.slot-pillar .content-section {
+    flex: none;
+}
+
+.cards-grid .forecast,
+.slot-pillar .forecast {
+    padding: 8px 12px 10px;
+    gap: 4px;
+}
+
+.cards-grid .separator,
+.slot-pillar .separator {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    .cards-grid .poke-card,
+    .slot-pillar .poke-card {
+        border-radius: 16px;
+    }
+    .cards-grid .tree-1,
+    .cards-grid .tree-2,
+    .cards-grid .sun,
+    .slot-pillar .tree-1,
+    .slot-pillar .tree-2,
+    .slot-pillar .sun,
+    .slot-pillar .elem-pill > span:last-child {
+        display: none;
+    }
+    .cards-grid .card-top-badges,
+    .slot-pillar .card-top-badges {
+        top: 7px;
+        left: 7px;
+        right: 7px;
+    }
+    .cards-grid .elem-pill,
+    .cards-grid .hp-pill,
+    .slot-pillar .hp-pill {
+        font-size: 10.5px;
+        padding: 3px 7px;
+    }
+    .cards-grid .card-hero-title,
+    .slot-pillar .card-hero-title {
+        left: 9px;
+        right: 9px;
+        bottom: 8px;
+    }
+    .cards-grid .poke-name-line,
+    .slot-pillar .poke-name-line {
+        font-size: 13px;
+    }
+    .cards-grid .poke-arch-line,
+    .slot-pillar .poke-arch-line {
+        font-size: 11px;
+    }
+    .cards-grid .forecast,
+    .slot-pillar .forecast {
+        padding: 6px 9px 8px;
+        gap: 3px;
+    }
+    .cards-grid .stat-row,
+    .slot-pillar .stat-row {
+        font-size: 11.5px;
+    }
+    .cards-grid .stat-val,
+    .slot-pillar .stat-val {
+        font-size: 11px;
+        padding: 1px 6px;
+    }
+    .slot-pillar .landscape-section {
+        aspect-ratio: 1 / 1;
     }
 }
