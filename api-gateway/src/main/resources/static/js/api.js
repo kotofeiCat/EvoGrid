@@ -35,9 +35,9 @@ function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
 let ymapsScriptPromise = null;
 
 async function loadYandexMapsScript() {
-    if (window.ymaps3) {
-        await window.ymaps3.ready;
-        return window.ymaps3;
+    if (window.ymaps) {
+        await new Promise((resolve) => window.ymaps.ready(resolve));
+        return window.ymaps;
     }
     if (ymapsScriptPromise) {
         return ymapsScriptPromise;
@@ -48,23 +48,24 @@ async function loadYandexMapsScript() {
         try {
             const cfg = await ApiService.getPublicConfig();
             if (cfg && cfg.yandexMapsApiKey) {
-                apiKey = cfg.yandexMapsApiKey;
+                apiKey = cfg.yandexMapsApiKey.trim();
             }
         } catch {
-            // Используем резервный ключ
+            // Резервный ключ
         }
 
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = `https://api-maps.yandex.ru/v3/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`;
+            // Подключаем API 2.1 вместо v3
+            script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`;
             script.async = true;
             script.onload = resolve;
-            script.onerror = () => reject(new Error('Не удалось загрузить Яндекс Карты API 3.0'));
+            script.onerror = () => reject(new Error('Не удалось загрузить Яндекс Карты API 2.1'));
             document.head.appendChild(script);
         });
 
-        await window.ymaps3.ready;
-        return window.ymaps3;
+        await new Promise((resolve) => window.ymaps.ready(resolve));
+        return window.ymaps;
     })();
 
     return ymapsScriptPromise;

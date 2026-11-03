@@ -47,16 +47,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         speciesCatalog = [];
     }
 
-    // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ ЯНДЕКСА
+    // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ ЯНДЕКСА (API 2.1)
     try {
         await initYandexGameMap(startLat, startLon);
         await loadNearbySpawns(startLat, startLon);
         startLiveGpsTracking();
     } catch (mapErr) {
-        console.error('Ошибка инициализации Яндекс Карт 3.0:', mapErr);
+        console.error('Ошибка инициализации Яндекс Карт 2.1:', mapErr);
         UiComponents.showErrorAlert(
             'Ошибка загрузки карты',
-            'Не удалось загрузить карту Яндекса. Проверьте ключ API, ограничения Referer или отключите AdBlock.'
+            'Не удалось загрузить карту Яндекса. Проверьте ключ API или отключите блокировщик рекламы.'
         );
     }
 });
@@ -71,89 +71,62 @@ function updateActiveFighterLabel() {
         : `Слот #${slot} • Радар ${CATCH_RADIUS_METERS} м`;
 }
 
-/**
- * Генерирует GeoJSON-кольцо координат [lon, lat] для круга радиуса radiusMeters в ymaps3
- */
-function buildCircleCoordinates(lat, lon, radiusMeters = CATCH_RADIUS_METERS, segments = 64) {
-    const coords = [];
-    const earthRadius = 6371000;
-    const latRad = (lat * Math.PI) / 180;
-
-    for (let i = 0; i <= segments; i++) {
-        const angle = (i * 2 * Math.PI) / segments;
-        const dx = radiusMeters * Math.cos(angle);
-        const dy = radiusMeters * Math.sin(angle);
-
-        const dLat = (dy / earthRadius) * (180 / Math.PI);
-        const dLon = (dx / (earthRadius * Math.cos(latRad))) * (180 / Math.PI);
-
-        // В Яндекс Картах API 3.0 координаты всегда в порядке [долгота, широта]
-        coords.push([lon + dLon, lat + dLat]);
-    }
-    return coords;
-}
-
 async function initYandexGameMap(lat, lon) {
-    const ymaps3 = await loadYandexMapsScript();
-    const {
-        YMap,
-        YMapDefaultSchemeLayer,
-        YMapDefaultFeaturesLayer,
-        YMapMarker,
-        YMapFeature,
-        YMapListener
-    } = ymaps3;
+    const ymaps = await loadYandexMapsScript();
 
-    map = new YMap(document.getElementById('map'), {
-        location: {
-            center: [lon, lat],
-            zoom: 17.6
-        }
-    });
-
-    map.addChild(new YMapDefaultSchemeLayer());
-    map.addChild(new YMapDefaultFeaturesLayer());
-
-    // Круг радиуса поимки (70 метров)
-    radarCircle = new YMapFeature({
-        geometry: {
-            type: 'Polygon',
-            coordinates: [buildCircleCoordinates(lat, lon, CATCH_RADIUS_METERS)]
-        },
-        style: {
-            stroke: [{ color: '#0284c7', width: 2 }],
-            fill: 'rgba(56, 189, 248, 0.14)'
-        }
-    });
-    map.addChild(radarCircle);
-
-    // Маркер тренера
-    const trainerEl = document.createElement('div');
-    trainerEl.className = 'ymap-trainer-pin-wrap';
-    trainerEl.innerHTML = '<div class="trainer-map-pin"></div>';
-
-    playerMarker = new YMapMarker(
+    map = new ymaps.Map(
+        'map',
         {
-            coordinates: [lon, lat],
-            zIndex: 1000
+            center: [lat, lon],
+            zoom: 17,
+            controls: []
         },
-        trainerEl
+        {
+            suppressMapOpenBlock: true
+        }
     );
-    map.addChild(playerMarker);
 
-    // Слушатель клика по карте (для перемещения кликом)
-    const mapListener = new YMapListener({
-        layer: 'any',
-        onClick: (object, event) => {
-            if (object && object.type === 'marker') return;
-            const walkToggle = document.getElementById('click-walk-toggle');
-            if (walkToggle && walkToggle.checked && event && Array.isArray(event.coordinates)) {
-                const [clickedLon, clickedLat] = event.coordinates;
-                moveTrainerTo(clickedLat, clickedLon, true);
+    // 70-метровый круг обнаружения вокруг игрока
+    radarCircle = new ymaps.Circle(
+        [[lat, lon], CATCH_RADIUS_METERS],
+        {},
+        {
+            fillColor: '#38bdf8',
+            fillOpacity: 0.14,
+            strokeColor: '#0284c7',
+            strokeOpacity: 1,
+            strokeWidth: 2,
+            interactivityModel: 'default#transparent'
+        }
+    );
+    map.geoObjects.add(radarCircle);
+
+    // Кастомный маркер игрока (HTML из CSS)
+    const TrainerLayout = ymaps.templateLayoutFactory.createClass(
+        '<div class="ymap-trainer-pin-wrap"><div class="trainer-map-pin"></div></div>'
+    );
+
+    playerMarker = new ymaps.Placemark(
+        [lat, lon],
+        {},
+        {
+            iconLayout: TrainerLayout,
+            interactivityModel: 'default#transparent',
+            zIndex: 1000
+        }
+    );
+    map.geoObjects.add(playerMarker);
+
+    // Клик по карте для передвижения
+    map.events.add('click', (e) => {
+        const walkToggle = document.getElementById('click-walk-toggle');
+        if (walkToggle && walkToggle.checked) {
+            const coords = e.get('coords');
+            if (Array.isArray(coords)) {
+                moveTrainerTo(coords[0], coords[1], true);
             }
         }
     });
-    map.addChild(mapListener);
 }
 
 function animateMarkerTo(targetLat, targetLon, durationMs = 380) {
@@ -171,16 +144,8 @@ function animateMarkerTo(targetLat, targetLon, durationMs = 380) {
         renderedLat = startLat + (targetLat - startLat) * eased;
         renderedLon = startLon + (targetLon - startLon) * eased;
 
-        playerMarker.update({
-            coordinates: [renderedLon, renderedLat]
-        });
-
-        radarCircle.update({
-            geometry: {
-                type: 'Polygon',
-                coordinates: [buildCircleCoordinates(renderedLat, renderedLon, CATCH_RADIUS_METERS)]
-            }
-        });
+        playerMarker.geometry.setCoordinates([renderedLat, renderedLon]);
+        radarCircle.geometry.setCoordinates([renderedLat, renderedLon]);
 
         if (progress < 1) {
             animFrameId = requestAnimationFrame(step);
@@ -190,15 +155,20 @@ function animateMarkerTo(targetLat, targetLon, durationMs = 380) {
     animFrameId = requestAnimationFrame(step);
 }
 
-/**
- * Перемещение тренера с защитой от GPS-шума и плавным следованием камеры
- */
+function panMapTo(lat, lon, zoom = null, duration = 400) {
+    if (!map) return;
+    if (zoom !== null) {
+        map.setCenter([lat, lon], Math.round(zoom), { duration });
+    } else {
+        map.panTo([lat, lon], { flying: false, duration });
+    }
+}
+
 async function moveTrainerTo(rawLat, rawLon, isManualClick = false) {
     const prevLat = currentUser.latitude || rawLat;
     const prevLon = currentUser.longitude || rawLon;
     const rawDist = calculateDistanceMeters(prevLat, prevLon, rawLat, rawLon);
 
-    // Игнорируем микродрожание GPS меньше 1.2 м на месте
     if (!isManualClick && rawDist < 1.2) return;
 
     let nextLat = rawLat;
@@ -209,12 +179,10 @@ async function moveTrainerTo(rawLat, rawLon, isManualClick = false) {
         const dtSec = Math.max(0.5, (now - lastGpsFixTime) / 1000);
         const speedMps = rawDist / dtSec;
 
-        // Защита от резких «телепортов» GPS в городе (> 12 м/с при обычной ходьбе)
         if (rawDist > 120 && speedMps > 12) {
             nextLat = prevLat + (rawLat - prevLat) * 0.25;
             nextLon = prevLon + (rawLon - prevLon) * 0.25;
         } else {
-            // Мягкое сглаживание траектории при ходьбе
             nextLat = prevLat + (rawLat - prevLat) * 0.65;
             nextLon = prevLon + (rawLon - prevLon) * 0.65;
         }
@@ -225,24 +193,17 @@ async function moveTrainerTo(rawLat, rawLon, isManualClick = false) {
     currentUser.longitude = nextLon;
 
     animateMarkerTo(nextLat, nextLon);
-
-    if (map) {
-        map.update({
-            location: {
-                center: [nextLon, nextLat],
-                duration: 400
-            }
-        });
-    }
-
+    panMapTo(nextLat, nextLon, null, 400);
     refreshSpawnDistances();
 
     const distFromLastSync = calculateDistanceMeters(lastServerSyncLat, lastServerSyncLon, nextLat, nextLon);
     const now = Date.now();
-    if (isManualClick || distFromLastSync >= 8 || now - lastServerSyncTime >= 6000) {
+
+    if (isManualClick || distFromLastSync >= 8 || (now - lastServerSyncTime >= 6000)) {
         lastServerSyncLat = nextLat;
         lastServerSyncLon = nextLon;
         lastServerSyncTime = now;
+
         ApiService.updateLocation(currentUser.id, nextLat, nextLon).catch(() => {});
         await loadNearbySpawns(nextLat, nextLon);
     }
@@ -253,10 +214,8 @@ function startLiveGpsTracking() {
     if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
     }
-
     watchId = navigator.geolocation.watchPosition(
         (pos) => {
-            // Отсекаем грубые сбои сотовых вышек с низкой точностью (> 65 метров)
             if (pos.coords.accuracy && pos.coords.accuracy > 65) {
                 return;
             }
@@ -276,37 +235,17 @@ function centerOnTrainerGps() {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 moveTrainerTo(pos.coords.latitude, pos.coords.longitude, true);
-                if (map) {
-                    map.update({
-                        location: {
-                            center: [pos.coords.longitude, pos.coords.latitude],
-                            zoom: 17.8,
-                            duration: 450
-                        }
-                    });
-                }
+                panMapTo(pos.coords.latitude, pos.coords.longitude, 17.8, 450);
             },
             () => {
-                if (map && currentUser) {
-                    map.update({
-                        location: {
-                            center: [currentUser.longitude, currentUser.latitude],
-                            zoom: 17.8,
-                            duration: 450
-                        }
-                    });
+                if (currentUser) {
+                    panMapTo(currentUser.latitude, currentUser.longitude, 17.8, 450);
                 }
             },
             { enableHighAccuracy: true, timeout: 6000 }
         );
-    } else if (map && currentUser) {
-        map.update({
-            location: {
-                center: [currentUser.longitude, currentUser.latitude],
-                zoom: 17.8,
-                duration: 450
-            }
-        });
+    } else if (currentUser) {
+        panMapTo(currentUser.latitude, currentUser.longitude, 17.8, 450);
     }
 }
 
@@ -323,22 +262,18 @@ function buildSpawnBadgeHtml(sp, dist) {
 
 function refreshSpawnDistances() {
     spawnMarkersMap.forEach((entry) => {
-        const { element, spawn } = entry;
+        const { marker, spawn } = entry;
         const dist = Math.round(
             calculateDistanceMeters(currentUser.latitude, currentUser.longitude, spawn.latitude, spawn.longitude)
         );
-        if (element) {
-            const badge = element.querySelector('.wild-map-badge');
-            const distLabel = element.querySelector('.dist-label');
-            if (badge) badge.classList.toggle('in-range', dist <= CATCH_RADIUS_METERS);
-            if (distLabel) distLabel.textContent = `${dist} м`;
+        if (marker) {
+            marker.properties.set('badgeHtml', buildSpawnBadgeHtml(spawn, dist));
         }
     });
 }
 
 async function loadNearbySpawns(lat, lon) {
-    if (!map || !window.ymaps3) return;
-    const { YMapMarker } = window.ymaps3;
+    if (!map || !window.ymaps) return;
 
     let spawns = [];
     try {
@@ -358,30 +293,38 @@ async function loadNearbySpawns(lat, lon) {
         );
 
         if (spawnMarkersMap.has(sp.spawnId)) {
-            const existingEntry = spawnMarkersMap.get(sp.spawnId);
-            existingEntry.spawn = sp;
-            existingEntry.marker.update({
-                coordinates: [sp.longitude, sp.latitude]
-            });
+            const existing = spawnMarkersMap.get(sp.spawnId);
+            existing.spawn = sp;
+            existing.marker.geometry.setCoordinates([sp.latitude, sp.longitude]);
+            existing.marker.properties.set('badgeHtml', buildSpawnBadgeHtml(sp, dist));
         } else {
-            const el = document.createElement('div');
-            el.className = 'spawn-marker-wrapper';
-            el.innerHTML = buildSpawnBadgeHtml(sp, dist);
-            el.addEventListener('click', (e) => {
+            const SpawnLayout = window.ymaps.templateLayoutFactory.createClass(
+                '<div class="spawn-marker-wrapper">$[properties.badgeHtml]</div>'
+            );
+
+            const marker = new window.ymaps.Placemark(
+                [sp.latitude, sp.longitude],
+                {
+                    badgeHtml: buildSpawnBadgeHtml(sp, dist)
+                },
+                {
+                    iconLayout: SpawnLayout,
+                    iconShape: {
+                        type: 'Rectangle',
+                        coordinates: [[-75, -22], [75, 22]]
+                    },
+                    zIndex: 500
+                }
+            );
+
+            marker.events.add('click', (e) => {
                 e.stopPropagation();
                 const latest = spawnMarkersMap.get(sp.spawnId)?.spawn || sp;
                 tryInspectWildPokemon(latest);
             });
 
-            const marker = new YMapMarker(
-                {
-                    coordinates: [sp.longitude, sp.latitude],
-                    zIndex: 500
-                },
-                el
-            );
-            map.addChild(marker);
-            spawnMarkersMap.set(sp.spawnId, { marker, element: el, spawn: sp });
+            map.geoObjects.add(marker);
+            spawnMarkersMap.set(sp.spawnId, { marker, spawn: sp });
         }
     });
 
@@ -389,7 +332,7 @@ async function loadNearbySpawns(lat, lon) {
         if (!activeIds.has(id)) {
             const entry = spawnMarkersMap.get(id);
             if (entry && entry.marker) {
-                map.removeChild(entry.marker);
+                map.geoObjects.remove(entry.marker);
             }
             spawnMarkersMap.delete(id);
         }
