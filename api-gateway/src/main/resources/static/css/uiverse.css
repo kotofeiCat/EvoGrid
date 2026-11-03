@@ -7,41 +7,37 @@ ul {
 
 .bottom-dock-wrap {
     position: fixed;
-    bottom: max(14px, env(safe-area-inset-bottom, 14px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 2500;
-    width: auto;
-    max-width: calc(100vw - 24px);
+    width: min(360px, calc(100vw - 24px));
 }
 
 .example-1 {
-    display: flex;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.96);
+    background-color: rgba(19, 35, 27, 0.94);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.95);
-    border-radius: 28px;
-    padding: 8px 16px;
-    height: 64px;
-    width: 310px;
-    max-width: 100%;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(2, 132, 199, 0.08);
+    border-radius: 999px;
+    padding: 6px;
+    box-shadow: 0 2px 6px rgba(19, 35, 27, 0.2), 0 18px 40px rgba(19, 35, 27, 0.28);
 }
 
 .example-1 .icon-content {
-    margin: 0 4px;
     position: relative;
+    display: flex;
+    justify-content: center;
 }
 
 .example-1 .icon-content .tooltip {
     position: absolute;
-    top: -32px;
+    top: -34px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #0f172a;
+    background-color: #13231b;
     color: #ffffff;
     padding: 5px 10px;
     border-radius: 8px;
@@ -49,58 +45,71 @@ ul {
     visibility: hidden;
     font-size: 12px;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: opacity 0.15s ease, top 0.15s ease;
     font-weight: 700;
     pointer-events: none;
 }
 
-.example-1 .icon-content:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-    top: -44px;
+@media (hover: hover) {
+    .example-1 .icon-content:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+        top: -42px;
+    }
 }
 
 .example-1 .icon-content .link {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    color: #64748b;
-    background-color: #f8fafc;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+    gap: 2px;
+    width: 100%;
+    min-width: 64px;
+    height: 52px;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.62);
+    transition: background-color 0.15s ease, color 0.15s ease;
     cursor: pointer;
     text-decoration: none;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.example-1 .icon-content .link::after {
+    content: attr(aria-label);
 }
 
 .example-1 .icon-content .link svg {
-    width: 22px;
-    height: 22px;
+    width: 21px;
+    height: 21px;
 }
 
 .example-1 .icon-content .link:hover {
-    background-color: #f1f5f9;
-    transform: translateY(-2px);
+    color: #ffffff;
 }
 
 .example-1 .icon-content .link.active-nav {
-    background-color: #e0f2fe;
-    border-color: rgba(2, 132, 199, 0.3);
-    color: #0284c7;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.16);
+    background-color: var(--amber, #f2a93b);
+    color: #13231b;
+}
+
+/* Подпись уже есть под иконкой — всплывашка не нужна */
+.example-1 .icon-content .tooltip {
+    display: none;
 }
 
 /* ==========================================================================
-   2. КНОПКИ
+   2. КНОПКИ (объёмные, с «нажатием»)
    ========================================================================== */
 .uiv-btn {
-    --button_radius: 0.75em;
-    --button_color: #f8fafc;
-    --button_outline_color: #0f172a;
-    font-size: 13.5px;
-    font-weight: 700;
+    --button_radius: 12px;
+    --button_color: #ffffff;
+    --button_outline_color: var(--ink, #13231b);
+    --button_text: var(--ink, #13231b);
+    font-family: var(--font-body, system-ui);
+    font-size: 14px;
+    font-weight: 800;
     border: none;
     cursor: pointer;
     border-radius: var(--button_radius);
@@ -109,11 +118,13 @@ ul {
     display: inline-block;
     text-decoration: none;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .uiv-btn.primary {
-    --button_color: #e0f2fe;
-    --button_outline_color: #0284c7;
+    --button_color: var(--amber, #f2a93b);
+    --button_outline_color: var(--ink, #13231b);
+    --button_text: var(--ink, #13231b);
 }
 
 .uiv-btn .button_top {
@@ -122,19 +133,22 @@ ul {
     justify-content: center;
     gap: 8px;
     width: 100%;
+    min-height: 44px;
     box-sizing: border-box;
     border: 2px solid var(--button_outline_color);
     border-radius: var(--button_radius);
     padding: 0.6em 1.15em;
     background: var(--button_color);
-    color: var(--button_outline_color);
-    transform: translateY(-0.18em);
+    color: var(--button_text);
+    transform: translateY(-0.2em);
     transition: transform 0.1s ease;
     text-align: center;
 }
 
-.uiv-btn:hover .button_top {
-    transform: translateY(-0.3em);
+@media (hover: hover) {
+    .uiv-btn:hover .button_top {
+        transform: translateY(-0.32em);
+    }
 }
 
 .uiv-btn:active .button_top {
@@ -142,8 +156,13 @@ ul {
 }
 
 .uiv-btn:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     pointer-events: none;
+}
+
+.uiv-btn:focus-visible {
+    outline: 3px solid var(--amber, #f2a93b);
+    outline-offset: 3px;
 }
 
 /* ==========================================================================
@@ -151,60 +170,61 @@ ul {
    ========================================================================== */
 .form-box {
     width: 100%;
-    max-width: 380px;
-    background: #f1f7fe;
+    max-width: 400px;
+    background: var(--surface, #fff);
+    border: 1px solid var(--line, #d5dfd3);
     overflow: hidden;
-    border-radius: 22px;
-    color: #0f172a;
-    box-shadow: 0 20px 50px rgba(2, 132, 199, 0.12);
+    border-radius: var(--r-lg, 24px);
+    color: var(--ink, #13231b);
+    box-shadow: var(--shadow-2);
 }
 
 .form {
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 32px 24px 24px;
-    gap: 16px;
-    text-align: center;
+    padding: 28px 24px 24px;
+    gap: 14px;
 }
 
 .form .title {
-    font-weight: 800;
-    font-size: 1.55rem;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
 }
 
 .form .subtitle {
-    font-size: 0.92rem;
-    color: #64748b;
+    font-size: 14px;
+    color: var(--ink-soft, #4b5d53);
+    margin-top: -6px;
 }
 
 .form-container {
-    border-radius: 14px;
-    background-color: #ffffff;
-    padding: 18px 20px 8px;
-    margin: 0.4rem 0;
     width: 100%;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+    margin: 4px 0;
 }
 
 .form-section {
     padding: 16px;
-    font-size: 0.88rem;
-    background-color: #e0ecfb;
+    font-size: 14px;
+    background-color: var(--surface-soft, #f6f9f4);
+    border-top: 1px solid var(--line, #d5dfd3);
     text-align: center;
+    color: var(--ink-soft, #4b5d53);
 }
 
 .form-section a {
-    font-weight: 700;
-    color: #0066ff;
+    font-weight: 800;
+    color: var(--radar, #0e7c66);
     cursor: pointer;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 .input-container {
     position: relative;
-    margin: 20px auto 24px;
+    margin: 22px 0 18px;
     width: 100%;
     text-align: left;
 }
@@ -213,19 +233,20 @@ ul {
     font-size: 16px;
     width: 100%;
     border: none;
-    border-bottom: 2px solid #e2e8f0;
-    padding: 6px 0;
+    border-bottom: 2px solid var(--line, #d5dfd3);
+    padding: 8px 0;
     background-color: transparent;
     outline: none;
-    color: #0f172a;
+    color: var(--ink, #13231b);
+    border-radius: 0;
 }
 
 .input-container .label {
     position: absolute;
-    top: 6px;
+    top: 8px;
     left: 0;
-    color: #94a3b8;
-    transition: all 0.3s ease;
+    color: var(--ink-faint, #8a998f);
+    transition: all 0.2s ease;
     pointer-events: none;
     font-size: 15px;
 }
@@ -233,9 +254,9 @@ ul {
 .input-container input:focus ~ .label,
 .input-container input:valid ~ .label {
     top: -16px;
-    font-size: 12px;
-    color: #0284c7;
-    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--radar, #0e7c66);
+    font-weight: 700;
 }
 
 .input-container .underline {
@@ -244,43 +265,45 @@ ul {
     left: 0;
     height: 2px;
     width: 100%;
-    background-color: #0284c7;
+    background-color: var(--radar, #0e7c66);
     transform: scaleX(0);
-    transition: all 0.3s ease;
+    transform-origin: left;
+    transition: transform 0.25s ease;
 }
 
-.input-container input:focus ~ .underline,
-.input-container input:valid ~ .underline {
+.input-container input:focus ~ .underline {
     transform: scaleX(1);
 }
 
 /* ==========================================================================
-   4. КАРТОЧКИ ПОКЕМОНОВ (РАСШИРЕННЫЕ)
+   4. КАРТОЧКИ ПОКЕМОНОВ
    ========================================================================== */
 .poke-card {
     display: flex;
     flex-direction: column;
     position: relative;
     width: 100%;
-    min-width: 245px;
     max-width: 265px;
     height: 330px;
-    border-radius: 22px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     background-color: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid var(--line, #d5dfd3);
+    box-shadow: var(--shadow-1);
     cursor: pointer;
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.poke-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 36px rgba(2, 132, 199, 0.16);
+@media (hover: hover) {
+    .poke-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-2);
+    }
 }
 
 .poke-card.selected-card {
-    box-shadow: 0 0 0 3px #0284c7, 0 14px 32px rgba(2, 132, 199, 0.22);
+    border-color: var(--ink, #13231b);
+    box-shadow: 0 0 0 3px var(--amber, #f2a93b), var(--shadow-1);
 }
 
 .landscape-section {
@@ -288,24 +311,17 @@ ul {
     width: 100%;
     height: 60%;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .landscape-section > div:not(.card-top-badges):not(.card-hero-title) {
     position: absolute;
 }
 
-.poke-card[data-element="FIRE"] .sky {
-    background: linear-gradient(0deg, #fde047 0%, #f43f5e 100%);
-}
-.poke-card[data-element="WATER"] .sky {
-    background: linear-gradient(0deg, #bae6fd 0%, #0284c7 100%);
-}
-.poke-card[data-element="FOREST"] .sky {
-    background: linear-gradient(0deg, #bbf7d0 0%, #059669 100%);
-}
-.poke-card[data-element="NEUTRAL"] .sky {
-    background: linear-gradient(0deg, #cbd5e1 0%, #475569 100%);
-}
+.poke-card[data-element="FIRE"] .sky    { background: linear-gradient(0deg, #ffd27a 0%, #e0542f 100%); }
+.poke-card[data-element="WATER"] .sky   { background: linear-gradient(0deg, #bfe3f5 0%, #1f7fc0 100%); }
+.poke-card[data-element="FOREST"] .sky  { background: linear-gradient(0deg, #d6efc4 0%, #2f8a4c 100%); }
+.poke-card[data-element="NEUTRAL"] .sky { background: linear-gradient(0deg, #dfe5dc 0%, #6b7c72 100%); }
 
 .sky { width: 100%; height: 100%; }
 
@@ -316,7 +332,7 @@ ul {
     background-color: rgba(255, 255, 255, 0.85);
     bottom: 42%;
     left: 20%;
-    filter: drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
 }
 
 .ocean {
@@ -324,10 +340,10 @@ ul {
     bottom: 0;
     width: 100%;
     height: 26%;
-    background: linear-gradient(0deg, #f1c07d 0%, #f7da96 100%);
+    background: linear-gradient(0deg, #e9b46c 0%, #f5d596 100%);
 }
-.poke-card[data-element="WATER"] .ocean { background: linear-gradient(0deg, #0369a1 0%, #38bdf8 100%); }
-.poke-card[data-element="FOREST"] .ocean { background: linear-gradient(0deg, #047857 0%, #34d399 100%); }
+.poke-card[data-element="WATER"] .ocean  { background: linear-gradient(0deg, #12608f 0%, #4aaee0 100%); }
+.poke-card[data-element="FOREST"] .ocean { background: linear-gradient(0deg, #1f6b3b 0%, #5fbf7a 100%); }
 
 .reflection {
     position: absolute;
@@ -340,11 +356,12 @@ ul {
 
 .hill-1 { right: -25%; bottom: 20%; width: 150px; height: 40px; border-radius: 50%; background-color: #e6b29d; }
 .hill-2 { right: -36%; bottom: 10%; width: 150px; height: 80px; border-radius: 50%; background-color: #c29182; }
-.hill-3 { left: -80%; bottom: -28%; width: 380px; height: 150px; border-radius: 50%; background-color: #b77873; z-index: 3; }
-.hill-4 { right: -80%; bottom: -40%; width: 380px; height: 150px; border-radius: 50%; background-color: #a16773; z-index: 3; }
+.hill-3 { left: -80%; bottom: -28%; width: 380px; height: 150px; border-radius: 50%; background-color: #9c5a50; z-index: 3; }
+.hill-4 { right: -80%; bottom: -40%; width: 380px; height: 150px; border-radius: 50%; background-color: #7f4447; z-index: 3; }
 
-.poke-card[data-element="WATER"] .hill-3, .poke-card[data-element="WATER"] .hill-4 { background-color: #075985; }
-.poke-card[data-element="FOREST"] .hill-3, .poke-card[data-element="FOREST"] .hill-4 { background-color: #065f46; }
+.poke-card[data-element="WATER"] .hill-3, .poke-card[data-element="WATER"] .hill-4 { background-color: #0d4a70; }
+.poke-card[data-element="FOREST"] .hill-3, .poke-card[data-element="FOREST"] .hill-4 { background-color: #164d2b; }
+.poke-card[data-element="NEUTRAL"] .hill-3, .poke-card[data-element="NEUTRAL"] .hill-4 { background-color: #44524a; }
 
 .tree-1 { bottom: 20%; left: 4%; width: 42px; height: 58px; z-index: 3; }
 .tree-2 { bottom: 14%; left: 25%; width: 42px; height: 58px; z-index: 3; }
@@ -352,19 +369,19 @@ ul {
 
 .filter {
     inset: 0;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.16) 0%, rgba(15, 23, 42, 0.06) 45%, rgba(15, 23, 42, 0.68) 100%);
+    background: linear-gradient(180deg, rgba(19, 35, 27, 0.18) 0%, rgba(19, 35, 27, 0.04) 45%, rgba(19, 35, 27, 0.72) 100%);
     z-index: 4;
 }
 
 .card-top-badges {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
+    top: 10px;
+    left: 10px;
+    right: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
     z-index: 10;
 }
 
@@ -372,36 +389,32 @@ ul {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 4px 10px;
-    border-radius: 99px;
-    background: rgba(15, 23, 42, 0.52);
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(19, 35, 27, 0.55);
     backdrop-filter: blur(6px);
     color: #ffffff;
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.03em;
+    min-width: 0;
 }
 
-.elem-pill .elem-svg-icon {
+.elem-pill .elem-svg-icon,
+.elem-pill .elem-svg-icon svg {
     display: inline-flex;
     width: 14px;
     height: 14px;
-}
-
-.elem-pill .elem-svg-icon svg {
-    width: 14px;
-    height: 14px;
+    flex-shrink: 0;
 }
 
 .hp-pill {
-    padding: 4px 10px;
-    border-radius: 99px;
-    background: rgba(255, 255, 255, 0.94);
-    color: #0f172a;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--ink, #13231b);
     font-size: 11.5px;
     font-weight: 800;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
 }
 
 .card-hero-title {
@@ -415,18 +428,18 @@ ul {
 }
 
 .poke-name-line {
-    font-size: 15.5px;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.01em;
-    text-shadow: 0 2px 6px rgba(15, 23, 42, 0.45);
+    text-shadow: 0 2px 6px rgba(19, 35, 27, 0.45);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .poke-arch-line {
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.86);
     margin-top: 2px;
@@ -434,7 +447,7 @@ ul {
 
 .content-section {
     width: 100%;
-    height: 40%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -447,7 +460,7 @@ ul {
     justify-content: space-evenly;
     height: 100%;
     width: 100%;
-    padding: 10px 18px;
+    padding: 8px 16px;
 }
 
 .stat-row {
@@ -455,40 +468,109 @@ ul {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 12.5px;
+    gap: 6px;
+    font-size: 13px;
 }
 
 .stat-label {
-    color: #64748b;
+    color: var(--ink-soft, #4b5d53);
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stat-val {
-    color: #0f172a;
+    color: var(--ink, #13231b);
     font-weight: 800;
-    background: #f1f5f9;
+    background: var(--paper, #eef3ec);
     padding: 2px 9px;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
 }
 
 .separator {
     width: 100%;
     height: 1px;
-    background-color: #f1f5f9;
+    background-color: #edf1ec;
+}
+
+/* Компактная карточка в бою: две карточки помещаются рядом даже на 320px */
+.battle-fighter-col .poke-card {
+    height: auto;
+    cursor: default;
+}
+
+.battle-fighter-col .landscape-section {
+    height: auto;
+    aspect-ratio: 5 / 3.6;
+}
+
+.battle-fighter-col .content-section {
+    flex: none;
+}
+
+@media (max-width: 640px) {
+    .battle-fighter-col .poke-card {
+        border-radius: 16px;
+    }
+    .battle-fighter-col .landscape-section {
+        aspect-ratio: 1 / 1;
+    }
+    .battle-fighter-col .tree-1,
+    .battle-fighter-col .tree-2,
+    .battle-fighter-col .sun,
+    .battle-fighter-col .elem-pill > span:last-child {
+        display: none;
+    }
+    .battle-fighter-col .card-top-badges {
+        top: 6px;
+        left: 6px;
+        right: 6px;
+    }
+    .battle-fighter-col .hp-pill {
+        font-size: 11px;
+        padding: 3px 7px;
+    }
+    .battle-fighter-col .card-hero-title {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+    }
+    .battle-fighter-col .poke-name-line {
+        font-size: 13px;
+    }
+    .battle-fighter-col .poke-arch-line {
+        font-size: 11px;
+    }
+    .battle-fighter-col .forecast {
+        padding: 6px 8px;
+        gap: 3px;
+    }
+    .battle-fighter-col .separator {
+        display: none;
+    }
+    .battle-fighter-col .stat-row {
+        font-size: 11.5px;
+    }
+    .battle-fighter-col .stat-val {
+        font-size: 11px;
+        padding: 1px 6px;
+    }
 }
 
 /* ==========================================================================
-   5. УВЕДОМЛЕНИЯ (TOAST ALERTS)
+   5. УВЕДОМЛЕНИЯ
    ========================================================================== */
 .toast-stack {
     position: fixed;
-    top: 22px;
-    right: 22px;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    right: 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 320px;
+    width: min(340px, calc(100vw - 32px));
     z-index: 9999;
     pointer-events: none;
 }
@@ -498,22 +580,30 @@ ul {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     width: 100%;
     min-height: 58px;
-    border-radius: 12px;
-    background-color: #1e293b;
+    border-radius: 14px;
+    background-color: var(--ink, #13231b);
     padding: 10px 12px;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+    box-shadow: var(--shadow-2);
+    animation: toastIn 0.2s ease-out;
+}
+
+@keyframes toastIn {
+    from { transform: translateY(-8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .error-alert-left {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .error-alert-icon {
-    color: #f43f5e;
+    color: var(--amber, #f2a93b);
     background: rgba(255, 255, 255, 0.08);
     padding: 6px;
     border-radius: 8px;
@@ -530,28 +620,38 @@ ul {
 
 .error-alert-title {
     color: #ffffff;
-    font-size: 12.5px;
-    font-weight: 700;
+    font-size: 13.5px;
+    font-weight: 800;
     margin-bottom: 2px;
 }
 
 .error-alert-desc {
-    color: #cbd5e1;
-    font-size: 11.5px;
-    line-height: 1.3;
+    color: #c9d6cd;
+    font-size: 12.5px;
+    line-height: 1.35;
 }
 
 .error-alert-close {
-    color: #94a3b8;
+    color: #8a998f;
     background: transparent;
     border: none;
-    padding: 4px;
+    padding: 6px;
     border-radius: 6px;
     cursor: pointer;
     display: flex;
+    flex-shrink: 0;
 }
 
 .error-alert-close svg {
     width: 18px;
     height: 18px;
+}
+
+@media (max-width: 640px) {
+    .toast-stack {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        top: calc(64px + env(safe-area-inset-top, 0px));
+    }
 }

@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#13231b">
     <title>EvoGrid — Профиль и Отряд</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/uiverse.css">
@@ -86,7 +87,7 @@
         </div>
         <div id="party-slots-row" class="party-grid"></div>
 
-        <div class="section-header left-align" style="margin-top:16px">
+        <div class="section-header left-align section-gap">
             <h2>Пойманные покемоны</h2>
             <p>Нажмите на любого пойманного покемона, чтобы почитать его способности и назначить в слот 1, 2 или 3</p>
         </div>
@@ -117,7 +118,7 @@
 
                 <!-- Способности пойманного покемона -->
                 <div id="detail-poke-abilities-wrap">
-                    <div class="abilities-section-title">Боевые способности покемона:</div>
+                    <div class="abilities-section-title">Боевые способности</div>
                     <div id="detail-poke-abilities-list" class="dossier-abilities-grid"></div>
                 </div>
 
@@ -130,7 +131,7 @@
                     </div>
                 </div>
 
-                <button class="uiv-btn" style="margin-top:4px;width:100%" onclick="closeDetailModal()">
+                <button class="uiv-btn" onclick="closeDetailModal()">
                     <span class="button_top">Закрыть</span>
                 </button>
             </div>

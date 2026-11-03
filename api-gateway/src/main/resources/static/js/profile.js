@@ -104,6 +104,10 @@ function renderPartySlots() {
 function renderOwnedCollection() {
     const colContainer = document.getElementById('owned-collection-row');
     colContainer.innerHTML = '';
+    if (!(profileData.collection || []).length) {
+        colContainer.innerHTML = '<div class="empty-hint">Пока никого не поймано. Открой карту и подойди к дикому покемону ближе чем на 70 м.</div>';
+        return;
+    }
     (profileData.collection || []).forEach(p => {
         const wrapper = document.createElement('div');
         wrapper.className = 'grid-card-item';

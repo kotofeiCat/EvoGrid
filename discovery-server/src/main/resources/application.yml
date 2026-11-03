@@ -4,10 +4,13 @@ server:
 spring:
   application:
     name: discovery-server
-  config:
-    import: "optional:configserver:http://localhost:8888"
 
 eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

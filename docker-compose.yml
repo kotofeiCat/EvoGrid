@@ -38,9 +38,10 @@ services:
       - evogrid-net
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 15
+      retries: 30
+      start_period: 120s
 
   config-server:
     build:
@@ -59,9 +60,10 @@ services:
       - evogrid-net
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/actuator/health"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 15
+      retries: 30
+      start_period: 120s
 
   pokemon-service:
     build:
@@ -176,10 +178,10 @@ services:
     container_name: api-gateway
     restart: always
     ports:
-      - "127.0.0.1:8080:8080"
+      - "${GATEWAY_BIND:-127.0.0.1}:${GATEWAY_PORT:-8080}:8080"
     environment:
-      JWT_SECRET: ${JWT_SECRET}
-      YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
+      YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY:-}
       EUREKA_URI: http://discovery-server:8761/eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server

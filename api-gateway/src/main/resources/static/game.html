@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#13231b">
     <title>EvoGrid — Карта мира</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/uiverse.css">
@@ -15,10 +16,11 @@
         <span id="active-fighter-indicator" class="fighter-pill-text">Слот #1 • Радар 70 м</span>
         <label class="walk-toggle-label" title="Позволяет перемещаться кликом по Яндекс Карте">
             <input type="checkbox" id="click-walk-toggle" checked>
-            <span>Ходьба кликом</span>
+            <span>Ходьба<span class="walk-text-long"> кликом</span></span>
         </label>
-        <button type="button" class="recenter-gps-btn" onclick="centerOnTrainerGps()" title="Центрировать на моей геопозиции">
-            📍 Моя геопозиция
+        <button type="button" class="recenter-gps-btn" onclick="centerOnTrainerGps()" title="Центрировать на моей геопозиции" aria-label="Центрировать на моей геопозиции">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            <span class="btn-text">Где я</span>
         </button>
     </div>
 
@@ -40,7 +42,7 @@
                     В бой вступит: <b id="wild-active-slot-label">Слот #1</b>
                 </p>
                 <div class="modal-actions-row">
-                    <button class="uiv-btn primary" style="flex:1" onclick="confirmStartBattle()">
+                    <button class="uiv-btn primary" onclick="confirmStartBattle()">
                         <span class="button_top">Вступить в бой</span>
                     </button>
                     <button class="uiv-btn" onclick="closeWildModal()">
@@ -77,12 +79,12 @@
         <div id="battle-log-container" class="combat-log-box"></div>
 
         <!-- Сетка из 4 способностей -->
-        <div class="abilities-section-title">Выберите способность на этот раунд:</div>
+        <div class="abilities-section-title">Способность на этот ход</div>
         <div id="battle-abilities-grid" class="abilities-grid"></div>
 
         <!-- Нижний ряд действий -->
         <div class="modal-actions-row">
-            <button id="btn-do-catch" class="uiv-btn primary" style="flex:1" onclick="doCatch()">
+            <button id="btn-do-catch" class="uiv-btn primary" onclick="doCatch()">
                 <span class="button_top">Бросить Покебол</span>
             </button>
             <button class="uiv-btn" onclick="closeBattleWindow()">
