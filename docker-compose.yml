@@ -36,6 +36,11 @@ services:
       CONFIG_SERVER_HOST: config-server
     networks:
       - evogrid-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
 
   config-server:
     build:
@@ -48,9 +53,15 @@ services:
       EUREKA_URI: http://discovery-server:8761/eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
     depends_on:
-      - discovery-server
+      discovery-server:
+        condition: service_healthy
     networks:
       - evogrid-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
 
   pokemon-service:
     build:
@@ -72,9 +83,9 @@ services:
       postgres:
         condition: service_healthy
       discovery-server:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - evogrid-net
 
@@ -99,9 +110,9 @@ services:
       postgres:
         condition: service_healthy
       discovery-server:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - evogrid-net
 
@@ -125,9 +136,9 @@ services:
       postgres:
         condition: service_healthy
       discovery-server:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - evogrid-net
 
@@ -151,9 +162,9 @@ services:
       postgres:
         condition: service_healthy
       discovery-server:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - evogrid-net
 
@@ -172,7 +183,9 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
       CONFIG_SERVER_HOST: config-server
     depends_on:
-      - discovery-server
-      - config-server
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - evogrid-net
