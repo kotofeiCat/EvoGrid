@@ -18,6 +18,13 @@ let lastGpsFixTime = 0;
 let watchId = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
+    // Свайп вниз закрывает карточку дикого покемона, тап по затемнению — тоже
+    const wildModal = document.getElementById('modal-wild-inspect');
+    Gestures.enableSwipeToClose(wildModal, closeWildModal);
+    wildModal.addEventListener('click', (e) => {
+        if (e.target === wildModal) closeWildModal();
+    });
+
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock('map');
 
     // 1. ПРОВЕРКА АВТОРИЗАЦИИ: только при 401 Unauthorized выкидываем на index.html
@@ -50,9 +57,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ ЯНДЕКСА (API 2.1)
     try {
         await initYandexGameMap(startLat, startLon);
+        hideMapLoader();
         await loadNearbySpawns(startLat, startLon);
         startLiveGpsTracking();
     } catch (mapErr) {
+        hideMapLoader();
         console.error('Ошибка инициализации Яндекс Карт 2.1:', mapErr);
         UiComponents.showErrorAlert(
             'Ошибка загрузки карты',
@@ -353,7 +362,6 @@ function tryInspectWildPokemon(spawn) {
     document.getElementById('wild-card-holder').innerHTML = UiComponents.createPokemonLandscapeCard(spawn);
     document.getElementById('wild-title').textContent = `${spawn.name} (${spawn.archetype})`;
     document.getElementById('wild-lore').textContent = speciesInfo?.description || 'Обитатель мира EvoGrid.';
-    showSheet('wild-sheet', spawn);
     document.getElementById('wild-active-slot-label').textContent = `Слот #${activeSlot} (${Math.round(distance)} м)`;
 
     document.getElementById('modal-wild-inspect').classList.remove('hidden');
@@ -650,4 +658,11 @@ async function checkBattleEnd() {
 function closeBattleWindow() {
     stopTurnTimer();
     document.getElementById('modal-battle').classList.add('hidden');
+}
+
+function hideMapLoader() {
+    const loader = document.getElementById('map-loader');
+    if (!loader) return;
+    loader.classList.add('is-done');
+    setTimeout(() => loader.remove(), 400);
 }

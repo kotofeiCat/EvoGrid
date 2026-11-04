@@ -9,8 +9,35 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.addEventListener('hashchange', routeByHash);
     } catch {
         window.location.href = 'index.html';
+        return;
     }
+
+    // Свайп вниз закрывает досье, тап по затемнению — тоже
+    const detailModal = document.getElementById('modal-poke-details');
+    Gestures.enableSwipeToClose(detailModal, closeDetailModal);
+    detailModal.addEventListener('click', (e) => {
+        if (e.target === detailModal) closeDetailModal();
+    });
+
+    // Свайп влево/вправо — соседняя вкладка нижнего меню (Карта, Отряд, Покедекс, Профиль)
+    Gestures.enableTabSwipe(document.body, () => TAB_ORDER.indexOf(currentTab()), (index, direction) => {
+        const tab = TAB_ORDER[index];
+        if (tab === 'map') {
+            window.location.href = 'game.html';
+            return;
+        }
+        pendingSlide = direction;
+        window.location.hash = '#' + tab;
+    }, TAB_ORDER.length);
 });
+
+const TAB_ORDER = ['map', 'party', 'pokedex', 'profile'];
+let pendingSlide = null;
+
+function currentTab() {
+    const hash = (window.location.hash || '#profile').replace('#', '');
+    return ['profile', 'party', 'pokedex'].includes(hash) ? hash : 'profile';
+}
 
 function routeByHash() {
     const hash = (window.location.hash || '#profile').replace('#', '');
@@ -21,6 +48,15 @@ function routeByHash() {
     document.getElementById('view-pokedex').classList.toggle('hidden', validTab !== 'pokedex');
 
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock(validTab);
+
+    if (pendingSlide) {
+        const view = document.getElementById('view-' + validTab);
+        view.classList.remove('slide-from-left', 'slide-from-right');
+        void view.offsetWidth;
+        view.classList.add(pendingSlide === 'left' ? 'slide-from-right' : 'slide-from-left');
+        pendingSlide = null;
+        window.scrollTo({ top: 0 });
+    }
 }
 
 async function reloadProfileData() {
@@ -151,7 +187,6 @@ async function openDossierModal(pokeObj, isOwned) {
     document.getElementById('detail-poke-lore').textContent =
         species.description || 'Обитатель мира EvoGrid.';
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);
-    showSheet('detail-poke-sheet', pokeObj);
 
     const abilitiesListEl = document.getElementById('detail-poke-abilities-list');
     abilitiesListEl.innerHTML = `<div class="ability-loading">Загрузка способностей...</div>`;

@@ -12,6 +12,11 @@
 
 <div class="fullscreen-map-wrap">
     <div id="map"></div>
+
+    <div id="map-loader" class="map-loader" role="status">
+        <div class="loader"></div>
+        <span class="map-loader-text">Загружаем карту</span>
+    </div>
 </div>
 
 <!-- Кнопка «Где я» -->
@@ -30,7 +35,6 @@
             <div class="inspector-details">
                 <h2 id="wild-title">Дикий покемон</h2>
                 <div id="wild-lore" class="lore-box"></div>
-                <img id="wild-sheet" class="dossier-sheet hidden" alt="Концепт-арт покемона" loading="lazy">
                 <p class="active-slot-hint">
                     В бой вступит: <b id="wild-active-slot-label">Слот #1</b>
                 </p>
@@ -104,6 +108,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/pokemon-art.js"></script>
+<script src="js/gestures.js"></script>
 <script src="js/ui-components.js"></script>
 <script src="js/game.js"></script>
 </body>
