@@ -1,0 +1,9 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: inventory-service
+  # база, Eureka, логи, actuator и цены/стартовый набор приходят из Config Server
+  config:
+    import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"

@@ -32,7 +32,7 @@ jobs:
           cp docker-compose.yml Dockerfile .dockerignore deploy_pkg/
           cp -r init-scripts/* deploy_pkg/init-scripts/
 
-          for service in config-server discovery-server api-gateway user-service pokemon-service world-service battle-service; do
+          for service in config-server discovery-server api-gateway user-service pokemon-service world-service battle-service inventory-service; do
             mkdir -p "deploy_pkg/$service/target"
             cp "$service/target/$service-1.0.0.jar" "deploy_pkg/$service/target/"
           done
@@ -91,7 +91,7 @@ jobs:
             rm -f deploy.tar.gz
 
             # 2. Принудительно удаляем старые контейнеры, если они остались от прошлых запусков
-            docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service api-gateway evogrid-postgres 2>/dev/null || true
+            docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service inventory-service api-gateway evogrid-db-init evogrid-postgres 2>/dev/null || true
 
             # 3. Генерируем .env файл
             cat <<EOF > .env
@@ -102,6 +102,7 @@ jobs:
             POKEMON_DB_NAME=pokemon_db
             WORLD_DB_NAME=world_db
             BATTLE_DB_NAME=battle_db
+            INVENTORY_DB_NAME=inventory_db
             JWT_SECRET=EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!
             EOF
 
@@ -112,7 +113,7 @@ jobs:
             sleep 15
             docker compose up -d pokemon-service user-service
             sleep 10
-            docker compose up -d world-service battle-service api-gateway
+            docker compose up -d world-service battle-service inventory-service api-gateway
 
             docker image prune -f
             docker compose ps

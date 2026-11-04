@@ -1,6 +1,8 @@
 let profileData = null;
 let allSpecies = [];
 let inspectedPokemon = null;
+/** Сумка из inventory-service; null — сервис недоступен (профиль всё равно работает). */
+let bagData = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -19,11 +21,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (e.target === detailModal) closeDetailModal();
     });
 
-    // Свайп влево/вправо — соседняя вкладка нижнего меню (Карта, Отряд, Покедекс, Профиль)
+    // Свайп влево/вправо — соседняя вкладка нижнего меню (Карта, Отряд, Эводекс, Магазин, Профиль)
     Gestures.enableTabSwipe(document.body, () => TAB_ORDER.indexOf(currentTab()), (index, direction) => {
         const tab = TAB_ORDER[index];
-        if (tab === 'map') {
-            window.location.href = 'game.html';
+        if (tab === 'map' || tab === 'shop') {
+            window.location.href = tab === 'map' ? 'game.html' : 'shop.html';
             return;
         }
         pendingSlide = direction;
@@ -31,7 +33,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, TAB_ORDER.length);
 });
 
-const TAB_ORDER = ['map', 'party', 'pokedex', 'profile'];
+const TAB_ORDER = ['map', 'party', 'pokedex', 'shop', 'profile'];
 let pendingSlide = null;
 
 function currentTab() {
@@ -60,9 +62,10 @@ function routeByHash() {
 }
 
 async function reloadProfileData() {
-    [profileData, allSpecies] = await Promise.all([
+    [profileData, allSpecies, bagData] = await Promise.all([
         ApiService.getCurrentUser(),
-        ApiService.getAllSpecies()
+        ApiService.getAllSpecies(),
+        ApiService.getInventory().catch(() => null)
     ]);
 
     const xp = profileData.experience || 0;
@@ -79,7 +82,8 @@ async function reloadProfileData() {
     const xpBar = document.getElementById('prof-xp-bar');
     if (xpBar) xpBar.style.width = `${xpPercent}%`;
 
-    document.getElementById('prof-balls').textContent = profileData.pokeballs;
+    document.getElementById('prof-coins').textContent = bagData ? bagData.coins : '—';
+    renderProfileBag();
     document.getElementById('prof-total-count').textContent = (profileData.collection || []).length;
 
     renderPartySlots();
@@ -103,7 +107,8 @@ function renderPartySlots() {
                 <span class="slot-tag ${isMain ? 'active-tag' : ''}">
                     Слот #${slot} ${isMain ? '• Активен' : ''}
                 </span>
-                <div class="card-click-area">${UiComponents.createPokemonLandscapeCard(p, isMain)}</div>
+                <div class="card-click-area ${p.currentHp <= 0 ? 'is-fainted' : ''}">${UiComponents.createPokemonLandscapeCard(withHp(p), isMain)}</div>
+                ${renderHpLine(p)}
                 <div class="slot-actions-col">
                     <button class="uiv-btn ${isMain ? 'primary' : ''} btn-select-slot" style="width:100%" data-slot="${slot}">
                         <span class="button_top">${isMain ? 'Активный боец' : 'Сделать основным'}</span>
@@ -116,8 +121,12 @@ function renderPartySlots() {
             pillar.querySelector('.card-click-area').onclick = () => openDossierModal(p, true);
             pillar.querySelector('.btn-inspect-abilities').onclick = () => openDossierModal(p, true);
             pillar.querySelector('.btn-select-slot').onclick = async () => {
-                profileData = await ApiService.selectActiveSlot(slot);
-                renderPartySlots();
+                try {
+                    profileData = await ApiService.selectActiveSlot(slot);
+                    renderPartySlots();
+                } catch (err) {
+                    UiComponents.showErrorAlert('Не получилось', err.message);
+                }
             };
         } else {
             pillar.innerHTML = `
@@ -129,7 +138,7 @@ function renderPartySlots() {
                         <line x1="8" y1="12" x2="16" y2="12"/>
                     </svg>
                     <span>Слот свободен</span>
-                    <small>Выберите покемона из коллекции ниже</small>
+                    <small>Выберите эвона из коллекции ниже</small>
                 </div>
             `;
         }
@@ -141,13 +150,14 @@ function renderOwnedCollection() {
     const colContainer = document.getElementById('owned-collection-row');
     colContainer.innerHTML = '';
     if (!(profileData.collection || []).length) {
-        colContainer.innerHTML = '<div class="empty-hint">Пока никого не поймано. Открой карту и подойди к дикому покемону ближе чем на 70 м.</div>';
+        colContainer.innerHTML = '<div class="empty-hint">Пока никого не поймано. Открой карту и подойди к дикому эвону ближе чем на 70 м.</div>';
         return;
     }
     (profileData.collection || []).forEach(p => {
         const wrapper = document.createElement('div');
         wrapper.className = 'grid-card-item';
-        wrapper.innerHTML = UiComponents.createPokemonLandscapeCard(p, Boolean(p.partySlot));
+        wrapper.className = `grid-card-item ${p.currentHp <= 0 ? 'is-fainted' : ''}`;
+        wrapper.innerHTML = UiComponents.createPokemonLandscapeCard(withHp(p), Boolean(p.partySlot));
         wrapper.onclick = () => openDossierModal(p, true);
         colContainer.appendChild(wrapper);
     });
@@ -182,7 +192,9 @@ async function openDossierModal(pokeObj, isOwned) {
     const speciesId = pokeObj.speciesId ?? pokeObj.id;
     const species = allSpecies.find(s => s.id === speciesId) || pokeObj;
 
-    document.getElementById('detail-card-box').innerHTML = UiComponents.createPokemonLandscapeCard(pokeObj);
+    document.getElementById('detail-card-box').innerHTML =
+        UiComponents.createPokemonLandscapeCard(isOwned ? withHp(pokeObj) : pokeObj);
+    renderHealSection(isOwned ? pokeObj : null);
     document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.archetype}`;
     document.getElementById('detail-poke-lore').textContent =
         species.description || 'Обитатель мира EvoGrid.';
@@ -193,7 +205,7 @@ async function openDossierModal(pokeObj, isOwned) {
     document.getElementById('modal-poke-details').classList.remove('hidden');
 
     try {
-        const abilities = await ApiService.getPokemonAbilities(speciesId, pokeObj.name);
+        const abilities = await ApiService.getPokemonAbilities(speciesId);
         abilitiesListEl.innerHTML = abilities.map(ab => {
             const cdText = ab.maxCooldown > 0 ? `КД ${ab.maxCooldown}` : 'Без КД';
             return `
@@ -216,11 +228,113 @@ async function openDossierModal(pokeObj, isOwned) {
 
 async function assignToSlot(slotNumber) {
     if (!inspectedPokemon) return;
-    await ApiService.assignPartySlot(profileData.id, slotNumber, inspectedPokemon.id);
-    closeDetailModal();
-    await reloadProfileData();
+    try {
+        await ApiService.assignPartySlot(slotNumber, inspectedPokemon.id);
+        closeDetailModal();
+        await reloadProfileData();
+    } catch (err) {
+        UiComponents.showErrorAlert('Не получилось', err.message);
+    }
+}
+
+// ==================== ЗДОРОВЬЕ И СУМКА ====================
+
+/** Для карточки: в плашке HP показываем текущее здоровье «42/70». */
+function withHp(p) {
+    return { ...p, maxHp: `${p.currentHp}/${p.maxHp}` };
+}
+
+function hpClass(p) {
+    const pct = p.maxHp > 0 ? (p.currentHp / p.maxHp) * 100 : 0;
+    return pct <= 25 ? 'low' : (pct <= 55 ? 'mid' : '');
+}
+
+function renderHpLine(p) {
+    const pct = p.maxHp > 0 ? Math.round((p.currentHp / p.maxHp) * 100) : 0;
+    const label = p.currentHp <= 0 ? 'Без сил' : `${p.currentHp}/${p.maxHp} HP`;
+    return `
+        <div class="slot-hp-line">
+            <div class="hp-bar"><div class="hp-bar-fill ${hpClass(p)}" style="width:${pct}%"></div></div>
+            <span>${label}</span>
+        </div>`;
+}
+
+function renderProfileBag() {
+    const box = document.getElementById('profile-bag');
+    if (!bagData) {
+        box.innerHTML = '<div class="empty-hint">Сумка временно недоступна.</div>';
+        return;
+    }
+    if (!bagData.items.length) {
+        box.innerHTML = '<div class="empty-hint">Сумка пуста. Загляните в магазин.</div>';
+        return;
+    }
+    box.innerHTML = bagData.items.map(({ item, quantity }) => `
+        <div class="bag-item static">
+            ${ItemArt.icon(item)}
+            <span class="bag-item-body">
+                <span class="bag-item-name">${item.name}</span>
+                <span class="bag-item-desc">${item.description || ''}</span>
+            </span>
+            <span class="bag-item-qty">×${quantity}</span>
+        </div>`).join('');
+}
+
+/** В досье своего эвона: полоска здоровья и лечилки из сумки, которые к нему подходят. */
+function renderHealSection(owned) {
+    const wrap = document.getElementById('detail-heal-wrap');
+    wrap.classList.toggle('hidden', !owned);
+    if (!owned) return;
+
+    const pct = owned.maxHp > 0 ? (owned.currentHp / owned.maxHp) * 100 : 0;
+    const fill = document.getElementById('detail-hp-fill');
+    fill.style.width = `${pct}%`;
+    fill.className = `hp-bar-fill ${hpClass(owned)}`;
+    document.getElementById('detail-hp-text').textContent =
+        owned.currentHp <= 0 ? 'Без сил' : `${owned.currentHp}/${owned.maxHp} HP`;
+
+    const list = document.getElementById('detail-heal-items');
+    const fainted = owned.currentHp <= 0;
+    const full = owned.currentHp >= owned.maxHp;
+    if (full) {
+        list.innerHTML = '<div class="bag-panel-hint">Полностью здоров.</div>';
+        return;
+    }
+    const usable = (bagData?.items || []).filter(({ item }) =>
+        fainted ? item.kind === 'REVIVE' : item.kind === 'HEAL');
+    if (!usable.length) {
+        list.innerHTML = `<div class="bag-panel-hint">${fainted
+            ? 'Нужна «Искра жизни» — она есть в магазине. Или подождите: силы возвращаются сами примерно за полчаса.'
+            : 'Лечилок нет. Здоровье восстанавливается само со временем или купите настой в магазине.'}</div>`;
+        return;
+    }
+    list.innerHTML = usable.map(({ item, quantity }) => `
+        <button type="button" class="bag-item" onclick="healInspected('${item.code}')">
+            ${ItemArt.icon(item)}
+            <span class="bag-item-body">
+                <span class="bag-item-name">${item.name}</span>
+                <span class="bag-item-desc">${item.description || ''}</span>
+            </span>
+            <span class="bag-item-qty">×${quantity}</span>
+        </button>`).join('');
+}
+
+async function healInspected(itemCode) {
+    if (!inspectedPokemon) return;
+    try {
+        await ApiService.useItemOnPokemon(inspectedPokemon.id, itemCode);
+        await reloadProfileData();
+        const updated = (profileData.collection || []).find(p => p.id === inspectedPokemon.id);
+        if (updated) {
+            inspectedPokemon = updated;
+            document.getElementById('detail-card-box').innerHTML = UiComponents.createPokemonLandscapeCard(withHp(updated));
+            renderHealSection(updated);
+        }
+    } catch (err) {
+        UiComponents.showErrorAlert('Не получилось', err.message);
+    }
 }
 
 function closeDetailModal() {
     document.getElementById('modal-poke-details').classList.add('hidden');
-}
+}

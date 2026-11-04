@@ -11,36 +11,116 @@ yandex:
 spring:
   application:
     name: api-gateway
+  # Eureka, логи и actuator приходят из Config Server
   config:
-    import: "optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
+    import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
+  # traceId из Micrometer Tracing попадает в логи реактивного шлюза
+  reactor:
+    context-propagation: auto
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOriginPatterns: "*"
-            allowCredentials: true
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
       routes:
+        # ---------- API сервисов, у каждого свой Circuit Breaker ----------
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user-service
         - id: pokemon-service
           uri: lb://pokemon-service
           predicates:
             - Path=/api/pokemons/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: pokemonServiceCB
+                fallbackUri: forward:/fallback/pokemon-service
         - id: world-service
           uri: lb://world-service
           predicates:
             - Path=/api/world/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: worldServiceCB
+                fallbackUri: forward:/fallback/world-service
         - id: battle-service
           uri: lb://battle-service
           predicates:
             - Path=/api/battles/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: battleServiceCB
+                fallbackUri: forward:/fallback/battle-service
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/shop/**,/api/inventory/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: inventoryServiceCB
+                fallbackUri: forward:/fallback/inventory-service
+
+        # ---------- Документация OpenAPI каждого сервиса для общего Swagger UI ----------
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/api-docs/user-service
+          filters:
+            - SetPath=/v3/api-docs
+        - id: pokemon-service-docs
+          uri: lb://pokemon-service
+          predicates:
+            - Path=/api-docs/pokemon-service
+          filters:
+            - SetPath=/v3/api-docs
+        - id: world-service-docs
+          uri: lb://world-service
+          predicates:
+            - Path=/api-docs/world-service
+          filters:
+            - SetPath=/v3/api-docs
+        - id: battle-service-docs
+          uri: lb://battle-service
+          predicates:
+            - Path=/api-docs/battle-service
+          filters:
+            - SetPath=/v3/api-docs
+        - id: inventory-service-docs
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api-docs/inventory-service
+          filters:
+            - SetPath=/v3/api-docs
+
+# Общий Swagger UI: http://<сайт>/swagger-ui.html, сервис выбирается в списке справа сверху
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /api-docs/user-service
+      - name: pokemon-service
+        url: /api-docs/pokemon-service
+      - name: world-service
+        url: /api-docs/world-service
+      - name: battle-service
+        url: /api-docs/battle-service
+      - name: inventory-service
+        url: /api-docs/inventory-service
+
+# Circuit Breaker: общие настройки (3 ошибки из 5 — размыкание на 15 с) приходят из Config Server
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        # по умолчанию 1 секунда — слишком мало для первого запроса к «холодному» сервису
+        timeoutDuration: 15s

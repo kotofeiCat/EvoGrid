@@ -1,10 +1,10 @@
 package com.EvoGrid.gateway;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -21,12 +21,19 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * Проверяет JWT на всех запросах к /api/** (кроме входа и регистрации)
+ * и передаёт сервисам ID игрока в заголовке X-User-Id.
+ * Заголовок от клиента всегда удаляется — подделать его нельзя.
+ */
+@Slf4j
 @Component
 public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthGatewayFilter.class);
-    private static final String JWT_COOKIE_NAME = "evogrid_jwt";
+    static final String USER_ID_HEADER = "X-User-Id";
+    private static final String JWT_COOKIE = "evogrid_jwt";
 
+    /** Адреса, доступные без входа. */
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/users/login",
             "/api/users/register",
@@ -38,57 +45,58 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
 
     private final SecretKey secretKey;
 
-    public JwtAuthGatewayFilter(
-            @Value("${jwt.secret}") String secret) {
+    public JwtAuthGatewayFilter(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String path = exchange.getRequest().getURI().getPath();
+        ServerHttpRequest request = exchange.getRequest().mutate()
+                .headers(headers -> headers.remove(USER_ID_HEADER))
+                .build();
+        String path = request.getURI().getPath();
 
         if (!path.startsWith("/api/") || PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(request).build());
         }
 
-        String token = extractToken(exchange.getRequest());
+        Long userId = authenticate(request);
+        if (userId == null) {
+            log.warn("Запрос без действующего токена отклонён: {}", path);
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
+        ServerHttpRequest withUser = request.mutate()
+                .header(USER_ID_HEADER, String.valueOf(userId))
+                .build();
+        return chain.filter(exchange.mutate().request(withUser).build());
+    }
+
+    /** ID игрока из токена или null, если токена нет или он недействителен. */
+    private Long authenticate(ServerHttpRequest request) {
+        String token = extractToken(request);
         if (token == null) {
-            log.warn("Запрос без JWT-токена отклонён: {}", path);
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return null;
         }
-
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-
-            String userId = String.valueOf(claims.get("userId"));
-            String email = claims.getSubject();
-
-            ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                    .header("X-User-Id", userId)
-                    .header("X-User-Email", email)
-                    .build();
-
-            return chain.filter(exchange.mutate().request(mutatedRequest).build());
-        } catch (Exception e) {
-            log.warn("Невалидный JWT-токен: {}", e.getMessage());
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            Claims claims = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+            Number userId = claims.get("userId", Number.class);
+            return userId == null ? null : userId.longValue();
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Недействительный JWT: {}", e.getMessage());
+            return null;
         }
     }
 
-    private String extractToken(ServerHttpRequest request) {
-        HttpCookie cookie = request.getCookies().getFirst(JWT_COOKIE_NAME);
+    private static String extractToken(ServerHttpRequest request) {
+        HttpCookie cookie = request.getCookies().getFirst(JWT_COOKIE);
         if (cookie != null && !cookie.getValue().isBlank()) {
             return cookie.getValue();
         }
-        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+        String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
         }
         return null;
     }

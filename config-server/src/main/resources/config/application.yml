@@ -1,3 +1,22 @@
+# ============================================================
+#  Общие настройки, которые Config Server раздаёт всем сервисам
+# ============================================================
+
+spring:
+  # Сообщения валидации (@Min, @NotNull …) всегда на русском, независимо от языка браузера
+  web:
+    locale: ru
+    locale-resolver: fixed
+  # Подключение к PostgreSQL. Имя базы у каждого сервиса своё: DB_NAME из docker-compose
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
 eureka:
   client:
     service-url:
@@ -5,17 +24,39 @@ eureka:
   instance:
     prefer-ip-address: true
 
+server:
+  # учитывать X-Forwarded-* от шлюза: Swagger строит ссылки на адрес шлюза
+  forward-headers-strategy: framework
+
+# Мониторинг: /actuator/health, /actuator/metrics, /actuator/circuitbreakers
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,circuitbreakers
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
   endpoint:
     health:
       show-details: always
   health:
     circuitbreakers:
       enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+# Circuit Breaker для всех вызовов между сервисами:
+# 3 ошибки из 5 запросов — автомат размыкается на 15 секунд, потом пробует снова
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
 
 springdoc:
   api-docs:
@@ -25,4 +66,7 @@ springdoc:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-no-trace}] %logger{36} - %msg%n"
+    # [сервис,traceId,spanId] — один traceId у запроса во всех сервисах
+    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name:-},%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+  level:
+    com.EvoGrid: INFO

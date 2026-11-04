@@ -1,35 +1,19 @@
 server:
   port: 8083
-  error:
-    include-message: always
 
 spring:
   application:
     name: battle-service
+  # база, Eureka, логи, actuator, Circuit Breaker и настройки боя приходят из Config Server
   config:
-    import: "optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:battle_db}
-    driver-class-name: org.postgresql.Driver
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
 
+# Ответы «не найдено» и «уже занято» — это не поломка сервиса, автомат из-за них не размыкается
 resilience4j:
   circuitbreaker:
-    instances:
-      worldService:
-        slidingWindowSize: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-      userService:
-        slidingWindowSize: 5
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-battle:
-  turn-seconds: 30
+    configs:
+      default:
+        ignoreExceptions:
+          - feign.FeignException$NotFound
+          - feign.FeignException$Conflict
+          - org.springframework.web.server.ResponseStatusException

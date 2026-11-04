@@ -76,7 +76,7 @@ const UiComponents = {
                     <span class="hp-pill">${hp} HP</span>
                 </div>
 
-                <!-- Название покемона и класс снизу пейзажа -->
+                <!-- Название эвона и класс снизу пейзажа -->
                 <div class="card-hero-title">
                     <div class="poke-name-line">${poke.name}</div>
                     <div class="poke-arch-line">${poke.archetype || 'Базовый вид'}</div>
@@ -121,10 +121,16 @@ const UiComponents = {
                     <div class="tooltip">Отряд</div>
                 </li>
                 <li class="icon-content">
-                    <a href="profile.html#pokedex" data-social="dribbble" class="link ${activeTab === 'pokedex' ? 'active-nav' : ''}" aria-label="Покедекс">
+                    <a href="profile.html#pokedex" data-social="dribbble" class="link ${activeTab === 'pokedex' ? 'active-nav' : ''}" aria-label="Эводекс">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     </a>
-                    <div class="tooltip">Покедекс</div>
+                    <div class="tooltip">Эводекс</div>
+                </li>
+                <li class="icon-content">
+                    <a href="shop.html" data-social="shop" class="link ${activeTab === 'shop' ? 'active-nav' : ''}" aria-label="Магазин">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </a>
+                    <div class="tooltip">Магазин</div>
                 </li>
                 <li class="icon-content">
                     <a href="profile.html#profile" data-social="telegram" class="link ${activeTab === 'profile' ? 'active-nav' : ''}" aria-label="Профиль">
@@ -135,4 +141,4 @@ const UiComponents = {
             </ul>
         </nav>`;
     }
-};
+};

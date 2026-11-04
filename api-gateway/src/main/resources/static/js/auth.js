@@ -136,4 +136,4 @@ async function finishRegistration(lat, lon) {
         document.getElementById('step-geo').classList.add('hidden');
         document.getElementById('step-auth').classList.remove('hidden');
     }
-}
+}

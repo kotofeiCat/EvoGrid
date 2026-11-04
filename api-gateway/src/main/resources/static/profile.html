@@ -45,11 +45,11 @@
             </div>
             <div class="metric-tile">
                 <div class="metric-icon-box rose">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.6-.9-1.6-1.5-2.8-1.5-1.7 0-2.9 1-2.9 2.2 0 2.9 6 1.6 6 4.6 0 1.3-1.3 2.2-3.1 2.2-1.3 0-2.4-.6-3-1.5"/><path d="M12 6v12"/></svg>
                 </div>
                 <div class="metric-info">
-                    <span class="metric-label">Покеболы</span>
-                    <div class="metric-value" id="prof-balls">15</div>
+                    <span class="metric-label">Монеты</span>
+                    <div class="metric-value" id="prof-coins">—</div>
                 </div>
             </div>
             <div class="metric-tile">
@@ -63,6 +63,13 @@
             </div>
         </div>
 
+        <div class="section-header left-align section-gap">
+            <h2>Сумка</h2>
+            <p>Лечилки и «Искру жизни» применяйте из карточки эвона во вкладке «Отряд» или прямо в бою</p>
+        </div>
+        <div id="profile-bag" class="bag-list bag-list-wide"></div>
+        <a href="shop.html" class="uiv-btn primary bag-shop-link"><span class="button_top">В магазин</span></a>
+
         <div class="profile-footer">
             <button type="button" class="logout-link" onclick="ApiService.logout()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
@@ -75,21 +82,21 @@
     <section id="view-party" class="view-section hidden">
         <div class="section-header left-align">
             <h2>Боевой отряд</h2>
-            <p>Выберите активного бойца или нажмите на карточку покемона, чтобы изучить его способности</p>
+            <p>В бой выходит активный боец, остальные ждут в запасе — их можно выпустить по ходу боя. Нажмите на карточку, чтобы изучить способности или вылечить эвона</p>
         </div>
         <div id="party-slots-row" class="party-grid"></div>
 
         <div class="section-header left-align section-gap">
-            <h2>Пойманные покемоны</h2>
-            <p>Нажмите на любого пойманного покемона, чтобы почитать его способности и назначить в слот 1, 2 или 3</p>
+            <h2>Пойманные эвоны</h2>
+            <p>Нажмите на любого пойманного эвона, чтобы почитать его способности и назначить в слот 1, 2 или 3</p>
         </div>
         <div id="owned-collection-row" class="cards-grid"></div>
     </section>
 
-    <!-- ВКЛАДКА 3: ПОКЕДЕКС -->
+    <!-- ВКЛАДКА 3: ЭВОДЕКС -->
     <section id="view-pokedex" class="view-section hidden">
         <div class="section-header left-align">
-            <h2>Покедекс</h2>
+            <h2>Эводекс</h2>
             <p>Полный каталог видов EvoGrid и их боевых характеристик</p>
         </div>
         <div id="pokedex-catalog-row" class="cards-grid"></div>
@@ -105,10 +112,20 @@
         <div class="inspector-layout">
             <div id="detail-card-box"></div>
             <div class="inspector-details">
-                <h2 id="detail-poke-name">Покемон</h2>
+                <h2 id="detail-poke-name">Эвон</h2>
                 <div id="detail-poke-lore" class="lore-box"></div>
 
-                <!-- Способности пойманного покемона -->
+                <!-- Здоровье и лечение пойманного эвона -->
+                <div id="detail-heal-wrap" class="hidden">
+                    <div class="abilities-section-title">Здоровье</div>
+                    <div class="detail-hp-row">
+                        <div class="hp-bar"><div id="detail-hp-fill" class="hp-bar-fill"></div></div>
+                        <span id="detail-hp-text" class="detail-hp-text"></span>
+                    </div>
+                    <div id="detail-heal-items" class="bag-list"></div>
+                </div>
+
+                <!-- Способности эвона -->
                 <div id="detail-poke-abilities-wrap">
                     <div class="abilities-section-title">Боевые способности</div>
                     <div id="detail-poke-abilities-list" class="dossier-abilities-grid"></div>
@@ -133,8 +150,9 @@
 
 <script src="js/api.js"></script>
 <script src="js/pokemon-art.js"></script>
+<script src="js/item-art.js"></script>
 <script src="js/gestures.js"></script>
 <script src="js/ui-components.js"></script>
 <script src="js/profile.js"></script>
 </body>
-</html>
+</html>

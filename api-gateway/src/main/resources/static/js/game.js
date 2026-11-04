@@ -18,7 +18,7 @@ let lastGpsFixTime = 0;
 let watchId = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // Свайп вниз закрывает карточку дикого покемона, тап по затемнению — тоже
+    // Свайп вниз закрывает карточку дикого эвона, тап по затемнению — тоже
     const wildModal = document.getElementById('modal-wild-inspect');
     Gestures.enableSwipeToClose(wildModal, closeWildModal);
     wildModal.addEventListener('click', (e) => {
@@ -46,11 +46,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     lastServerSyncTime = Date.now();
     lastGpsFixTime = Date.now();
 
-    // 2. ЗАГРУЗКА СПРАВОЧНИКА ПОКЕМОНОВ
+    // 2. ЗАГРУЗКА СПРАВОЧНИКА ЭВОНОВ
     try {
         speciesCatalog = await ApiService.getAllSpecies();
     } catch (e) {
-        console.error('Не удалось загрузить каталог покемонов:', e);
+        console.error('Не удалось загрузить каталог эвонов:', e);
         speciesCatalog = [];
     }
 
@@ -202,7 +202,7 @@ async function moveTrainerTo(rawLat, rawLon, isManualClick = false) {
         lastServerSyncLon = nextLon;
         lastServerSyncTime = now;
 
-        ApiService.updateLocation(currentUser.id, nextLat, nextLon).catch(() => {});
+        ApiService.updateLocation(nextLat, nextLon).catch(() => {});
         await loadNearbySpawns(nextLat, nextLon);
     }
 }
@@ -350,7 +350,7 @@ function tryInspectWildPokemon(spawn) {
     if (distance > CATCH_RADIUS_METERS) {
         UiComponents.showErrorAlert(
             'Слишком далеко',
-            `До покемона ${spawn.name} сейчас ${Math.round(distance)} м (нужно не более ${CATCH_RADIUS_METERS} м).`
+            `До эвона ${spawn.name} сейчас ${Math.round(distance)} м (нужно не более ${CATCH_RADIUS_METERS} м).`
         );
         return;
     }
@@ -375,11 +375,12 @@ async function confirmStartBattle() {
     closeWildModal();
     try {
         currentBattle = await ApiService.startBattle(
-            currentUser.id,
             selectedWildSpawn.spawnId,
             currentUser.activePartySlot || 1
         );
         lastHp = null;
+        closeBattleBag();
+        await refreshBattleBag();
         renderBattleState();
         document.getElementById('modal-battle').classList.remove('hidden');
     } catch (err) {
@@ -391,9 +392,9 @@ async function confirmStartBattle() {
 
 const BATTLE_STATUS_TEXT = {
     IN_PROGRESS: null,
-    WON_BY_KO: { title: 'Победа!', text: 'Дикий покемон повержен.', kind: 'win' },
-    CAPTURED: { title: 'Пойман!', text: 'Покемон добавлен в коллекцию.', kind: 'win' },
-    LOST: { title: 'Поражение', text: 'Ваш покемон без сил. Попробуйте другим бойцом.', kind: 'lose' }
+    WON_BY_KO: { title: 'Победа!', text: 'Дикий эвон повержен.', kind: 'win' },
+    CAPTURED: { title: 'Пойман!', text: 'Эвон добавлен в коллекцию.', kind: 'win' },
+    LOST: { title: 'Поражение', text: 'Весь отряд без сил. Вылечите эвонов в сумке или подождите — силы возвращаются со временем.', kind: 'lose' }
 };
 
 let battleBusy = false;
@@ -401,6 +402,12 @@ let turnTimerId = null;
 let turnDeadlineMs = 0;
 let turnTotalSec = 30;
 let lastHp = null;
+/** Сумка игрока (inventory-service): монеты и предметы. null — сумка недоступна. */
+let battleBag = null;
+/** Какую часть сумки показываем в бою: CAPTURE (сферы) или HEAL (лечилки и оживление). */
+let battleBagMode = null;
+/** Выбранная лечилка, ждём выбора бойца. */
+let pendingItem = null;
 
 function renderStatusBadges(statuses = []) {
     if (!statuses || statuses.length === 0) {
@@ -513,10 +520,14 @@ function renderBattleState() {
     setHpBar('battle-player-hp', b.playerCurrentHp, b.playerMaxHp);
     setHpBar('battle-enemy-hp', b.enemyCurrentHp, b.enemyMaxHp);
     if (lastHp) {
-        flashHit('battle-player-card', b.playerCurrentHp - lastHp.player);
+        if (lastHp.activeIndex === b.activeIndex) {
+            flashHit('battle-player-card', b.playerCurrentHp - lastHp.player);
+        }
         flashHit('battle-enemy-card', b.enemyCurrentHp - lastHp.enemy);
     }
-    lastHp = { player: b.playerCurrentHp, enemy: b.enemyCurrentHp };
+    lastHp = { player: b.playerCurrentHp, enemy: b.enemyCurrentHp, activeIndex: b.activeIndex };
+
+    renderTeamStrip(b, isOver);
 
     document.getElementById('battle-player-statuses').innerHTML = renderStatusBadges(b.playerActiveStatuses);
     document.getElementById('battle-enemy-statuses').innerHTML = renderStatusBadges(b.enemyActiveStatuses);
@@ -548,16 +559,21 @@ function renderBattleState() {
     if (skip) {
         const asleep = (b.playerActiveStatuses || []).some(s => /сон/i.test(s));
         document.getElementById('battle-skip-text').textContent =
-            `${b.playerPokemonName} ${asleep ? 'спит' : 'оглушён'} и пропускает этот ход.`;
+            `${b.playerPokemonName} ${asleep ? 'спит' : 'оглушён'} и не может атаковать. Смените бойца, примените предмет или пропустите ход.`;
     }
 
     document.getElementById('battle-abilities-wrap').classList.toggle('hidden', isOver);
     renderAbilitiesGrid(b.playerAbilities, isOver || skip || battleBusy);
 
-    const catchBtn = document.getElementById('btn-do-catch');
-    if (catchBtn) {
-        catchBtn.disabled = isOver || battleBusy;
-        catchBtn.classList.toggle('hidden', isOver);
+    ['btn-open-spheres', 'btn-open-items'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.disabled = isOver || battleBusy;
+        btn.classList.toggle('hidden', isOver);
+    });
+    if (isOver) {
+        closeBattleBag();
+    } else if (battleBagMode) {
+        renderBattleBag();
     }
 
     startTurnTimer(isOver ? 0 : b.turnSecondsLeft, b.turnSecondsTotal || 30);
@@ -638,8 +654,147 @@ function skipTurn() {
     return runBattleAction(() => ApiService.battleTimeout(currentBattle.battleId));
 }
 
-function doCatch() {
-    return runBattleAction(() => ApiService.catchPokemon(currentBattle.battleId));
+function doSwitch(index) {
+    if (!currentBattle || currentBattle.status !== 'IN_PROGRESS') return;
+    const fighter = (currentBattle.team || [])[index];
+    if (!fighter || fighter.active || fighter.fainted) return;
+    closeBattleBag();
+    return runBattleAction(() => ApiService.switchFighter(currentBattle.battleId, index));
+}
+
+async function throwSphere(code) {
+    closeBattleBag();
+    await runBattleAction(() => ApiService.throwSphere(currentBattle.battleId, code));
+    await refreshBattleBag();
+}
+
+async function applyItem(code, targetIndex) {
+    closeBattleBag();
+    await runBattleAction(() => ApiService.useBattleItem(currentBattle.battleId, code, targetIndex));
+    await refreshBattleBag();
+}
+
+// ==================== ОТРЯД В БОЮ ====================
+
+function renderTeamStrip(b, isOver) {
+    const strip = document.getElementById('battle-team');
+    const team = b.team || [];
+    strip.innerHTML = team.map(f => {
+        const pct = f.maxHp > 0 ? Math.round((f.currentHp / f.maxHp) * 100) : 0;
+        const hpCls = pct <= 25 ? 'low' : (pct <= 55 ? 'mid' : '');
+        const selectable = pendingItem && canUseItemOn(pendingItem, f);
+        const canSwitch = !isOver && !battleBusy && !f.active && !f.fainted && !pendingItem;
+        const clickable = selectable || canSwitch;
+        const state = f.active ? 'на поле' : (f.fainted ? 'без сил' : 'в запасе');
+        const action = selectable ? `applyItem('${pendingItem.code}', ${f.index})` : `doSwitch(${f.index})`;
+        return `
+            <button type="button" class="team-chip ${f.active ? 'active' : ''} ${f.fainted ? 'fainted' : ''} ${selectable ? 'target' : ''}"
+                    ${clickable ? '' : 'disabled'} onclick="${action}">
+                <span class="team-chip-icon">${renderGoogleIcon(f.element)}</span>
+                <span class="team-chip-body">
+                    <span class="team-chip-name">${escapeHtml(f.name)}</span>
+                    <span class="team-chip-state">${state} · ${f.currentHp}/${f.maxHp}</span>
+                    <span class="team-chip-hp"><span class="hp-bar-fill ${hpCls}" style="width:${pct}%"></span></span>
+                </span>
+            </button>`;
+    }).join('');
+}
+
+// ==================== СУМКА В БОЮ ====================
+
+async function refreshBattleBag() {
+    try {
+        battleBag = await ApiService.getInventory();
+    } catch {
+        battleBag = null;
+    }
+}
+
+function openBattleBag(mode) {
+    if (!currentBattle || currentBattle.status !== 'IN_PROGRESS' || battleBusy) return;
+    if (battleBagMode === mode) {
+        closeBattleBag();
+        return;
+    }
+    battleBagMode = mode;
+    pendingItem = null;
+    document.getElementById('battle-bag-panel').classList.remove('hidden');
+    renderBattleBag();
+    renderTeamStrip(currentBattle, false);
+}
+
+function closeBattleBag() {
+    battleBagMode = null;
+    pendingItem = null;
+    document.getElementById('battle-bag-panel').classList.add('hidden');
+    if (currentBattle) renderTeamStrip(currentBattle, currentBattle.status !== 'IN_PROGRESS');
+}
+
+function canUseItemOn(item, fighter) {
+    if (item.kind === 'REVIVE') return fighter.fainted;
+    if (item.kind === 'HEAL') return !fighter.fainted && (fighter.currentHp < fighter.maxHp || item.fullHeal);
+    return false;
+}
+
+function renderBattleBag() {
+    const capture = battleBagMode === 'CAPTURE';
+    document.getElementById('battle-bag-title').textContent = capture ? 'Чем ловить' : 'Лечение и оживление';
+    const hint = document.getElementById('battle-bag-hint');
+    const list = document.getElementById('battle-bag-list');
+
+    if (!battleBag) {
+        hint.textContent = 'Сумка сейчас недоступна — можно сражаться способностями.';
+        list.innerHTML = `<button type="button" class="uiv-btn" onclick="refreshBattleBag().then(renderBattleBag)"><span class="button_top">Повторить</span></button>`;
+        return;
+    }
+
+    const slots = (battleBag.items || []).filter(s =>
+        capture ? s.item.kind === 'CAPTURE' : s.item.kind !== 'CAPTURE');
+
+    if (pendingItem) {
+        hint.textContent = `«${pendingItem.name}»: выберите бойца в отряде выше.`;
+    } else if (slots.length === 0) {
+        hint.innerHTML = capture
+            ? 'Сфер нет. Купите их в <a href="shop.html">магазине</a>.'
+            : 'Лечилок нет. Купите их в <a href="shop.html">магазине</a>.';
+    } else {
+        hint.textContent = capture
+            ? 'Шанс выше, если у противника мало здоровья. Бросок тратит ход.'
+            : 'Выберите предмет, затем бойца. Применение тратит ход.';
+    }
+
+    list.innerHTML = slots.map(({ item, quantity }) => {
+        const chosen = pendingItem && pendingItem.code === item.code;
+        const onclick = capture ? `throwSphere('${item.code}')` : `chooseItem('${item.code}')`;
+        return `
+            <button type="button" class="bag-item ${chosen ? 'chosen' : ''}" onclick="${onclick}" ${battleBusy ? 'disabled' : ''}>
+                ${ItemArt.icon(item)}
+                <span class="bag-item-body">
+                    <span class="bag-item-name">${escapeHtml(item.name)}</span>
+                    <span class="bag-item-desc">${escapeHtml(item.description || '')}</span>
+                </span>
+                <span class="bag-item-qty">×${quantity}</span>
+            </button>`;
+    }).join('');
+}
+
+function chooseItem(code) {
+    const slot = (battleBag?.items || []).find(s => s.item.code === code);
+    if (!slot) return;
+    pendingItem = slot.item;
+    const targets = (currentBattle.team || []).filter(f => canUseItemOn(pendingItem, f));
+    if (targets.length === 0) {
+        UiComponents.showErrorAlert('Не на кого применить',
+            pendingItem.kind === 'REVIVE' ? 'В отряде нет бойцов без сил.' : 'Все живые бойцы полностью здоровы.');
+        pendingItem = null;
+        return;
+    }
+    if (targets.length === 1) {
+        applyItem(code, targets[0].index);
+        return;
+    }
+    renderBattleBag();
+    renderTeamStrip(currentBattle, false);
 }
 
 async function checkBattleEnd() {

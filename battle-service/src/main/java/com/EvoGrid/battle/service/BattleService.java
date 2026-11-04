@@ -1,302 +1,331 @@
 package com.EvoGrid.battle.service;
 
-import com.EvoGrid.battle.client.UserClient;
-import com.EvoGrid.battle.client.WorldClient;
-import com.EvoGrid.battle.dto.*;
-import com.EvoGrid.battle.model.BattleSession;
-import com.EvoGrid.battle.model.BattleStatus;
-import com.EvoGrid.battle.model.Combatant;
-import com.EvoGrid.battle.repository.BattleSessionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import com.EvoGrid.battle.engine.BattleEngine;
+import com.EvoGrid.battle.engine.CatchRules;
+import com.EvoGrid.battle.engine.Combatant;
+import com.EvoGrid.battle.engine.EnemyAi;
+import com.EvoGrid.battle.remote.AbilityBook;
+import com.EvoGrid.battle.remote.Bag;
+import com.EvoGrid.battle.remote.Players;
+import com.EvoGrid.battle.remote.Spawns;
+import com.EvoGrid.battle.session.BattleSession;
+import com.EvoGrid.battle.session.BattleSessionRepository;
+import com.EvoGrid.battle.session.BattleStatus;
+import com.EvoGrid.battle.web.BattleStateDto;
+import com.EvoGrid.common.dto.AbilityDto;
+import com.EvoGrid.common.dto.ItemDto;
+import com.EvoGrid.common.dto.OwnedPokemonDto;
+import com.EvoGrid.common.dto.UserProfileDto;
+import com.EvoGrid.common.dto.WorldSpawnDto;
+import com.EvoGrid.common.game.ItemKind;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Сценарии боя: начать, сходить способностью, бросить покебол, истечение времени хода.
- * Сами правила — в {@link BattleEngine}, выбор врага — в {@link EnemyAi}.
+ * Сценарии боя: начать, сходить способностью, сменить бойца, применить предмет, бросить сферу,
+ * пропустить ход по таймеру. Правила — в {@link BattleEngine}, решения врага — в {@link EnemyAi},
+ * награды — в {@link BattleRewards}.
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class BattleService {
 
-    private static final Logger log = LoggerFactory.getLogger(BattleService.class);
-
-    private static final double MAX_BATTLE_DISTANCE_METERS = 100.0; // радиус 70 м + запас на погрешность GPS
-    private static final int XP_WIN = 35;
-    private static final int XP_CATCH = 50;
-    private static final int XP_LOSS = 10;
+    public static final String DEFAULT_SPHERE = "SPHERE_BASIC";
 
     private final BattleSessionRepository repository;
-    private final UserClient userClient;
-    private final WorldClient worldClient;
-    private final AbilityCatalog catalog;
+    private final Players players;
+    private final Spawns spawns;
+    private final Bag bag;
+    private final AbilityBook abilityBook;
     private final BattleEngine engine;
     private final EnemyAi enemyAi;
-    private final Duration turnTime;
-
-    public BattleService(BattleSessionRepository repository,
-                         UserClient userClient,
-                         WorldClient worldClient,
-                         AbilityCatalog catalog,
-                         BattleEngine engine,
-                         EnemyAi enemyAi,
-                         @Value("${battle.turn-seconds:30}") int turnSeconds) {
-        this.repository = repository;
-        this.userClient = userClient;
-        this.worldClient = worldClient;
-        this.catalog = catalog;
-        this.engine = engine;
-        this.enemyAi = enemyAi;
-        this.turnTime = Duration.ofSeconds(Math.max(5, turnSeconds));
-    }
-
-    // ==================== СЦЕНАРИИ ====================
+    private final BattleRewards rewards;
+    private final BattleSettings settings;
 
     @Transactional
-    public BattleStateDto start(StartBattleRequest req, Long authUserId) {
-        Long userId = authUserId != null ? authUserId : req.userId();
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Требуется авторизация");
+    public BattleStateDto start(Long userId, Long spawnId, Integer partySlot) {
+        var unfinished = repository.findFirstByUserIdAndSpawnIdAndStatus(userId, spawnId, BattleStatus.IN_PROGRESS)
+                .filter(BattleService::isPlayable);
+        if (unfinished.isPresent()) {
+            // Игрок перезагрузил страницу или нажал «В бой» второй раз — продолжаем тот же бой.
+            return toDto(unfinished.get());
         }
 
-        UserProfileDto user = fetchUser(userId);
-        WorldSpawnDto spawn = fetchSpawn(req.spawnId());
-        if (!spawn.active()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Этот покемон уже пойман или скрылся.");
+        UserProfileDto user = players.profile(userId);
+        List<OwnedPokemonDto> party = user.party();
+        if (party == null || party.isEmpty()) {
+            throw badRequest("В отряде нет эвонов. Назначьте бойцов в профиле.");
+        }
+        if (party.stream().allMatch(OwnedPokemonDto::fainted)) {
+            throw badRequest("Все эвоны отряда без сил. Вылечите их в сумке или подождите — силы восстанавливаются со временем.");
         }
 
-        double distance = distanceMeters(user.latitude(), user.longitude(), spawn.latitude(), spawn.longitude());
-        if (distance > MAX_BATTLE_DISTANCE_METERS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Покемон слишком далеко (" + Math.round(distance) + " м). Подойдите ближе.");
+        WorldSpawnDto spawn = spawns.reserve(spawnId, userId);
+        double distance = Geo.distanceMeters(user.latitude(), user.longitude(), spawn.latitude(), spawn.longitude());
+        if (distance > settings.maxDistanceMeters()) {
+            throw badRequest("Эвон слишком далеко (" + Math.round(distance) + " м). Подойдите ближе.");
         }
 
-        OwnedPokemonDto f = chooseFighter(user, req.partySlot());
-        Combatant player = new Combatant(f.speciesId(), f.name(), f.element(), f.archetype(),
-                f.maxHp(), f.attack(), f.defense(), f.speed());
+        List<Combatant> team = party.stream()
+                .map(p -> new Combatant(p.id(), p.speciesId(), p.name(), p.element(), p.archetype(),
+                        p.maxHp(), p.currentHp(), p.attack(), p.defense(), p.speed(),
+                        abilityBook.forSpecies(p.speciesId())))
+                .toList();
+        int active = firstFighter(party, partySlot != null ? partySlot : user.activePartySlot());
         Combatant enemy = new Combatant(spawn.speciesId(), spawn.name(), spawn.element(), spawn.archetype(),
-                spawn.maxHp(), spawn.attack(), spawn.defense(), spawn.speed());
+                spawn.maxHp(), spawn.attack(), spawn.defense(), spawn.speed(),
+                abilityBook.forSpecies(spawn.speciesId()));
 
-        BattleSession b = new BattleSession(user.id(), spawn.spawnId(), player, enemy,
-                String.format("Бой начался: %s против дикого %s.", player.name, enemy.name),
-                deadlineFromNow());
-        return toDto(save(b));
+        BattleSession battle = save(new BattleSession(userId, spawnId, team, active, enemy,
+                "Бой начался: " + team.get(active).name + " против дикого " + enemy.name + ".", nextDeadline()));
+        log.info("Бой {} начат: игрок {} ({} в отряде) против {} (спавн {})",
+                battle.getId(), userId, team.size(), enemy.name, spawnId);
+        return toDto(battle);
     }
 
-    /** Игрок выбрал способность (слот 1..4). */
+    /** Игрок выбрал способность 1–4. Если она на перезарядке — используется обычная атака. */
     @Transactional
-    public BattleStateDto useAbility(Long battleId, Long authUserId, Integer requestedSlot) {
-        BattleSession b = load(battleId, authUserId);
-        if (!b.inProgress()) return toDto(b);
-
-        Combatant player = b.player();
-        int slot = requestedSlot == null || requestedSlot < 1 || requestedSlot > 4 ? 1 : requestedSlot;
-        AbilityDto ability = catalog.getAbilityBySlot(player.speciesId, player.name, slot);
-
+    public BattleStateDto useAbility(Long battleId, Long userId, int slot) {
+        BattleSession battle = load(battleId, userId);
+        if (!battle.inProgress()) {
+            return toDto(battle);
+        }
+        Combatant player = battle.player();
+        AbilityDto ability = player.ability(slot);
         if (!player.skipsTurn() && player.cooldown(slot) > 0) {
-            b.log("«" + ability.name() + "» ещё перезаряжается — используется обычная атака.");
-            ability = catalog.getAbilityBySlot(player.speciesId, player.name, 1);
+            battle.log("«" + ability.name() + "» ещё перезаряжается — используется обычная атака.");
+            ability = player.ability(1);
         }
-
-        engine.playRound(b, ability, enemyAi.chooseAbility(b));
-        afterRound(b);
-        return toDto(save(b));
+        engine.playRound(battle, ability, enemyAi.chooseAbility(battle));
+        return finishRound(battle);
     }
 
-    /**
-     * Время на выбор вышло (или игрок спит/оглушён и пропускает ход).
-     * Ход разыгрывается автоматически: обычная атака или пропуск хода.
-     */
+    /** Время хода вышло, или боец спит/оглушён: ход разыгрывается автоматически. */
     @Transactional
-    public BattleStateDto timeout(Long battleId, Long authUserId) {
-        BattleSession b = load(battleId, authUserId);
-        if (!b.inProgress()) return toDto(b);
-
-        Combatant player = b.player();
-        boolean expired = b.getTurnDeadline() == null || !Instant.now().isBefore(b.getTurnDeadline().minusSeconds(1));
-        if (!expired && !player.skipsTurn()) {
-            return toDto(b); // время ещё есть — ничего не делаем
+    public BattleStateDto timeout(Long battleId, Long userId) {
+        BattleSession battle = load(battleId, userId);
+        if (!battle.inProgress()) {
+            return toDto(battle);
         }
-
+        Combatant player = battle.player();
         if (!player.skipsTurn()) {
-            b.log("Время на выбор вышло — автоматически используется обычная атака.");
+            boolean timeIsUp = battle.getTurnDeadline() == null
+                    || !Instant.now().isBefore(battle.getTurnDeadline().minusSeconds(1));
+            if (!timeIsUp) {
+                return toDto(battle);
+            }
+            battle.log("Время на выбор вышло — используется обычная атака.");
         }
-        engine.playRound(b, catalog.getAbilityBySlot(player.speciesId, player.name, 1), enemyAi.chooseAbility(b));
-        afterRound(b);
-        return toDto(save(b));
+        engine.playRound(battle, player.ability(1), enemyAi.chooseAbility(battle));
+        return finishRound(battle);
     }
 
+    /** Отозвать бойца и выпустить другого из отряда. Тратит ход: противник успевает ударить. */
     @Transactional
-    public BattleStateDto throwPokeball(Long battleId, Long authUserId) {
-        BattleSession b = load(battleId, authUserId);
-        if (!b.inProgress()) return toDto(b);
-
-        UserProfileDto user = fetchUser(b.getUserId());
-        if (user.pokeballs() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Покеболы закончились.");
+    public BattleStateDto switchFighter(Long battleId, Long userId, int index) {
+        BattleSession battle = load(battleId, userId);
+        if (!battle.inProgress()) {
+            return toDto(battle);
+        }
+        Combatant target = fighter(battle, index);
+        if (index == battle.getActiveIndex()) {
+            throw badRequest(target.name + " уже на поле");
+        }
+        if (!target.alive()) {
+            throw badRequest(target.name + " без сил и не может сражаться");
         }
 
-        Combatant enemy = b.enemy();
-        double chance = Math.min(0.95, 0.35 + (1.0 - enemy.hpRatio()) * 0.65);
-        b.log(String.format("— Ход %d — Бросок покебола (шанс %d%%)…", b.getTurnNumber(), Math.round(chance * 100)));
+        battle.log(String.format("— Ход %d — %s возвращается. В бой выходит %s!",
+                battle.getTurnNumber(), battle.player().name, target.name));
+        battle.switchTo(index);
+        engine.enemyOnlyRound(battle, enemyAi.chooseAbility(battle));
+        return finishRound(battle);
+    }
+
+    /** Лечилка или оживление на любого бойца отряда. Тратит ход. */
+    @Transactional
+    public BattleStateDto useItem(Long battleId, Long userId, String itemCode, Integer targetIndex) {
+        BattleSession battle = load(battleId, userId);
+        if (!battle.inProgress()) {
+            return toDto(battle);
+        }
+        ItemDto item = bag.item(itemCode);
+        Combatant target = fighter(battle, targetIndex != null ? targetIndex : battle.getActiveIndex());
+        checkItemApplies(item, target);
+
+        bag.consume(userId, operationId(battle), itemCode);
+        String effect = switch (item.kind()) {
+            case HEAL -> {
+                int healed = target.heal(item.fullHeal() ? target.maxHp : item.healHp());
+                if (item.fullHeal()) target.cleanseDebuffs();
+                yield String.format("+%d HP (%d/%d)%s", healed, target.hp, target.maxHp,
+                        item.fullHeal() ? ", статусы сняты" : "");
+            }
+            case REVIVE -> String.format("снова в строю с %d HP", target.revive(item.revivePercent()));
+            case CAPTURE -> throw new IllegalStateException("сферы проверяются выше");
+        };
+        battle.log(String.format("— Ход %d — «%s» на %s: %s.", battle.getTurnNumber(), item.name(), target.name, effect));
+
+        engine.enemyOnlyRound(battle, enemyAi.chooseAbility(battle));
+        return finishRound(battle);
+    }
+
+    /** Бросить сферу. Не получилось — противник ходит. */
+    @Transactional
+    public BattleStateDto throwSphere(Long battleId, Long userId, String sphereCode) {
+        BattleSession battle = load(battleId, userId);
+        if (!battle.inProgress()) {
+            return toDto(battle);
+        }
+        ItemDto sphere = bag.item(sphereCode != null ? sphereCode : DEFAULT_SPHERE);
+        if (sphere.kind() != ItemKind.CAPTURE) {
+            throw badRequest("«" + sphere.name() + "» — не сфера");
+        }
+        bag.consume(userId, operationId(battle), sphere.code());
+
+        Combatant enemy = battle.enemy();
+        double chance = CatchRules.chance(enemy, sphere);
+        battle.log(String.format("— Ход %d — Бросок: «%s» (шанс %d%%)",
+                battle.getTurnNumber(), sphere.name(), Math.round(chance * 100)));
 
         if (ThreadLocalRandom.current().nextDouble() <= chance) {
-            b.finish(BattleStatus.CAPTURED);
-            b.log(enemy.name + " пойман! +" + XP_CATCH + " XP.");
-            deactivateSpawn(b.getSpawnId());
-            reward(b.getUserId(), new BattleRewardRequest(XP_CATCH, true, true,
-                    enemy.speciesId, enemy.name, enemy.element, enemy.archetype,
-                    enemy.maxHp, enemy.attack, enemy.defense, enemy.speed));
-            return toDto(save(b));
+            battle.finish(BattleStatus.CAPTURED);
+            log.info("Бой {}: игрок {} поймал {} сферой {}", battle.getId(), userId, enemy.name, sphere.code());
+            spawns.remove(battle.getSpawnId());
+            rewards.settle(battle);
+            return toDto(save(battle));
         }
 
-        b.log(enemy.name + " вырвался из покебола!");
-        reward(b.getUserId(), xpOnly(0, true));
-        engine.enemyOnlyRound(b, enemyAi.chooseAbility(b));
-        afterRound(b);
-        return toDto(save(b));
+        battle.log(enemy.name + " вырвался из сферы!");
+        engine.enemyOnlyRound(battle, enemyAi.chooseAbility(battle));
+        return finishRound(battle);
     }
 
     @Transactional(readOnly = true)
-    public BattleStateDto get(Long battleId, Long authUserId) {
-        return toDto(load(battleId, authUserId));
+    public BattleStateDto get(Long battleId, Long userId) {
+        return toDto(load(battleId, userId));
     }
 
-    // ==================== ИТОГИ РАУНДА ====================
+    // ==================== ВНУТРЕННЕЕ ====================
 
-    private void afterRound(BattleSession b) {
-        Combatant player = b.player();
-        Combatant enemy = b.enemy();
+    /** Итог раунда: победа, замена павшего бойца, поражение или следующий ход. */
+    private BattleStateDto finishRound(BattleSession battle) {
+        Combatant player = battle.player();
+        Combatant enemy = battle.enemy();
 
         if (!enemy.alive()) {
-            b.finish(BattleStatus.WON_BY_KO);
-            b.log("Дикий " + enemy.name + " повержен! +" + XP_WIN + " XP.");
-            deactivateSpawn(b.getSpawnId());
-            reward(b.getUserId(), xpOnly(XP_WIN, false));
-        } else if (!player.alive()) {
-            b.finish(BattleStatus.LOST);
-            b.log(player.name + " без сил. +" + XP_LOSS + " XP за опыт.");
-            reward(b.getUserId(), xpOnly(XP_LOSS, false));
-        } else {
-            b.nextTurn(deadlineFromNow());
-            if (player.skipsTurn()) {
-                b.log(player.name + " не может действовать в этом ходу.");
+            battle.finish(BattleStatus.WON_BY_KO);
+            log.info("Бой {}: победа игрока {} на ходу {}", battle.getId(), battle.getUserId(), battle.getTurnNumber());
+            spawns.remove(battle.getSpawnId());
+            rewards.settle(battle);
+            return toDto(save(battle));
+        }
+
+        if (!player.alive()) {
+            int next = battle.nextAliveIndex();
+            if (next < 0) {
+                battle.finish(BattleStatus.LOST);
+                log.info("Бой {}: поражение игрока {} на ходу {}", battle.getId(), battle.getUserId(), battle.getTurnNumber());
+                rewards.settle(battle);
+                return toDto(save(battle));
+            }
+            // Павший боец уходит, следующий живой выходит сам — ход на это не тратится
+            battle.switchTo(next);
+            battle.log(player.name + " без сил! В бой выходит " + battle.player().name + ".");
+        }
+
+        battle.nextTurn(nextDeadline());
+        if (battle.player().skipsTurn()) {
+            battle.log(battle.player().name + " не может атаковать в этом ходу — можно сменить бойца или применить предмет.");
+        }
+        return toDto(save(battle));
+    }
+
+    private void checkItemApplies(ItemDto item, Combatant target) {
+        switch (item.kind()) {
+            case CAPTURE -> throw badRequest("Сферу бросают кнопкой «Поймать»");
+            case HEAL -> {
+                if (!target.alive()) {
+                    throw badRequest(target.name + " без сил — сначала нужна «Искра жизни»");
+                }
+                boolean curesSomething = item.fullHeal() && Combatant.DEBUFFS.stream().anyMatch(target::has);
+                if (target.hp >= target.maxHp && !curesSomething) {
+                    throw badRequest(target.name + " и так полностью здоров");
+                }
+            }
+            case REVIVE -> {
+                if (target.alive()) {
+                    throw badRequest(target.name + " не нуждается в оживлении");
+                }
             }
         }
     }
 
-    // ==================== ВСПОМОГАТЕЛЬНОЕ ====================
-
-    private Instant deadlineFromNow() {
-        return Instant.now().plus(turnTime);
-    }
-
-    private BattleSession save(BattleSession b) {
-        b.syncState();
-        return repository.save(b);
-    }
-
-    private BattleSession load(Long battleId, Long authUserId) {
-        BattleSession b = repository.findById(battleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Бой не найден: " + battleId));
-        if (authUserId != null && !b.getUserId().equals(authUserId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Это чужой бой.");
+    /** Активный слот, если его эвон в силах; иначе первый живой. */
+    private static int firstFighter(List<OwnedPokemonDto> party, int preferredSlot) {
+        for (int i = 0; i < party.size(); i++) {
+            OwnedPokemonDto p = party.get(i);
+            if (p.partySlot() != null && p.partySlot() == preferredSlot && !p.fainted()) return i;
         }
-        return b;
-    }
-
-    private OwnedPokemonDto chooseFighter(UserProfileDto user, Integer slot) {
-        List<OwnedPokemonDto> party = user.party();
-        if (party == null || party.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "В отряде нет покемонов. Назначьте бойца в профиле.");
+        for (int i = 0; i < party.size(); i++) {
+            if (!party.get(i).fainted()) return i;
         }
-        return party.stream()
-                .filter(p -> slot != null && slot.equals(p.partySlot()))
-                .findFirst()
-                .orElse(party.get(0));
+        throw new IllegalStateException("в отряде нет живых — проверяется раньше");
     }
 
-    private UserProfileDto fetchUser(Long userId) {
-        try {
-            return userClient.getUserProfile(userId);
-        } catch (Exception e) {
-            log.warn("user-service недоступен: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Сервис профилей недоступен, попробуйте позже.");
+    private static Combatant fighter(BattleSession battle, int index) {
+        if (index < 0 || index >= battle.team().size()) {
+            throw badRequest("В отряде нет бойца №" + (index + 1));
         }
+        return battle.team().get(index);
     }
 
-    private WorldSpawnDto fetchSpawn(Long spawnId) {
-        try {
-            return worldClient.getSpawnById(spawnId);
-        } catch (Exception e) {
-            log.warn("world-service недоступен: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Сервис карты недоступен, попробуйте позже.");
+    /** Один предмет за ход: повторный клик в том же ходу не спишет предмет второй раз. */
+    private static String operationId(BattleSession battle) {
+        return "battle-" + battle.getId() + "-turn-" + battle.getTurnNumber();
+    }
+
+    /** Бои, сохранённые до переноса способностей в pokemon-service, не содержат списка способностей. */
+    private static boolean isPlayable(BattleSession battle) {
+        return battle.team().stream().noneMatch(c -> c == null || c.abilities.isEmpty())
+                && !battle.enemy().abilities.isEmpty();
+    }
+
+    private BattleSession load(Long battleId, Long userId) {
+        BattleSession battle = repository.findById(battleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Бой не найден"));
+        if (!battle.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Это чужой бой");
         }
-    }
-
-    private void deactivateSpawn(Long spawnId) {
-        try {
-            worldClient.deactivateSpawn(spawnId);
-        } catch (Exception e) {
-            log.warn("Не удалось убрать спавн {}: {}", spawnId, e.getMessage());
+        if (!isPlayable(battle)) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Бой из старой версии игры, начните новый");
         }
+        return battle;
     }
 
-    private static BattleRewardRequest xpOnly(int xp, boolean pokeballUsed) {
-        return new BattleRewardRequest(xp, pokeballUsed, false, null, null, null, null, 0, 0, 0, 0);
+    private BattleSession save(BattleSession battle) {
+        battle.syncState();
+        return repository.save(battle);
     }
 
-    private void reward(Long userId, BattleRewardRequest reward) {
-        try {
-            userClient.applyBattleReward(userId, reward);
-        } catch (Exception e) {
-            log.warn("Не удалось начислить награду игроку {}: {}", userId, e.getMessage());
-        }
+    private BattleStateDto toDto(BattleSession battle) {
+        return BattleMapper.toDto(battle, settings.turnTime());
     }
 
-    private static double distanceMeters(double lat1, double lon1, double lat2, double lon2) {
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return 6371000.0 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    private Instant nextDeadline() {
+        return Instant.now().plus(settings.turnTime());
     }
 
-    private BattleStateDto toDto(BattleSession b) {
-        Combatant p = b.player();
-        Combatant e = b.enemy();
-
-        List<AbilityDto> playerAbilities = catalog.getAbilitiesForPokemon(p.speciesId, p.name).stream()
-                .map(a -> a.withCurrentCooldown(p.cooldown(a.slot())))
-                .toList();
-        List<AbilityDto> enemyAbilities = catalog.getAbilitiesForPokemon(e.speciesId, e.name).stream()
-                .map(a -> a.withCurrentCooldown(e.cooldown(a.slot())))
-                .toList();
-
-        long deadlineMs = b.getTurnDeadline() == null ? 0 : b.getTurnDeadline().toEpochMilli();
-        int secondsLeft = b.getTurnDeadline() == null ? 0
-                : (int) Math.max(0, Duration.between(Instant.now(), b.getTurnDeadline()).toSeconds());
-
-        return new BattleStateDto(
-                b.getId(), b.getUserId(), b.getSpawnId(), b.getTurnNumber(), b.getStatus(),
-                p.name, p.element, p.hp, p.maxHp, p.attack, p.defense, p.speed,
-                e.name, e.element, e.archetype, e.hp, e.maxHp, e.attack, e.defense, e.speed,
-                b.logLines(),
-                p.effectiveSpeed(), e.effectiveSpeed(),
-                p.statusBadges(), e.statusBadges(),
-                playerAbilities, enemyAbilities,
-                deadlineMs, secondsLeft, (int) turnTime.toSeconds(),
-                b.inProgress() && p.skipsTurn(),
-                p.speciesId, e.speciesId
-        );
+    private static ResponseStatusException badRequest(String message) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 }

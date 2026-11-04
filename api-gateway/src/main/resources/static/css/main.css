@@ -1210,7 +1210,7 @@ h1, h2, h3 {
 }
 
 /* ==========================================================================
-   КОМПАКТНЫЕ СЕТКИ: ПОКЕДЕКС, КОЛЛЕКЦИЯ, ОТРЯД
+   КОМПАКТНЫЕ СЕТКИ: ЭВОДЕКС, КОЛЛЕКЦИЯ, ОТРЯД
    Карточки меньше и идут сеткой, а не одна под другой.
    ========================================================================== */
 .cards-grid {
@@ -1248,7 +1248,7 @@ h1, h2, h3 {
 }
 
 /* Телефон: отряд — три строки «карточка слева, кнопки справа»,
-   покедекс и коллекция — по две карточки в ряд */
+   эводекс и коллекция — по две карточки в ряд */
 @media (max-width: 720px) {
     .party-grid {
         grid-template-columns: 1fr;
@@ -1706,7 +1706,7 @@ h1, h2, h3 {
     animation: riseIn 0.45s cubic-bezier(.2, .8, .2, 1) both;
 }
 
-/* Дикие покемоны на карте слегка покачиваются */
+/* Дикие эвоны на карте слегка покачиваются */
 .wild-map-badge {
     animation: badgeBob 2.4s ease-in-out infinite;
 }
@@ -1855,4 +1855,485 @@ h1, h2, h3 {
 @keyframes slideFromLeft {
     from { opacity: 0; transform: translateX(-40px); }
     to { opacity: 1; transform: translateX(0); }
+}
+
+/* ==========================================================================
+   ОТРЯД В БОЮ
+   ========================================================================== */
+.team-strip-wrap {
+    margin: 4px 0 2px;
+}
+
+.team-strip-hint {
+    font-weight: 600;
+    color: var(--ink-faint);
+    margin-left: 6px;
+}
+
+.team-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.team-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 2px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.team-chip:not(:disabled):hover {
+    border-color: var(--radar);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-1);
+}
+
+.team-chip:disabled {
+    cursor: default;
+}
+
+.team-chip.active {
+    border-color: var(--radar);
+    background: var(--radar-soft);
+}
+
+.team-chip.fainted {
+    opacity: 0.55;
+    filter: grayscale(0.8);
+}
+
+.team-chip.target {
+    border-color: var(--ok);
+    background: var(--ok-soft);
+    opacity: 1;
+    filter: none;
+    animation: chipPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes chipPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(29, 122, 67, 0.35); }
+    50% { box-shadow: 0 0 0 5px rgba(29, 122, 67, 0); }
+}
+
+.team-chip-icon {
+    flex: none;
+    color: var(--radar);
+}
+
+.team-chip-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.team-chip-name {
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.team-chip-state {
+    font-size: 11px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.team-chip-hp {
+    display: block;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.team-chip-hp .hp-bar-fill {
+    display: block;
+    height: 100%;
+}
+
+.battle-actions-row .uiv-btn {
+    flex: 1 1 0;
+}
+
+/* ==========================================================================
+   СУМКА: панель в бою, список в профиле
+   ========================================================================== */
+.bag-panel {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface-soft);
+    padding: 12px;
+    animation: bagSlideUp 0.22s cubic-bezier(.2, .9, .3, 1);
+}
+
+@keyframes bagSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+
+.bag-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bag-panel-head .abilities-section-title {
+    margin: 0;
+}
+
+.bag-panel-close {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px 8px;
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.bag-panel-hint {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 6px 0 10px;
+}
+
+.bag-panel-hint a {
+    color: var(--radar);
+    font-weight: 700;
+}
+
+.bag-list {
+    display: grid;
+    gap: 8px;
+}
+
+.bag-list-wide {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    margin-top: 12px;
+}
+
+.bag-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bag-item.static {
+    cursor: default;
+}
+
+button.bag-item:not(:disabled):hover {
+    border-color: var(--radar);
+    transform: translateY(-1px);
+}
+
+.bag-item.chosen {
+    border-color: var(--ok);
+    background: var(--ok-soft);
+}
+
+.bag-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.bag-item-name {
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.bag-item-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.bag-item-qty {
+    flex: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--radar);
+}
+
+.item-icon {
+    display: inline-flex;
+    flex: none;
+    width: 40px;
+    height: 40px;
+}
+
+.item-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.bag-shop-link {
+    display: inline-block;
+    margin-top: 12px;
+    text-decoration: none;
+}
+
+/* Здоровье эвона в профиле */
+.slot-hp-line,
+.detail-hp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+
+.slot-hp-line .hp-bar,
+.detail-hp-row .hp-bar {
+    flex: 1;
+    margin: 0;
+}
+
+.detail-hp-row {
+    margin-bottom: 10px;
+}
+
+.detail-hp-text {
+    min-width: 64px;
+    text-align: right;
+}
+
+#detail-heal-wrap {
+    margin-bottom: 14px;
+}
+
+.is-fainted .poke-card {
+    filter: grayscale(0.85);
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   МАГАЗИН
+   ========================================================================== */
+.shop-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.coins-badge {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: var(--amber);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: var(--shadow-1);
+}
+
+.coins-badge svg {
+    width: 22px;
+    height: 22px;
+}
+
+.shop-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    margin: 18px 0 14px;
+    border-radius: 999px;
+    background: var(--paper-deep);
+}
+
+.shop-tab {
+    border: none;
+    background: transparent;
+    padding: 9px 20px;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.shop-tab.active {
+    background: var(--surface);
+    color: var(--radar);
+    box-shadow: var(--shadow-1);
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    padding-bottom: 110px;
+}
+
+.shop-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "art body"
+        "buy buy";
+    gap: 12px 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-1);
+    animation: shopCardIn 0.3s ease both;
+}
+
+.shop-card:nth-child(2) { animation-delay: 0.04s; }
+.shop-card:nth-child(3) { animation-delay: 0.08s; }
+.shop-card:nth-child(4) { animation-delay: 0.12s; }
+.shop-card:nth-child(5) { animation-delay: 0.16s; }
+.shop-card:nth-child(6) { animation-delay: 0.20s; }
+
+@keyframes shopCardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+.shop-card-art {
+    grid-area: art;
+}
+
+.shop-card-art .item-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.shop-card-body {
+    grid-area: body;
+    min-width: 0;
+}
+
+.shop-card-body h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.shop-card-body p {
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+
+.shop-card-owned {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-faint);
+}
+
+.shop-card-buy {
+    grid-area: buy;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+}
+
+.shop-price {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--amber-deep);
+}
+
+.shop-price small {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+
+.shop-buy-row {
+    display: flex;
+    gap: 8px;
+}
+
+.purchase-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 3000;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow-2);
+    animation: toastIn 0.25s cubic-bezier(.2, 1.3, .4, 1);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.purchase-toast.leaving {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 16px) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+@media (max-width: 560px) {
+    .team-strip {
+        gap: 6px;
+    }
+    .team-chip {
+        padding: 7px 8px;
+    }
+    .team-chip-icon {
+        display: none;
+    }
+    .team-strip-hint {
+        display: block;
+        margin: 2px 0 0;
+    }
+    .shop-head {
+        flex-direction: column;
+    }
+    .shop-grid {
+        grid-template-columns: 1fr;
+    }
 }

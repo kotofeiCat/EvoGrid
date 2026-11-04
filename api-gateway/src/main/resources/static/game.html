@@ -27,13 +27,13 @@
 <!-- Нижний док -->
 <div id="dock-mount"></div>
 
-<!-- Модальное окно осмотра дикого покемона -->
+<!-- Модальное окно осмотра дикого эвона -->
 <div id="modal-wild-inspect" class="modal-backdrop hidden">
     <div class="modal-window">
         <div class="inspector-layout">
             <div id="wild-card-holder"></div>
             <div class="inspector-details">
-                <h2 id="wild-title">Дикий покемон</h2>
+                <h2 id="wild-title">Дикий эвон</h2>
                 <div id="wild-lore" class="lore-box"></div>
                 <p class="active-slot-hint">
                     В бой вступит: <b id="wild-active-slot-label">Слот #1</b>
@@ -79,12 +79,18 @@
             </div>
         </div>
 
+        <!-- Отряд: кто на поле, кто в запасе. Тап по бойцу в запасе — смена (тратит ход) -->
+        <div class="team-strip-wrap">
+            <div class="abilities-section-title">Отряд <span class="team-strip-hint">нажмите на бойца, чтобы сменить — это тратит ход</span></div>
+            <div id="battle-team" class="team-strip"></div>
+        </div>
+
         <div id="battle-result" class="battle-result hidden"></div>
 
         <div id="battle-log-container" class="combat-log-box"></div>
 
         <div id="battle-skip-notice" class="skip-notice hidden">
-            <span id="battle-skip-text">Ваш покемон спит и пропускает этот ход.</span>
+            <span id="battle-skip-text">Ваш эвон спит и не может атаковать.</span>
             <button class="uiv-btn primary" onclick="skipTurn()">
                 <span class="button_top">Пропустить ход</span>
             </button>
@@ -95,9 +101,22 @@
             <div id="battle-abilities-grid" class="abilities-grid"></div>
         </div>
 
-        <div class="modal-actions-row">
-            <button id="btn-do-catch" class="uiv-btn primary" onclick="doCatch()">
-                <span class="button_top">Бросить покебол</span>
+        <!-- Сумка в бою: выбор сферы или лечилки -->
+        <div id="battle-bag-panel" class="bag-panel hidden">
+            <div class="bag-panel-head">
+                <span id="battle-bag-title" class="abilities-section-title">Сумка</span>
+                <button type="button" class="bag-panel-close" onclick="closeBattleBag()" aria-label="Закрыть сумку">✕</button>
+            </div>
+            <div id="battle-bag-hint" class="bag-panel-hint"></div>
+            <div id="battle-bag-list" class="bag-list"></div>
+        </div>
+
+        <div class="modal-actions-row battle-actions-row">
+            <button id="btn-open-spheres" class="uiv-btn primary" onclick="openBattleBag('CAPTURE')">
+                <span class="button_top">Поймать</span>
+            </button>
+            <button id="btn-open-items" class="uiv-btn" onclick="openBattleBag('HEAL')">
+                <span class="button_top">Предмет</span>
             </button>
             <button class="uiv-btn" onclick="closeBattleWindow()">
                 <span class="button_top">Выйти</span>
@@ -108,8 +127,9 @@
 
 <script src="js/api.js"></script>
 <script src="js/pokemon-art.js"></script>
+<script src="js/item-art.js"></script>
 <script src="js/gestures.js"></script>
 <script src="js/ui-components.js"></script>
 <script src="js/game.js"></script>
 </body>
-</html>
+</html>

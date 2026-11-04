@@ -1,0 +1,2 @@
+com.EvoGrid.common.web.CommonWebAutoConfiguration
+com.EvoGrid.common.web.OpenApiAutoConfiguration

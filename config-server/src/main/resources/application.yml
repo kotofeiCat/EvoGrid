@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: config-server
+  # native — настройки лежат в classpath:/config (папка config рядом с этим файлом):
+  #   config/application.yml   — общие для всех сервисов
+  #   config/<имя-сервиса>.yml — только для одного сервиса
   profiles:
     active: native
   cloud:
@@ -11,9 +14,3 @@ spring:
       server:
         native:
           search-locations: classpath:/config
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"

@@ -126,11 +126,8 @@ const ApiService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        if (res.status === 409) {
-            throw new Error('Этот email уже занят.');
-        }
         if (!res.ok) {
-            throw new Error('Ошибка регистрации.');
+            throw new Error(await readError(res, 'Ошибка регистрации'));
         }
         return res.json();
     },
@@ -144,10 +141,11 @@ const ApiService = {
     },
 
     async selectActiveSlot(slot) {
-        const res = await fetch(`${API_BASE}/api/users/active-slot?slot=${slot}`, {
+        const res = await fetch(`${API_BASE}/api/users/me/active-slot?slot=${slot}`, {
             method: 'PUT',
             credentials: 'include'
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось выбрать бойца'));
         return res.json();
     },
 
@@ -161,30 +159,31 @@ const ApiService = {
         return res.json();
     },
 
-    async getPokemonAbilities(speciesId, name = '') {
-        const query = name ? `?name=${encodeURIComponent(name)}` : '';
-        const res = await fetch(`${API_BASE}/api/battles/abilities/${encodeURIComponent(speciesId || 1)}${query}`, {
+    async getPokemonAbilities(speciesId) {
+        const res = await fetch(`${API_BASE}/api/pokemons/${encodeURIComponent(speciesId)}/abilities`, {
             credentials: 'include'
         });
         if (!res.ok) throw new Error('Не удалось загрузить способности');
         return res.json();
     },
 
-    async updateLocation(userId, lat, lon) {
-        const res = await fetch(`${API_BASE}/api/users/${userId}/location?lat=${lat}&lon=${lon}`, {
+    async updateLocation(lat, lon) {
+        const res = await fetch(`${API_BASE}/api/users/me/location?lat=${lat}&lon=${lon}`, {
             method: 'PUT',
             credentials: 'include'
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось обновить позицию'));
         return res.json();
     },
 
-    async assignPartySlot(userId, slot, ownedPokemonId) {
-        const res = await fetch(`${API_BASE}/api/users/${userId}/party`, {
+    async assignPartySlot(slot, ownedPokemonId) {
+        const res = await fetch(`${API_BASE}/api/users/me/party`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slot, ownedPokemonId })
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось изменить отряд'));
         return res.json();
     },
 
@@ -192,15 +191,16 @@ const ApiService = {
         const res = await fetch(`${API_BASE}/api/world/spawns?lat=${lat}&lon=${lon}`, {
             credentials: 'include'
         });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось загрузить эвонов рядом'));
         return res.json();
     },
 
-    async startBattle(userId, spawnId, partySlot) {
+    async startBattle(spawnId, partySlot) {
         const res = await fetch(`${API_BASE}/api/battles/start`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, spawnId, partySlot })
+            body: JSON.stringify({ spawnId, partySlot })
         });
         if (!res.ok) throw new Error(await readError(res, 'Не удалось начать бой'));
         return res.json();
@@ -224,12 +224,68 @@ const ApiService = {
         return res.json();
     },
 
-    async catchPokemon(battleId) {
-        const res = await fetch(`${API_BASE}/api/battles/${battleId}/catch`, {
+    async throwSphere(battleId, sphereCode = 'SPHERE_BASIC') {
+        const res = await fetch(`${API_BASE}/api/battles/${battleId}/catch?sphere=${encodeURIComponent(sphereCode)}`, {
             method: 'POST',
             credentials: 'include'
         });
-        if (!res.ok) throw new Error(await readError(res, 'Не удалось бросить покебол'));
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось бросить сферу'));
+        return res.json();
+    },
+
+    async switchFighter(battleId, index) {
+        const res = await fetch(`${API_BASE}/api/battles/${battleId}/switch?index=${encodeURIComponent(index)}`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось сменить бойца'));
+        return res.json();
+    },
+
+    async useBattleItem(battleId, itemCode, targetIndex) {
+        const res = await fetch(`${API_BASE}/api/battles/${battleId}/item`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemCode, targetIndex })
+        });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось применить предмет'));
+        return res.json();
+    },
+
+    // ---------- магазин и сумка (inventory-service) ----------
+
+    async getShop() {
+        const res = await fetch(`${API_BASE}/api/shop`, { credentials: 'include' });
+        if (!res.ok) throw new Error(await readError(res, 'Магазин недоступен'));
+        return res.json();
+    },
+
+    async getInventory() {
+        const res = await fetch(`${API_BASE}/api/inventory`, { credentials: 'include' });
+        if (!res.ok) throw new Error(await readError(res, 'Сумка недоступна'));
+        return res.json();
+    },
+
+    async buyItem(itemCode, quantity = 1) {
+        const res = await fetch(`${API_BASE}/api/shop/buy`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemCode, quantity })
+        });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось купить'));
+        return res.json();
+    },
+
+    async useItemOnPokemon(ownedPokemonId, itemCode) {
+        const res = await fetch(`${API_BASE}/api/users/me/pokemons/${encodeURIComponent(ownedPokemonId)}/items`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemCode })
+        });
+        if (!res.ok) throw new Error(await readError(res, 'Не удалось применить предмет'));
         return res.json();
     }
-};
+};

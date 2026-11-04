@@ -4,16 +4,6 @@ server:
 spring:
   application:
     name: pokemon-service
+  # всё остальное (база, Eureka, логи, actuator) приходит из Config Server
   config:
-    import: "optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pokemon_db}
-    driver-class-name: org.postgresql.Driver
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"

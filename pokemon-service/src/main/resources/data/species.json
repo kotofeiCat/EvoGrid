@@ -1,0 +1,835 @@
+[
+  {
+    "id": 1,
+    "name": "Серый грызун",
+    "element": "NEUTRAL",
+    "archetype": "Баланс",
+    "description": "Юркий полевой зверёк, обитающий в городских парках и скверах. Отличается высокой живучестью и быстрой реакцией.",
+    "stats": {
+      "hp": 75,
+      "attack": 25,
+      "defense": 25,
+      "speed": 25
+    },
+    "starter": false,
+    "spawnable": false,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "QUICK_BITE",
+        "name": "Быстрый укус",
+        "description": "Резкий выпад острыми резцами.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "SWIFT_LUNGE",
+        "name": "Стремительный рывок",
+        "description": "Разгоняется и таранит цель (точность 95%).",
+        "category": "SPECIAL",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 18,
+        "accuracy": 95,
+        "cooldown": 2
+      },
+      {
+        "slot": 3,
+        "code": "NIMBLE_DODGE",
+        "name": "Юркий кувырок",
+        "description": "Уклонение: 65% шанс полностью избежать следующей атаки.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "FIELD_SNACK",
+        "name": "Запас зёрен",
+        "description": "Восстанавливает 20% от макс. HP.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "healPercentMaxHp": 20
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Красная панда",
+    "element": "FIRE",
+    "archetype": "Атакующий",
+    "description": "Стремительный огненный боец с раскалёнными когтями. Наносит серию быстрых ударов и оставляет ожоги.",
+    "stats": {
+      "hp": 70,
+      "attack": 35,
+      "defense": 20,
+      "speed": 25
+    },
+    "starter": true,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "HOT_CLAW",
+        "name": "Раскалённый коготь",
+        "description": "Быстрый удар горящей лапой.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "FIRE_ARC",
+        "name": "Пламенная дуга",
+        "description": "Огненный STAB-удар, накладывающий Ожог (2 хода).",
+        "category": "SPECIAL",
+        "element": "FIRE",
+        "target": "ENEMY",
+        "power": 16,
+        "cooldown": 2,
+        "stab": true,
+        "effect": "BURN",
+        "effectTurns": 2
+      },
+      {
+        "slot": 3,
+        "code": "SPARK_DASH",
+        "name": "Искровой рывок",
+        "description": "Уклонение: 65% шанс избежать атаки.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "VOLCANO_WARMTH",
+        "name": "Тепло вулкана",
+        "description": "Повышает Атаку (+30%) и даёт Огненные шипы (10% возврата урона) на 2 хода.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "effect": "ATK_UP",
+        "effectTurns": 2,
+        "secondEffect": "THORNS",
+        "secondEffectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Огнеборец",
+    "element": "FIRE",
+    "archetype": "Воин / Танк",
+    "description": "Могучий четырёхрукий боец огненной стихии. Способен блокировать тяжёлые удары и пробивать любую защиту.",
+    "stats": {
+      "hp": 85,
+      "attack": 35,
+      "defense": 25,
+      "speed": 5
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "DIRECT_JAB",
+        "name": "Прямой джеб",
+        "description": "Тяжёлый пробивной удар кулаком.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 12
+      },
+      {
+        "slot": 2,
+        "code": "FOUR_ARM_BARRAGE",
+        "name": "Шквал четырёх рук",
+        "description": "Сокрушительная серия огненных ударов (STAB).",
+        "category": "SPECIAL",
+        "element": "FIRE",
+        "target": "ENEMY",
+        "power": 22,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "CROSS_BLOCK",
+        "name": "Перекрёстный блок",
+        "description": "Снижает входящий урон на 70%.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 70
+      },
+      {
+        "slot": 4,
+        "code": "VOLCANIC_RAGE",
+        "name": "Вулканический напор",
+        "description": "Жертвует 10% HP: удваивает Скорость (x2) и пробивает блоки (2 хода).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "selfDamagePercentMaxHp": 10,
+        "effect": "RAGE_SPEED_PIERCE",
+        "effectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Пеплоух",
+    "element": "FIRE",
+    "archetype": "Убийца / Скорость",
+    "description": "Бесшумная огненная сова, скрывающаяся в клубах горячего дыма и ослепляющая противников пеплом.",
+    "stats": {
+      "hp": 65,
+      "attack": 30,
+      "defense": 20,
+      "speed": 35
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "TALON_GRIP",
+        "name": "Хватка когтей",
+        "description": "Резкий удар когтями с налёту.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "SMOLDER_SWEEP",
+        "name": "Пепельный вихрь",
+        "description": "Огненный STAB-удар, ослепляющий цель (-35% точности на 2 хода).",
+        "category": "SPECIAL",
+        "element": "FIRE",
+        "target": "ENEMY",
+        "power": 16,
+        "cooldown": 2,
+        "stab": true,
+        "effect": "BLIND",
+        "effectTurns": 2
+      },
+      {
+        "slot": 3,
+        "code": "SMOKE_SCREEN",
+        "name": "Дымовая завеса",
+        "description": "Уклонение: 65% шанс избежать следующей атаки.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "ASH_SECOND_WIND",
+        "name": "Второе дыхание пепла",
+        "description": "Восстанавливает 22% HP (или 44%, если HP ниже 25%).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 4,
+        "healPercentMaxHp": 22,
+        "doubleHealLowHp": true
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Пиромандра",
+    "element": "FIRE",
+    "archetype": "Поддержка / Танк",
+    "description": "Бронированная лавовая саламандра с базальтовой чешуёй. Замедляет врагов магмой и восстанавливает силы в тепле.",
+    "stats": {
+      "hp": 80,
+      "attack": 20,
+      "defense": 30,
+      "speed": 20
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "WHIP_TAIL",
+        "name": "Хлесткий хвост",
+        "description": "Размашистый удар тяжёлым хвостом.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "MAGMA_SPLASH",
+        "name": "Всплеск магмы",
+        "description": "Огненный STAB-удар, замедляющий врага (-35% скорости на 2 хода).",
+        "category": "SPECIAL",
+        "element": "FIRE",
+        "target": "ENEMY",
+        "power": 16,
+        "cooldown": 2,
+        "stab": true,
+        "effect": "SLOW",
+        "effectTurns": 2
+      },
+      {
+        "slot": 3,
+        "code": "BASALT_SCALES",
+        "name": "Базальтовая чешуя",
+        "description": "Каменная броня снижает входящий урон на 60%.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 60
+      },
+      {
+        "slot": 4,
+        "code": "LAVA_BATH",
+        "name": "Лавовый прогрев",
+        "description": "Восстанавливает 22% HP и заряжает следующую атаку гарантированным Ожогом.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "healPercentMaxHp": 22,
+        "effect": "NEXT_HIT_BURN",
+        "effectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Речная выдра",
+    "element": "WATER",
+    "archetype": "Защитник / Контроль",
+    "description": "Ловкий водный хранитель, использующий ракушечный щит для отражения атак и приливные волны для оглушения.",
+    "stats": {
+      "hp": 85,
+      "attack": 20,
+      "defense": 35,
+      "speed": 10
+    },
+    "starter": true,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "WATER_SLAP",
+        "name": "Водный всплеск",
+        "description": "Быстрый водный удар с бонусом STAB.",
+        "category": "BASIC",
+        "element": "WATER",
+        "target": "ENEMY",
+        "power": 10,
+        "stab": true
+      },
+      {
+        "slot": 2,
+        "code": "WAVE_WHIP",
+        "name": "Приливная волна",
+        "description": "Мощный водный STAB-удар, оглушающий противника (1 ход).",
+        "category": "SPECIAL",
+        "element": "WATER",
+        "target": "ENEMY",
+        "power": 16,
+        "cooldown": 3,
+        "stab": true,
+        "effect": "STUN",
+        "effectTurns": 1
+      },
+      {
+        "slot": 3,
+        "code": "WATER_SURFACE",
+        "name": "Водная гладь",
+        "description": "Уклонение: 65% шанс уйти под воду от атаки.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "SHELL_BARRIER",
+        "name": "Ракушечный щит",
+        "description": "Полностью блокирует следующую вражескую атаку (0 урона).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 4,
+        "effect": "SHELL_BARRIER",
+        "effectTurns": 1
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Сэр Сомуэль",
+    "element": "WATER",
+    "archetype": "Поддержка / Танк",
+    "description": "Галантный речной джентльмен в цилиндре. Мастер защитных барьеров, очищения от негативных эффектов и регенерации.",
+    "stats": {
+      "hp": 80,
+      "attack": 20,
+      "defense": 30,
+      "speed": 20
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "CANE_STRIKE",
+        "name": "Удар тростью",
+        "description": "Точный фехтовальный выпад тростью.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "PIPE_GEYSER",
+        "name": "Напорный гейзер",
+        "description": "Мощный выброс водяной струи под давлением (STAB).",
+        "category": "SPECIAL",
+        "element": "WATER",
+        "target": "ENEMY",
+        "power": 18,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "HAT_WARD",
+        "name": "Защита цилиндра",
+        "description": "Снижает урон на 45% и даёт иммунитет к критам (2 хода).",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 45,
+        "effect": "CRIT_IMMUNE",
+        "effectTurns": 2
+      },
+      {
+        "slot": 4,
+        "code": "AROMATIC_TEA",
+        "name": "Ароматный чай",
+        "description": "Восстанавливает 10% HP, снимает все дебаффы и даёт Регенерацию (3 хода).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 4,
+        "healPercentMaxHp": 10,
+        "effect": "CLEANSE",
+        "effectTurns": 1,
+        "secondEffect": "REGEN",
+        "secondEffectTurns": 3
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Плескан",
+    "element": "WATER",
+    "archetype": "Снайпер / Баланс",
+    "description": "Морской пеликан, обрушивающий мощные водяные залпы с высоты и ловко уклоняющийся в воздушных потоках.",
+    "stats": {
+      "hp": 75,
+      "attack": 35,
+      "defense": 25,
+      "speed": 15
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "WING_CLAP",
+        "name": "Хлопок крылом",
+        "description": "Широкий удар мощными крыльями.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 11
+      },
+      {
+        "slot": 2,
+        "code": "WATER_VOLLEY",
+        "name": "Водяной залп",
+        "description": "Прицельный гидроудар с высоты (STAB).",
+        "category": "SPECIAL",
+        "element": "WATER",
+        "target": "ENEMY",
+        "power": 20,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "AIR_SOMERSAULT",
+        "name": "Воздушный вираж",
+        "description": "Уклонение: 65% шанс избежать атаки в воздухе.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "LIVING_RESERVOIR",
+        "name": "Водный резервуар",
+        "description": "Восстанавливает 20% HP и усиливает следующую водную атаку на +35%.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "healPercentMaxHp": 20,
+        "effect": "WATER_BOOST",
+        "effectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Касторакс",
+    "element": "WATER",
+    "archetype": "Воин / Щит",
+    "description": "Крепкий речной строитель, возводящий непробиваемые бревенчатые щиты и устойчивый к любому контролю.",
+    "stats": {
+      "hp": 75,
+      "attack": 35,
+      "defense": 25,
+      "speed": 15
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "INCISOR_STRIKE",
+        "name": "Удар резцами",
+        "description": "Крепкий укус, способный перегрызть ствол дерева.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 12
+      },
+      {
+        "slot": 2,
+        "code": "DAM_SMASH",
+        "name": "Прорыв плотины",
+        "description": "Сокрушительная волна водной стихии (STAB).",
+        "category": "SPECIAL",
+        "element": "WATER",
+        "target": "ENEMY",
+        "power": 21,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "LOG_SHIELD",
+        "name": "Бревенчатый щит",
+        "description": "Плотина снижает входящий урон на 55%.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 55
+      },
+      {
+        "slot": 4,
+        "code": "EXPRESS_REPAIR",
+        "name": "Срочный ремонт",
+        "description": "Восстанавливает 25% HP и даёт иммунитет к контролю (2 хода).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "healPercentMaxHp": 25,
+        "effect": "CC_IMMUNE",
+        "effectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Лесной страж",
+    "element": "FOREST",
+    "archetype": "Баланс / Контроль",
+    "description": "Благородный хранитель древней чащи с цветущими рогами, способный погружать противников в глубокий сон.",
+    "stats": {
+      "hp": 70,
+      "attack": 35,
+      "defense": 20,
+      "speed": 25
+    },
+    "starter": true,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "HOOF_STRIKE",
+        "name": "Удар копытом",
+        "description": "Быстрый и точный выпад передними копытами.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "FERN_WHIRLWIND",
+        "name": "Листопадный вихрь",
+        "description": "Шквал острых листьев и ветвей (STAB).",
+        "category": "SPECIAL",
+        "element": "FOREST",
+        "target": "ENEMY",
+        "power": 19,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "FOREST_STEP",
+        "name": "Лесная поступь",
+        "description": "Уклонение: 65% шанс раствориться среди листвы.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "ANTLER_BLOOM",
+        "name": "Цветение кроны",
+        "description": "Восстанавливает 18% HP, очищает дебаффы и с шансом 55% усыпляет врага.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 4,
+        "healPercentMaxHp": 18,
+        "effect": "SLEEP",
+        "effectChance": 55,
+        "effectTurns": 1,
+        "secondEffect": "CLEANSE",
+        "secondEffectTurns": 1
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Лесной вепрь",
+    "element": "FOREST",
+    "archetype": "Танк / Живучесть",
+    "description": "Могучий кабан в плотной моховой броне. Атакует ядовитыми спорами и быстро восстанавливает здоровье.",
+    "stats": {
+      "hp": 85,
+      "attack": 20,
+      "defense": 35,
+      "speed": 10
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "TUSK_RAM",
+        "name": "Таран клыками",
+        "description": "Мощный наскок с разбега.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "SPORE_VOLLEY",
+        "name": "Споровый залп",
+        "description": "Лесной STAB-удар, отравляющий противника Ядом (3 хода).",
+        "category": "SPECIAL",
+        "element": "FOREST",
+        "target": "ENEMY",
+        "power": 15,
+        "cooldown": 2,
+        "stab": true,
+        "effect": "POISON",
+        "effectTurns": 3
+      },
+      {
+        "slot": 3,
+        "code": "MOSS_ARMOR",
+        "name": "Моховая броня",
+        "description": "Плотный слой мха снижает входящий урон на 50%.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 50
+      },
+      {
+        "slot": 4,
+        "code": "TRUFFLE_SNACK",
+        "name": "Лесной трюфель",
+        "description": "Находит редкий корень и восстанавливает 35% от макс. HP.",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 4,
+        "healPercentMaxHp": 35
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Ворон-сыщик",
+    "element": "FOREST",
+    "archetype": "Крит / Скорость",
+    "description": "Проницательный лесной ворон с моноклем. Анализирует слабые места врага для гарантированных критических ударов.",
+    "stats": {
+      "hp": 65,
+      "attack": 30,
+      "defense": 20,
+      "speed": 35
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "DIVE_PECK",
+        "name": "Пикирующий клевок",
+        "description": "Стремительная атака клювом с разворота.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 10
+      },
+      {
+        "slot": 2,
+        "code": "BRAMBLE_TRAP",
+        "name": "Терновая ловушка",
+        "description": "Лесной STAB-удар, опутывающий и замедляющий цель (-35% скорости на 2 хода).",
+        "category": "SPECIAL",
+        "element": "FOREST",
+        "target": "ENEMY",
+        "power": 16,
+        "cooldown": 2,
+        "stab": true,
+        "effect": "SLOW",
+        "effectTurns": 2
+      },
+      {
+        "slot": 3,
+        "code": "SHADOW_FLAP",
+        "name": "Взмах в тени",
+        "description": "Уклонение: 65% шанс скрыться в тени ветвей.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "evasionChancePercent": 65
+      },
+      {
+        "slot": 4,
+        "code": "MONOCLE_ANALYSIS",
+        "name": "Дедукция монокля",
+        "description": "Находит уязвимость: следующая атака нанесёт гарантированный крит (x1.5).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "effect": "GUARANTEED_CRIT",
+        "effectTurns": 2
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Культурный медведь",
+    "element": "FOREST",
+    "archetype": "Брузер / Танк",
+    "description": "Воспитанный хозяин тайги, сочетающий сокрушительную силу лесного зверя с безупречным чайным этикетом.",
+    "stats": {
+      "hp": 85,
+      "attack": 35,
+      "defense": 25,
+      "speed": 5
+    },
+    "starter": false,
+    "spawnable": true,
+    "abilities": [
+      {
+        "slot": 1,
+        "code": "HEAVY_PAW",
+        "name": "Тяжелая лапа",
+        "description": "Размашистый удар медвежьей лапой.",
+        "category": "BASIC",
+        "element": "NEUTRAL",
+        "target": "ENEMY",
+        "power": 12
+      },
+      {
+        "slot": 2,
+        "code": "FERN_SWING",
+        "name": "Папоротниковый размах",
+        "description": "Сокрушительный лесной удар (STAB).",
+        "category": "SPECIAL",
+        "element": "FOREST",
+        "target": "ENEMY",
+        "power": 22,
+        "cooldown": 2,
+        "stab": true
+      },
+      {
+        "slot": 3,
+        "code": "WOODEN_CARAPACE",
+        "name": "Древесный панцирь",
+        "description": "Древесная кора снижает входящий урон на 60%.",
+        "category": "DEFENSE",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "blockPercent": 60
+      },
+      {
+        "slot": 4,
+        "code": "TEA_ETIQUETTE",
+        "name": "Чайный этикет",
+        "description": "Восстанавливает 20% HP и повышает Защиту на +35% (2 хода).",
+        "category": "UTILITY",
+        "element": "NEUTRAL",
+        "target": "SELF",
+        "cooldown": 3,
+        "healPercentMaxHp": 20,
+        "effect": "DEF_UP",
+        "effectTurns": 2
+      }
+    ]
+  }
+]

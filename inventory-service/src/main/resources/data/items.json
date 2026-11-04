@@ -1,0 +1,22 @@
+[
+  {"code": "SPHERE_BASIC", "name": "Простая сфера", "kind": "CAPTURE", "price": 100,
+   "description": "Обычный шанс поимки.", "catchMultiplier": 1.0},
+  {"code": "SPHERE_GREAT", "name": "Усиленная сфера", "kind": "CAPTURE", "price": 250,
+   "description": "Шанс поимки ×1.5.", "catchMultiplier": 1.5},
+  {"code": "SPHERE_STAR", "name": "Звёздная сфера", "kind": "CAPTURE", "price": 600,
+   "description": "Шанс поимки ×2.", "catchMultiplier": 2.0},
+  {"code": "SPHERE_FIRE", "name": "Стихийная сфера · Огонь", "kind": "CAPTURE", "price": 400,
+   "description": "Шанс ×3 против огненных эвонов, против остальных — как у простой.", "catchMultiplier": 3.0, "catchElement": "FIRE"},
+  {"code": "SPHERE_WATER", "name": "Стихийная сфера · Вода", "kind": "CAPTURE", "price": 400,
+   "description": "Шанс ×3 против водных эвонов, против остальных — как у простой.", "catchMultiplier": 3.0, "catchElement": "WATER"},
+  {"code": "SPHERE_FOREST", "name": "Стихийная сфера · Лес", "kind": "CAPTURE", "price": 400,
+   "description": "Шанс ×3 против лесных эвонов, против остальных — как у простой.", "catchMultiplier": 3.0, "catchElement": "FOREST"},
+  {"code": "POTION", "name": "Целебный настой", "kind": "HEAL", "price": 80,
+   "description": "Восстанавливает 30 HP.", "healHp": 30},
+  {"code": "POTION_BIG", "name": "Большой настой", "kind": "HEAL", "price": 200,
+   "description": "Восстанавливает 80 HP.", "healHp": 80},
+  {"code": "FULL_HEAL", "name": "Полное исцеление", "kind": "HEAL", "price": 500,
+   "description": "Восстанавливает всё здоровье и снимает сон, ожог, яд и другие статусы.", "fullHeal": true},
+  {"code": "REVIVE", "name": "Искра жизни", "kind": "REVIVE", "price": 300,
+   "description": "Поднимает эвона без сил с 50% здоровья.", "revivePercent": 50}
+]

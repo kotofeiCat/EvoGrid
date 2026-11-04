@@ -1,0 +1,7 @@
+# Экономика: стартовый набор нового игрока. Цены предметов — в inventory-service/data/items.json
+inventory:
+  starter-coins: 500
+  starter-items:
+    SPHERE_BASIC: 10
+    POTION: 3
+  max-per-purchase: 99
