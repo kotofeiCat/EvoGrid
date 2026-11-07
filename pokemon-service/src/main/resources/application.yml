@@ -4,6 +4,5 @@ server:
 spring:
   application:
     name: pokemon-service
-  # всё остальное (база, Eureka, логи, actuator) приходит из Config Server
   config:
     import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"

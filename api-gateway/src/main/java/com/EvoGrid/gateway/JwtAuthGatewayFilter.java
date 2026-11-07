@@ -21,11 +21,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * Проверяет JWT на всех запросах к /api/** (кроме входа и регистрации)
- * и передаёт сервисам ID игрока в заголовке X-User-Id.
- * Заголовок от клиента всегда удаляется — подделать его нельзя.
- */
 @Slf4j
 @Component
 public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
@@ -33,7 +28,6 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
     static final String USER_ID_HEADER = "X-User-Id";
     private static final String JWT_COOKIE = "evogrid_jwt";
 
-    /** Адреса, доступные без входа. */
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/users/login",
             "/api/users/register",
@@ -73,7 +67,6 @@ public class JwtAuthGatewayFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(withUser).build());
     }
 
-    /** ID игрока из токена или null, если токена нет или он недействителен. */
     private Long authenticate(ServerHttpRequest request) {
         String token = extractToken(request);
         if (token == null) {

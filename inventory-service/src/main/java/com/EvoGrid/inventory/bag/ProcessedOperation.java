@@ -9,11 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-/**
- * Уже выполненные операции списания и начисления.
- * Если battle-service повторит запрос (например, после таймаута), предмет не спишется дважды,
- * а награда не начислится дважды.
- */
 @Entity
 @Table(name = "processed_operations")
 @Getter

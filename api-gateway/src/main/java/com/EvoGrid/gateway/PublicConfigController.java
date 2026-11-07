@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/** Публичные настройки для фронтенда (ключ Яндекс Карт). */
 @RestController
 public class PublicConfigController {
 

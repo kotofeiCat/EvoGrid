@@ -16,10 +16,6 @@ import lombok.NoArgsConstructor;
 import java.time.Duration;
 import java.time.Instant;
 
-/**
- * Эвон в коллекции игрока. Характеристики сохраняются на момент поимки,
- * чтобы будущие изменения баланса не меняли уже пойманных.
- */
 @Entity
 @Table(name = "owned_pokemons")
 @Getter
@@ -43,10 +39,8 @@ public class OwnedPokemon {
     private int defense;
     private int speed;
 
-    /** 1–3, если эвон в отряде; null — просто в коллекции. */
     private Integer partySlot;
 
-    /** Здоровье на момент hpUpdatedAt; null — здоров полностью (так у записей из старой версии). */
     private Integer currentHp;
 
     private Instant hpUpdatedAt;
@@ -76,12 +70,6 @@ public class OwnedPokemon {
                 species.baseHp(), species.baseAttack(), species.baseDefense(), species.baseSpeed(), 1);
     }
 
-    // ---------- здоровье ----------
-
-    /**
-     * Здоровье сейчас. Вне боя эвоны понемногу восстанавливаются (даже те, кто без сил):
-     * от нуля до полного здоровья за fullRegenTime. Считается «на лету», без фоновых задач.
-     */
     public int hpAt(Instant now, Duration fullRegenTime) {
         if (currentHp == null) return maxHp;
         if (hpUpdatedAt == null || fullRegenTime.isZero()) return currentHp;
@@ -99,7 +87,6 @@ public class OwnedPokemon {
         this.partySlot = slot;
     }
 
-    /** Подтягивает название и стихию из каталога (старые записи могли называться иначе). */
     public boolean renameFrom(PokemonSpeciesDto species) {
         if (species.name().equals(name) && species.element().equals(element) && species.archetype().equals(archetype)) {
             return false;

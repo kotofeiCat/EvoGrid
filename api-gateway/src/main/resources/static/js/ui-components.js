@@ -67,7 +67,6 @@ const UiComponents = {
                 ${art ? `<img class="poke-art fit-${art.fit}" src="${art.src}" alt="" loading="lazy" draggable="false">` : ''}
                 <div class="filter"></div>
 
-                <!-- Верхние контрастные плашки стихии и HP -->
                 <div class="card-top-badges">
                     <span class="elem-pill">
                         ${renderGoogleIcon(elem)}
@@ -76,7 +75,6 @@ const UiComponents = {
                     <span class="hp-pill">${hp} HP</span>
                 </div>
 
-                <!-- Название эвона и класс снизу пейзажа -->
                 <div class="card-hero-title">
                     <div class="poke-name-line">${poke.name}</div>
                     <div class="poke-arch-line">${poke.archetype || 'Базовый вид'}</div>

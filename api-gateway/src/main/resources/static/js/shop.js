@@ -1,4 +1,3 @@
-/** Магазин: витрина из inventory-service, покупка за монеты. */
 let shopItems = [];
 let shopBag = null;
 let shopKind = 'CAPTURE';
@@ -24,7 +23,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Свайп влево/вправо — соседняя вкладка нижнего меню
     Gestures.enableTabSwipe(document.body, () => 3, (index) => {
         window.location.href = TAB_ORDER[index];
     }, TAB_ORDER.length);

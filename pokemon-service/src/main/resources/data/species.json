@@ -83,7 +83,7 @@
         "category": "BASIC",
         "element": "NEUTRAL",
         "target": "ENEMY",
-        "power": 10
+        "power": 12
       },
       {
         "slot": 2,
@@ -159,7 +159,7 @@
         "category": "SPECIAL",
         "element": "FIRE",
         "target": "ENEMY",
-        "power": 22,
+        "power": 26,
         "cooldown": 2,
         "stab": true
       },
@@ -178,12 +178,12 @@
         "slot": 4,
         "code": "VOLCANIC_RAGE",
         "name": "Вулканический напор",
-        "description": "Жертвует 10% HP: удваивает Скорость (x2) и пробивает блоки (2 хода).",
+        "description": "Разогревается: удваивает Скорость (x2) и пробивает блоки (2 хода).",
         "category": "UTILITY",
         "element": "NEUTRAL",
         "target": "SELF",
         "cooldown": 3,
-        "selfDamagePercentMaxHp": 10,
+        "selfDamagePercentMaxHp": 0,
         "effect": "RAGE_SPEED_PIERCE",
         "effectTurns": 2
       }
@@ -218,7 +218,7 @@
         "slot": 2,
         "code": "SMOLDER_SWEEP",
         "name": "Пепельный вихрь",
-        "description": "Огненный STAB-удар, ослепляющий цель (-35% точности на 2 хода).",
+        "description": "Огненный STAB-удар, ослепляющий цель (-35% точности на 1 ход).",
         "category": "SPECIAL",
         "element": "FIRE",
         "target": "ENEMY",
@@ -226,7 +226,7 @@
         "cooldown": 2,
         "stab": true,
         "effect": "BLIND",
-        "effectTurns": 2
+        "effectTurns": 1
       },
       {
         "slot": 3,
@@ -243,12 +243,12 @@
         "slot": 4,
         "code": "ASH_SECOND_WIND",
         "name": "Второе дыхание пепла",
-        "description": "Восстанавливает 22% HP (или 44%, если HP ниже 25%).",
+        "description": "Восстанавливает 15% HP (или 30%, если HP ниже 25%).",
         "category": "UTILITY",
         "element": "NEUTRAL",
         "target": "SELF",
         "cooldown": 4,
-        "healPercentMaxHp": 22,
+        "healPercentMaxHp": 15,
         "doubleHealLowHp": true
       }
     ]
@@ -276,7 +276,7 @@
         "category": "BASIC",
         "element": "NEUTRAL",
         "target": "ENEMY",
-        "power": 10
+        "power": 12
       },
       {
         "slot": 2,
@@ -286,7 +286,7 @@
         "category": "SPECIAL",
         "element": "FIRE",
         "target": "ENEMY",
-        "power": 16,
+        "power": 21,
         "cooldown": 2,
         "stab": true,
         "effect": "SLOW",
@@ -352,7 +352,7 @@
         "category": "SPECIAL",
         "element": "WATER",
         "target": "ENEMY",
-        "power": 16,
+        "power": 13,
         "cooldown": 3,
         "stab": true,
         "effect": "STUN",
@@ -416,7 +416,7 @@
         "category": "SPECIAL",
         "element": "WATER",
         "target": "ENEMY",
-        "power": 18,
+        "power": 22,
         "cooldown": 2,
         "stab": true
       },
@@ -437,12 +437,12 @@
         "slot": 4,
         "code": "AROMATIC_TEA",
         "name": "Ароматный чай",
-        "description": "Восстанавливает 10% HP, снимает все дебаффы и даёт Регенерацию (3 хода).",
+        "description": "Восстанавливает 20% HP, снимает все дебаффы и даёт Регенерацию (3 хода).",
         "category": "UTILITY",
         "element": "NEUTRAL",
         "target": "SELF",
         "cooldown": 4,
-        "healPercentMaxHp": 10,
+        "healPercentMaxHp": 20,
         "effect": "CLEANSE",
         "effectTurns": 1,
         "secondEffect": "REGEN",
@@ -671,7 +671,7 @@
         "slot": 2,
         "code": "SPORE_VOLLEY",
         "name": "Споровый залп",
-        "description": "Лесной STAB-удар, отравляющий противника Ядом (3 хода).",
+        "description": "Лесной STAB-удар, отравляющий противника Ядом (2 хода).",
         "category": "SPECIAL",
         "element": "FOREST",
         "target": "ENEMY",
@@ -679,7 +679,7 @@
         "cooldown": 2,
         "stab": true,
         "effect": "POISON",
-        "effectTurns": 3
+        "effectTurns": 2
       },
       {
         "slot": 3,
@@ -696,12 +696,12 @@
         "slot": 4,
         "code": "TRUFFLE_SNACK",
         "name": "Лесной трюфель",
-        "description": "Находит редкий корень и восстанавливает 35% от макс. HP.",
+        "description": "Находит редкий корень и восстанавливает 22% от макс. HP.",
         "category": "UTILITY",
         "element": "NEUTRAL",
         "target": "SELF",
         "cooldown": 4,
-        "healPercentMaxHp": 35
+        "healPercentMaxHp": 22
       }
     ]
   },
@@ -728,7 +728,7 @@
         "category": "BASIC",
         "element": "NEUTRAL",
         "target": "ENEMY",
-        "power": 10
+        "power": 14
       },
       {
         "slot": 2,
@@ -738,7 +738,7 @@
         "category": "SPECIAL",
         "element": "FOREST",
         "target": "ENEMY",
-        "power": 16,
+        "power": 22,
         "cooldown": 2,
         "stab": true,
         "effect": "SLOW",
@@ -759,13 +759,15 @@
         "slot": 4,
         "code": "MONOCLE_ANALYSIS",
         "name": "Дедукция монокля",
-        "description": "Находит уязвимость: следующая атака нанесёт гарантированный крит (x1.5).",
+        "description": "Находит уязвимость: Атака +30% на 2 хода и следующая атака — гарантированный крит (x1.5).",
         "category": "UTILITY",
         "element": "NEUTRAL",
         "target": "SELF",
         "cooldown": 3,
-        "effect": "GUARANTEED_CRIT",
-        "effectTurns": 2
+        "effect": "ATK_UP",
+        "effectTurns": 2,
+        "secondEffect": "GUARANTEED_CRIT",
+        "secondEffectTurns": 2
       }
     ]
   },

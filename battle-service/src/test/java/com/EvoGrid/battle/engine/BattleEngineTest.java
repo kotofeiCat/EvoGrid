@@ -15,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BattleEngineTest {
 
-    /** Случайность без сюрпризов: всегда попадание, никогда крит или уворот. */
     private static final Random NO_LUCK = new Random() {
         @Override
         public int nextInt(int bound) {
@@ -36,12 +35,12 @@ class BattleEngineTest {
     private final BattleEngine engine = new BattleEngine(() -> NO_LUCK);
 
     @Test
-    @DisplayName("Треугольник стихий: огонь > лес > вода > огонь")
+    @DisplayName("Треугольник стихий: огонь > лес > вода > огонь (x1.3 / x0.77)")
     void elementTriangle() {
-        assertThat(BattleEngine.elementMultiplier("FIRE", "FOREST")).isEqualTo(1.5);
-        assertThat(BattleEngine.elementMultiplier("FOREST", "WATER")).isEqualTo(1.5);
-        assertThat(BattleEngine.elementMultiplier("WATER", "FIRE")).isEqualTo(1.5);
-        assertThat(BattleEngine.elementMultiplier("FOREST", "FIRE")).isEqualTo(0.67);
+        assertThat(BattleEngine.elementMultiplier("FIRE", "FOREST")).isEqualTo(1.3);
+        assertThat(BattleEngine.elementMultiplier("FOREST", "WATER")).isEqualTo(1.3);
+        assertThat(BattleEngine.elementMultiplier("WATER", "FIRE")).isEqualTo(1.3);
+        assertThat(BattleEngine.elementMultiplier("FOREST", "FIRE")).isEqualTo(0.77);
         assertThat(BattleEngine.elementMultiplier("NEUTRAL", "FIRE")).isEqualTo(1.0);
         assertThat(BattleEngine.elementMultiplier("FIRE", "FIRE")).isEqualTo(1.0);
     }
@@ -132,7 +131,28 @@ class BattleEngineTest {
         assertThat(blocker.maxHp - blocker.hp).isLessThan(fullDamage);
     }
 
-    // ---------- тестовые данные ----------
+    @Test
+    @DisplayName("Защита снижает урон, но не обнуляет его")
+    void defenseReducesDamage() {
+        Combatant attacker = new Combatant(1L, "А", "NEUTRAL", "", 100, 35, 20, 20, List.of());
+        Combatant soft = new Combatant(2L, "Мягкий", "NEUTRAL", "", 100, 20, 10, 20, List.of());
+        Combatant hard = new Combatant(3L, "Твёрдый", "NEUTRAL", "", 100, 20, 40, 20, List.of());
+        AbilityDto hit = attack(1, "NEUTRAL", 10, 0, NONE, 0);
+        int vsSoft = engine.estimateDamage(attacker, soft, hit);
+        int vsHard = engine.estimateDamage(attacker, hard, hit);
+        assertThat(vsSoft).isGreaterThan(vsHard);
+        assertThat(vsHard).isGreaterThan(10);
+    }
+
+    @Test
+    @DisplayName("Даже самый сильный удар по слабой стихии без крита не убивает с одного раза")
+    void noOneShots() {
+        Combatant strong = new Combatant(1L, "Сильный", "FIRE", "", 85, 35, 25, 5, List.of());
+        Combatant weak = new Combatant(2L, "Хрупкий", "FOREST", "", 65, 30, 20, 35, List.of());
+        AbilityDto strongest = attack(2, "FIRE", 26, 2, NONE, 0);
+        int maxDamage = (int) Math.round(engine.estimateDamage(strong, weak, strongest) * (1 + BattleEngine.DAMAGE_SPREAD));
+        assertThat(maxDamage).isLessThan(weak.maxHp);
+    }
 
     private static Combatant fighter(String name, String element, int speed) {
         return new Combatant(1L, name, element, "Тест", 100, 30, 20, speed, List.of());

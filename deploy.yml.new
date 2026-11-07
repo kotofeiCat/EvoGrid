@@ -1,8 +1,5 @@
 name: Build and Deploy EvoGrid
 
-# Собираем проект прямо на сервере: по сети идёт только git pull (несколько сотен КБ),
-# а не ~400 МБ jar-файлов через scp, на котором деплой зависал.
-
 on:
   push:
     branches:
@@ -37,13 +34,9 @@ jobs:
           script: |
             set -e
 
-            # Папка, куда репозиторий склонирован на сервере (поменяйте, если путь другой)
             APP_DIR=/var/www/EvoGrid
-            # Имя compose-проекта = имя папки в нижнем регистре,
-            # как при ручном запуске `docker compose up` из папки EvoGrid (том evogrid_postgres_data)
             PROJECT=evogrid
 
-            # 0. Swap, чтобы сборка и 7 JVM не вешали сервер
             if [ ! -f /swapfile ]; then
               fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
               chmod 600 /swapfile
@@ -54,7 +47,6 @@ jobs:
               swapon /swapfile 2>/dev/null || true
             fi
 
-            # 1. Получаем свежий код
             if [ ! -d "$APP_DIR/.git" ]; then
               git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
             fi
@@ -64,8 +56,6 @@ jobs:
             git clean -fdx -e .env
             echo "Деплой коммита: $(git log -1 --format='%h %s')"
 
-            # 2. Сборка Maven внутри Docker (Maven/JDK на сервере не нужны).
-            #    Зависимости кэшируются в томе evogrid-m2, повторные сборки быстрые.
             docker run --rm \
               -v "$APP_DIR":/build -w /build \
               -v evogrid-m2:/root/.m2 \
@@ -73,7 +63,6 @@ jobs:
               maven:3.9-eclipse-temurin-17 \
               mvn -B -q clean package -DskipTests
 
-            # 3. .env (кавычки вокруг EOF — bash ничего не подставляет)
             cat <<'EOF' > .env
             POSTGRES_USER=postgres
             POSTGRES_PASSWORD=postgres
@@ -86,7 +75,6 @@ jobs:
             EOF
             echo "YANDEX_MAPS_API_KEY=${YANDEX_MAPS_API_KEY}" >> .env
 
-            # 4. Убираем старые контейнеры и поднимаем всё заново
             docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service api-gateway evogrid-postgres 2>/dev/null || true
 
             docker compose -p "$PROJECT" build
@@ -103,7 +91,6 @@ jobs:
             docker image prune -f
             docker compose -p "$PROJECT" ps
 
-            # 5. Проверяем, что шлюз отвечает
             for i in $(seq 1 30); do
               if curl -fsS -o /dev/null http://127.0.0.1:8080/; then echo "api-gateway OK"; exit 0; fi
               sleep 5

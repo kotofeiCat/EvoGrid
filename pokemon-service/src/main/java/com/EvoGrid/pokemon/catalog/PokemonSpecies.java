@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/** Вид эвона в базе pokemon_db. ID фиксированы и совпадают с data/species.json. */
 @Entity
 @Table(name = "pokemon_species")
 @Getter
@@ -48,7 +47,6 @@ public class PokemonSpecies {
         updateFrom(definition);
     }
 
-    /** Обновляет запись из data/species.json, не меняя ID. */
     public void updateFrom(SpeciesDefinition definition) {
         this.name = definition.name();
         this.element = ElementType.valueOf(definition.element());

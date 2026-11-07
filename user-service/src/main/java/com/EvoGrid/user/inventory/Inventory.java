@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** inventory-service под Circuit Breaker: описание предметов, списание и начисление. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,7 +21,6 @@ public class Inventory {
 
     private final InventoryClient client;
 
-    /** Каталог меняется только с новой версией сервиса, поэтому кэшируем его навсегда. */
     private final Map<String, ItemDto> catalog = new ConcurrentHashMap<>();
 
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "unavailable")
@@ -42,7 +40,6 @@ public class Inventory {
         return client.consume(userId, new ConsumeItemRequest(operationId, itemCode));
     }
 
-    /** Без fallback: если сервис недоступен, вызывающий (доставка сфер) просто повторит позже. */
     @CircuitBreaker(name = "inventoryService")
     public void grantSpheres(Long userId, String operationId, int amount) {
         client.grant(userId, new GrantRequest(operationId, 0, Map.of("SPHERE_BASIC", amount)));

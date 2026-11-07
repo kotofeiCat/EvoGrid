@@ -1,7 +1,6 @@
 let profileData = null;
 let allSpecies = [];
 let inspectedPokemon = null;
-/** Сумка из inventory-service; null — сервис недоступен (профиль всё равно работает). */
 let bagData = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -14,14 +13,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Свайп вниз закрывает досье, тап по затемнению — тоже
     const detailModal = document.getElementById('modal-poke-details');
     Gestures.enableSwipeToClose(detailModal, closeDetailModal);
     detailModal.addEventListener('click', (e) => {
         if (e.target === detailModal) closeDetailModal();
     });
 
-    // Свайп влево/вправо — соседняя вкладка нижнего меню (Карта, Отряд, Эводекс, Магазин, Профиль)
     Gestures.enableTabSwipe(document.body, () => TAB_ORDER.indexOf(currentTab()), (index, direction) => {
         const tab = TAB_ORDER[index];
         if (tab === 'map' || tab === 'shop') {
@@ -237,9 +234,6 @@ async function assignToSlot(slotNumber) {
     }
 }
 
-// ==================== ЗДОРОВЬЕ И СУМКА ====================
-
-/** Для карточки: в плашке HP показываем текущее здоровье «42/70». */
 function withHp(p) {
     return { ...p, maxHp: `${p.currentHp}/${p.maxHp}` };
 }
@@ -280,7 +274,6 @@ function renderProfileBag() {
         </div>`).join('');
 }
 
-/** В досье своего эвона: полоска здоровья и лечилки из сумки, которые к нему подходят. */
 function renderHealSection(owned) {
     const wrap = document.getElementById('detail-heal-wrap');
     wrap.classList.toggle('hidden', !owned);

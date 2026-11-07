@@ -7,10 +7,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * При старте приводит таблицу видов в соответствие с data/species.json:
- * добавляет новые виды и обновляет существующие. ID не меняются, данные игроков не страдают.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

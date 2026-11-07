@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Адреса только для других сервисов (battle-service).
- * Снаружи недоступны: в шлюзе нет маршрута на /internal/**.
- */
 @RestController
 @RequestMapping("/internal/users/{userId}")
 @RequiredArgsConstructor

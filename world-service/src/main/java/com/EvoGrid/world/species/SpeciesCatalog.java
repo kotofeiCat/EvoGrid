@@ -9,10 +9,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Виды, которые могут появляться на карте. Берутся из pokemon-service под Circuit Breaker;
- * последний удачный ответ запоминается, и при падении pokemon-service карта работает на нём.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

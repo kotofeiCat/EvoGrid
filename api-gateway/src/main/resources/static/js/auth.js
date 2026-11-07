@@ -5,13 +5,11 @@ let selectedStarterId = 2;
 
 const EMAIL_REGEX = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
-// Проверяем серверную HttpOnly JWT-куку при открытии сайта
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         await ApiService.getCurrentUser();
         window.location.href = 'game.html';
     } catch {
-        // Пользователь еще не авторизован — остаемся на форме входа
     }
 });
 
@@ -59,7 +57,6 @@ async function handleAuthForm(e) {
                 return;
             }
         } catch {
-            // Продолжаем, финальная проверка пройдет при создании записи
         }
 
         await renderStartersSelection();

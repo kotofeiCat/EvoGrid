@@ -2,7 +2,6 @@ package com.EvoGrid.common.dto;
 
 import java.util.List;
 
-/** Профиль игрока: прогресс, позиция, отряд и вся коллекция. Предметы и монеты — в inventory-service. */
 public record UserProfileDto(
         Long id,
         String email,

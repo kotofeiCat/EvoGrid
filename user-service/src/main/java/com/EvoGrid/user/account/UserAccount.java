@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
-/** Аккаунт тренера. @DynamicUpdate — в UPDATE попадают только изменённые колонки. */
 @Entity
 @DynamicUpdate
 @Table(name = "users")
@@ -35,23 +34,13 @@ public class UserAccount {
     private int level;
     private int experience;
 
-    /**
-     * Сферы, заработанные за уровни, которые ещё не доставлены в inventory-service.
-     * Колонка «pokeballs» осталась от старой версии: старые покеболы игроков доставляются так же.
-     */
     @Column(name = "pokeballs")
     private int pendingSpheres;
 
-    /**
-     * Сколько сфер уже доставлено — из этого числа строится уникальный id операции доставки.
-     * Integer без columnDefinition: колонка добавится в существующую таблицу как nullable,
-     * а null читается как 0.
-     */
     private Integer spheresDelivered;
     private double latitude;
     private double longitude;
 
-    /** Каким слотом отряда игрок вступает в бой (1–3). */
     @Column(columnDefinition = "integer default 1")
     private Integer activePartySlot;
 
@@ -81,7 +70,6 @@ public class UserAccount {
         this.longitude = longitude;
     }
 
-    /** Начисляет опыт; каждые 100 XP — новый уровень и 3 сферы. */
     public void addExperience(int xp) {
         experience += xp;
         while (experience >= XP_PER_LEVEL) {

@@ -49,7 +49,6 @@ jobs:
           timeout: 60s
           command_timeout: 3m
           script: |
-            # Создаем 4GB Swap, если его еще нет, чтобы Java-сервисы не вешали сервер
             if [ ! -f /swapfile ]; then
               fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096
               chmod 600 /swapfile
@@ -86,14 +85,11 @@ jobs:
             set -e
             cd /var/www/EvoGrid
 
-            # 1. Сначала распаковываем свежие файлы (включая docker-compose.yml)
             tar -xzf deploy.tar.gz
             rm -f deploy.tar.gz
 
-            # 2. Принудительно удаляем старые контейнеры, если они остались от прошлых запусков
             docker rm -f discovery-server config-server pokemon-service user-service world-service battle-service inventory-service api-gateway evogrid-db-init evogrid-postgres 2>/dev/null || true
 
-            # 3. Генерируем .env файл
             cat <<EOF > .env
             POSTGRES_USER=postgres
             POSTGRES_PASSWORD=postgres
@@ -106,7 +102,6 @@ jobs:
             JWT_SECRET=EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!
             EOF
 
-            # 4. Собираем и запускаем сервисы
             docker compose build
 
             docker compose up -d postgres discovery-server config-server

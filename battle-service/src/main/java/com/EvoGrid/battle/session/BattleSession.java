@@ -13,11 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Бой с диким эвоном.
- * Состояние бойцов хранится JSON-ом: весь отряд игрока (до трёх эвонов) и дикий противник.
- * На поле в каждый момент один боец отряда — activeIndex.
- */
 @Entity
 @Table(name = "battles")
 public class BattleSession {
@@ -40,15 +35,12 @@ public class BattleSession {
     @Column(length = 20)
     private BattleStatus status;
 
-    /** Отряд игрока (JSON-массив). */
     @Column(columnDefinition = "TEXT")
     private String teamJson;
 
-    /** Кто из отряда сейчас на поле. */
     @Column(columnDefinition = "integer default 0 not null")
     private int activeIndex;
 
-    /** Боец игрока из версии без отрядов — читается, только если teamJson пуст. */
     @Column(columnDefinition = "TEXT")
     private String playerJson;
 
@@ -58,17 +50,14 @@ public class BattleSession {
     @Column(columnDefinition = "TEXT")
     private String combatLog;
 
-    /** До какого момента игрок должен выбрать действие. */
     private Instant turnDeadline;
 
-    /** Защита от двойной обработки хода (два быстрых клика). */
     @Version
     @Column(columnDefinition = "bigint default 0 not null")
     private long version;
 
     private Instant createdAt;
 
-    /** Монеты за итог боя, которые ещё не удалось начислить (inventory-service был недоступен). */
     @Column(columnDefinition = "integer default 0 not null")
     private int coinsPending;
 
@@ -79,7 +68,6 @@ public class BattleSession {
     private Combatant enemy;
 
     protected BattleSession() {
-        // для JPA
     }
 
     public BattleSession(Long userId, Long spawnId, List<Combatant> team, int activeIndex, Combatant enemy,
@@ -97,9 +85,6 @@ public class BattleSession {
         syncState();
     }
 
-    // ---------- бойцы ----------
-
-    /** Весь отряд игрока по порядку слотов. */
     public List<Combatant> team() {
         if (team == null) {
             team = teamJson != null && !teamJson.isBlank()
@@ -109,7 +94,6 @@ public class BattleSession {
         return team;
     }
 
-    /** Боец игрока, который сейчас на поле. */
     public Combatant player() {
         return team().get(activeIndex);
     }
@@ -118,7 +102,6 @@ public class BattleSession {
         return activeIndex;
     }
 
-    /** Вывести на поле другого бойца отряда. */
     public void switchTo(int index) {
         if (index < 0 || index >= team().size()) {
             throw new IllegalArgumentException("Нет бойца с номером " + index);
@@ -126,7 +109,6 @@ public class BattleSession {
         this.activeIndex = index;
     }
 
-    /** Первый живой боец отряда, кроме того, что на поле; -1 — живых не осталось. */
     public int nextAliveIndex() {
         for (int i = 0; i < team().size(); i++) {
             if (i != activeIndex && team().get(i).alive()) return i;
@@ -143,17 +125,11 @@ public class BattleSession {
         return enemy;
     }
 
-    /**
-     * Записывает изменения бойцов обратно в JSON-колонки.
-     * Вызывается сервисом перед сохранением: так Hibernate гарантированно видит изменения.
-     */
     @PrePersist
     public void syncState() {
         if (team != null) teamJson = write(team);
         if (enemy != null) enemyJson = write(enemy);
     }
-
-    // ---------- ход боя ----------
 
     public boolean inProgress() {
         return status == BattleStatus.IN_PROGRESS;
@@ -177,8 +153,6 @@ public class BattleSession {
         return combatLog == null || combatLog.isEmpty() ? List.of() : Arrays.asList(combatLog.split("\n"));
     }
 
-    // ---------- геттеры ----------
-
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public Long getSpawnId() { return spawnId; }
@@ -191,8 +165,6 @@ public class BattleSession {
     public void setCoinsPending(int coins) {
         this.coinsPending = Math.max(0, coins);
     }
-
-    // ---------- JSON ----------
 
     private static Combatant read(String json) {
         if (json == null || json.isBlank()) return null;

@@ -1,14 +1,13 @@
-# Настройки только для battle-service
 battle:
-  # сколько игрок выбирает действие
+
   turn-time: 30s
-  # с какого расстояния можно начать бой (радиус 70 м + запас на погрешность GPS)
+
   max-distance-meters: 100
-  # опыт за итог боя
+
   xp-for-win: 35
   xp-for-catch: 50
   xp-for-loss: 10
-  # монеты за итог боя (тратятся в магазине)
-  coins-for-win: 40
+
+  coins-for-win: 60
   coins-for-catch: 25
-  coins-for-loss: 10
+  coins-for-loss: 15

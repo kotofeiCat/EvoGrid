@@ -22,10 +22,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
-/**
- * Превращает исключения в понятный JSON {@link ApiError}.
- * Сервисы просто бросают {@link ResponseStatusException} или валидируют вход аннотациями.
- */
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -35,7 +31,6 @@ public class ApiExceptionHandler {
         return error(HttpStatus.valueOf(e.getStatusCode().value()), e.getReason());
     }
 
-    /** Стандартные HTTP-ошибки Spring: 404 нет пути, 405 не тот метод, 415 не тот Content-Type и т.п. */
     @ExceptionHandler(ErrorResponseException.class)
     public ResponseEntity<ApiError> handleSpringHttpError(ErrorResponseException e) {
         return error(HttpStatus.valueOf(e.getStatusCode().value()), null);

@@ -4,11 +4,9 @@ server:
 spring:
   application:
     name: battle-service
-  # база, Eureka, логи, actuator, Circuit Breaker и настройки боя приходят из Config Server
   config:
     import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
 
-# Ответы «не найдено» и «уже занято» — это не поломка сервиса, автомат из-за них не размыкается
 resilience4j:
   circuitbreaker:
     configs:

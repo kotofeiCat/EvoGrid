@@ -1,6 +1,5 @@
 package com.EvoGrid.common.dto;
 
-/** Дикий эвон на карте. */
 public record WorldSpawnDto(
         Long spawnId,
         Long speciesId,

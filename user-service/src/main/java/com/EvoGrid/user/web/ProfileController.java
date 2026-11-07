@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Профиль текущего игрока. ID берётся из JWT, который проверил шлюз. */
 @Validated
 @RestController
 @RequestMapping("/api/users/me")

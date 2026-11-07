@@ -14,11 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Итог закончившегося боя: опыт и здоровье отряда — в user-service, монеты — в inventory-service.
- * Если inventory-service недоступен, монеты не теряются: они остаются в coinsPending и
- * начисляются фоновой задачей. Id операции «battle-{id}» не даст начислить их дважды.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -62,7 +57,6 @@ public class BattleRewards {
         }
     }
 
-    /** Раз в минуту дозачисляет монеты, которые не удалось начислить сразу. */
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     @Transactional
     public void retryPendingCoins() {

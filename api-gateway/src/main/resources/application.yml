@@ -11,16 +11,18 @@ yandex:
 spring:
   application:
     name: api-gateway
-  # Eureka, логи и actuator приходят из Config Server
   config:
     import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
-  # traceId из Micrometer Tracing попадает в логи реактивного шлюза
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-cache: true
   reactor:
     context-propagation: auto
   cloud:
     gateway:
       routes:
-        # ---------- API сервисов, у каждого свой Circuit Breaker ----------
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -67,7 +69,6 @@ spring:
                 name: inventoryServiceCB
                 fallbackUri: forward:/fallback/inventory-service
 
-        # ---------- Документация OpenAPI каждого сервиса для общего Swagger UI ----------
         - id: user-service-docs
           uri: lb://user-service
           predicates:
@@ -99,7 +100,6 @@ spring:
           filters:
             - SetPath=/v3/api-docs
 
-# Общий Swagger UI: http://<сайт>/swagger-ui.html, сервис выбирается в списке справа сверху
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -117,10 +117,8 @@ springdoc:
       - name: inventory-service
         url: /api-docs/inventory-service
 
-# Circuit Breaker: общие настройки (3 ошибки из 5 — размыкание на 15 с) приходят из Config Server
 resilience4j:
   timelimiter:
     configs:
       default:
-        # по умолчанию 1 секунда — слишком мало для первого запроса к «холодному» сервису
         timeoutDuration: 15s

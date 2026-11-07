@@ -8,10 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Обращения к pokemon-service под Circuit Breaker.
- * Если каталог недоступен, регистрация не ломается: выдаётся стартер по умолчанию.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

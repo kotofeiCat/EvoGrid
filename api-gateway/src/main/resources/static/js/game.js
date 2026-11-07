@@ -7,7 +7,6 @@ const spawnMarkersMap = new Map();
 let selectedWildSpawn = null;
 let currentBattle = null;
 
-// Переменные плавной анимации маркера и фильтрации GPS
 let animFrameId = null;
 let renderedLat = 55.7558;
 let renderedLon = 37.6173;
@@ -18,7 +17,8 @@ let lastGpsFixTime = 0;
 let watchId = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // Свайп вниз закрывает карточку дикого эвона, тап по затемнению — тоже
+    if (reloadIfPageOutdated()) return;
+
     const wildModal = document.getElementById('modal-wild-inspect');
     Gestures.enableSwipeToClose(wildModal, closeWildModal);
     wildModal.addEventListener('click', (e) => {
@@ -27,7 +27,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock('map');
 
-    // 1. ПРОВЕРКА АВТОРИЗАЦИИ: только при 401 Unauthorized выкидываем на index.html
     try {
         currentUser = await ApiService.getCurrentUser();
         updateActiveFighterLabel();
@@ -46,7 +45,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     lastServerSyncTime = Date.now();
     lastGpsFixTime = Date.now();
 
-    // 2. ЗАГРУЗКА СПРАВОЧНИКА ЭВОНОВ
     try {
         speciesCatalog = await ApiService.getAllSpecies();
     } catch (e) {
@@ -54,7 +52,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         speciesCatalog = [];
     }
 
-    // 3. ИНИЦИАЛИЗАЦИЯ КАРТЫ ЯНДЕКСА (API 2.1)
     try {
         await initYandexGameMap(startLat, startLon);
         hideMapLoader();
@@ -69,6 +66,22 @@ window.addEventListener('DOMContentLoaded', async () => {
         );
     }
 });
+
+function reloadIfPageOutdated() {
+    const KEY = 'evogrid-reloaded-for-update';
+    if (document.getElementById('battle-bag-panel') && document.getElementById('battle-team')) {
+        try { sessionStorage.removeItem(KEY); } catch {  }
+        return false;
+    }
+    try {
+        if (sessionStorage.getItem(KEY)) return false;
+        sessionStorage.setItem(KEY, '1');
+    } catch {
+        return false;
+    }
+    window.location.reload();
+    return true;
+}
 
 function updateActiveFighterLabel() {
     const el = document.getElementById('active-fighter-indicator');
@@ -95,7 +108,6 @@ async function initYandexGameMap(lat, lon) {
         }
     );
 
-    // 70-метровый круг обнаружения вокруг игрока
     radarCircle = new ymaps.Circle(
         [[lat, lon], CATCH_RADIUS_METERS],
         {},
@@ -110,7 +122,6 @@ async function initYandexGameMap(lat, lon) {
     );
     map.geoObjects.add(radarCircle);
 
-    // Кастомный маркер игрока (HTML из CSS)
     const TrainerLayout = ymaps.templateLayoutFactory.createClass(
         '<div class="ymap-trainer-pin-wrap"><div class="trainer-map-pin"></div></div>'
     );
@@ -388,8 +399,6 @@ async function confirmStartBattle() {
     }
 }
 
-// ==================== СОСТОЯНИЕ БОЯ ====================
-
 const BATTLE_STATUS_TEXT = {
     IN_PROGRESS: null,
     WON_BY_KO: { title: 'Победа!', text: 'Дикий эвон повержен.', kind: 'win' },
@@ -402,11 +411,8 @@ let turnTimerId = null;
 let turnDeadlineMs = 0;
 let turnTotalSec = 30;
 let lastHp = null;
-/** Сумка игрока (inventory-service): монеты и предметы. null — сумка недоступна. */
 let battleBag = null;
-/** Какую часть сумки показываем в бою: CAPTURE (сферы) или HEAL (лечилки и оживление). */
 let battleBagMode = null;
-/** Выбранная лечилка, ждём выбора бойца. */
 let pendingItem = null;
 
 function renderStatusBadges(statuses = []) {
@@ -478,7 +484,7 @@ function flashHit(containerId, delta) {
     const card = document.querySelector(`#${containerId} .poke-card`);
     if (!card || delta === 0) return;
     card.classList.remove('anim-hit', 'anim-heal');
-    void card.offsetWidth; // перезапуск анимации
+    void card.offsetWidth;
     card.classList.add(delta < 0 ? 'anim-hit' : 'anim-heal');
 
     const float = document.createElement('span');
@@ -532,7 +538,6 @@ function renderBattleState() {
     document.getElementById('battle-player-statuses').innerHTML = renderStatusBadges(b.playerActiveStatuses);
     document.getElementById('battle-enemy-statuses').innerHTML = renderStatusBadges(b.enemyActiveStatuses);
 
-    // Лог: ходы отделены заголовками, последний ход выделен
     const logBox = document.getElementById('battle-log-container');
     const lines = b.combatLog || [];
     let lastRoundIdx = 0;
@@ -543,7 +548,6 @@ function renderBattleState() {
     }).join('');
     logBox.scrollTop = logBox.scrollHeight;
 
-    // Результат боя
     const resultEl = document.getElementById('battle-result');
     const result = BATTLE_STATUS_TEXT[b.status];
     if (result) {
@@ -553,7 +557,6 @@ function renderBattleState() {
         resultEl.className = 'battle-result hidden';
     }
 
-    // Сон / оглушение: способности недоступны, есть кнопка «Пропустить ход»
     const skip = !isOver && b.playerSkipsTurn;
     document.getElementById('battle-skip-notice').classList.toggle('hidden', !skip);
     if (skip) {
@@ -585,8 +588,6 @@ function escapeHtml(text) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 }
-
-// ==================== ТАЙМЕР ХОДА ====================
 
 function startTurnTimer(secondsLeft, totalSec) {
     clearInterval(turnTimerId);
@@ -627,8 +628,6 @@ async function handleTurnTimeout() {
 function stopTurnTimer() {
     clearInterval(turnTimerId);
 }
-
-// ==================== ДЕЙСТВИЯ ====================
 
 async function runBattleAction(request) {
     if (!currentBattle || battleBusy) return;
@@ -674,8 +673,6 @@ async function applyItem(code, targetIndex) {
     await refreshBattleBag();
 }
 
-// ==================== ОТРЯД В БОЮ ====================
-
 function renderTeamStrip(b, isOver) {
     const strip = document.getElementById('battle-team');
     const team = b.team || [];
@@ -699,8 +696,6 @@ function renderTeamStrip(b, isOver) {
             </button>`;
     }).join('');
 }
-
-// ==================== СУМКА В БОЮ ====================
 
 async function refreshBattleBag() {
     try {
@@ -805,7 +800,6 @@ async function checkBattleEnd() {
             updateActiveFighterLabel();
             await loadNearbySpawns(currentUser.latitude, currentUser.longitude);
         } catch {
-            // карта обновится при следующем движении
         }
     }
 }

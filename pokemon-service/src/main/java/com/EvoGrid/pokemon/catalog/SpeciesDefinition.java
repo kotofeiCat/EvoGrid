@@ -5,7 +5,6 @@ import com.EvoGrid.common.game.StatusEffectType;
 
 import java.util.List;
 
-/** Описание вида в файле data/species.json. */
 public record SpeciesDefinition(
         long id,
         String name,
@@ -20,7 +19,6 @@ public record SpeciesDefinition(
 
     public record Stats(int hp, int attack, int defense, int speed) {}
 
-    /** Способность в JSON: необязательные поля можно не писать. */
     public record AbilityDefinition(
             int slot,
             String code,

@@ -29,11 +29,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Сценарии боя: начать, сходить способностью, сменить бойца, применить предмет, бросить сферу,
- * пропустить ход по таймеру. Правила — в {@link BattleEngine}, решения врага — в {@link EnemyAi},
- * награды — в {@link BattleRewards}.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -56,7 +51,6 @@ public class BattleService {
         var unfinished = repository.findFirstByUserIdAndSpawnIdAndStatus(userId, spawnId, BattleStatus.IN_PROGRESS)
                 .filter(BattleService::isPlayable);
         if (unfinished.isPresent()) {
-            // Игрок перезагрузил страницу или нажал «В бой» второй раз — продолжаем тот же бой.
             return toDto(unfinished.get());
         }
 
@@ -92,7 +86,6 @@ public class BattleService {
         return toDto(battle);
     }
 
-    /** Игрок выбрал способность 1–4. Если она на перезарядке — используется обычная атака. */
     @Transactional
     public BattleStateDto useAbility(Long battleId, Long userId, int slot) {
         BattleSession battle = load(battleId, userId);
@@ -109,7 +102,6 @@ public class BattleService {
         return finishRound(battle);
     }
 
-    /** Время хода вышло, или боец спит/оглушён: ход разыгрывается автоматически. */
     @Transactional
     public BattleStateDto timeout(Long battleId, Long userId) {
         BattleSession battle = load(battleId, userId);
@@ -129,7 +121,6 @@ public class BattleService {
         return finishRound(battle);
     }
 
-    /** Отозвать бойца и выпустить другого из отряда. Тратит ход: противник успевает ударить. */
     @Transactional
     public BattleStateDto switchFighter(Long battleId, Long userId, int index) {
         BattleSession battle = load(battleId, userId);
@@ -151,7 +142,6 @@ public class BattleService {
         return finishRound(battle);
     }
 
-    /** Лечилка или оживление на любого бойца отряда. Тратит ход. */
     @Transactional
     public BattleStateDto useItem(Long battleId, Long userId, String itemCode, Integer targetIndex) {
         BattleSession battle = load(battleId, userId);
@@ -179,7 +169,6 @@ public class BattleService {
         return finishRound(battle);
     }
 
-    /** Бросить сферу. Не получилось — противник ходит. */
     @Transactional
     public BattleStateDto throwSphere(Long battleId, Long userId, String sphereCode) {
         BattleSession battle = load(battleId, userId);
@@ -215,9 +204,6 @@ public class BattleService {
         return toDto(load(battleId, userId));
     }
 
-    // ==================== ВНУТРЕННЕЕ ====================
-
-    /** Итог раунда: победа, замена павшего бойца, поражение или следующий ход. */
     private BattleStateDto finishRound(BattleSession battle) {
         Combatant player = battle.player();
         Combatant enemy = battle.enemy();
@@ -238,7 +224,6 @@ public class BattleService {
                 rewards.settle(battle);
                 return toDto(save(battle));
             }
-            // Павший боец уходит, следующий живой выходит сам — ход на это не тратится
             battle.switchTo(next);
             battle.log(player.name + " без сил! В бой выходит " + battle.player().name + ".");
         }
@@ -270,7 +255,6 @@ public class BattleService {
         }
     }
 
-    /** Активный слот, если его эвон в силах; иначе первый живой. */
     private static int firstFighter(List<OwnedPokemonDto> party, int preferredSlot) {
         for (int i = 0; i < party.size(); i++) {
             OwnedPokemonDto p = party.get(i);
@@ -289,12 +273,10 @@ public class BattleService {
         return battle.team().get(index);
     }
 
-    /** Один предмет за ход: повторный клик в том же ходу не спишет предмет второй раз. */
     private static String operationId(BattleSession battle) {
         return "battle-" + battle.getId() + "-turn-" + battle.getTurnNumber();
     }
 
-    /** Бои, сохранённые до переноса способностей в pokemon-service, не содержат списка способностей. */
     private static boolean isPlayable(BattleSession battle) {
         return battle.team().stream().noneMatch(c -> c == null || c.abilities.isEmpty())
                 && !battle.enemy().abilities.isEmpty();

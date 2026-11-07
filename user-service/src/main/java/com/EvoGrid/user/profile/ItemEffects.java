@@ -4,7 +4,6 @@ import com.EvoGrid.common.dto.ItemDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Что предмет делает со здоровьем эвона вне боя. */
 final class ItemEffects {
 
     private ItemEffects() {

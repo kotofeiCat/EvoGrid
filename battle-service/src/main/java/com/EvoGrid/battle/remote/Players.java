@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-/** user-service под Circuit Breaker: профиль игрока и награды за бой. */
 @Slf4j
 @Component
 @RequiredArgsConstructor

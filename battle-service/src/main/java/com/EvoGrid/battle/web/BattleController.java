@@ -78,13 +78,11 @@ public class BattleController {
         return battles.get(battleId, userId);
     }
 
-    /** @param targetIndex номер бойца в отряде (0–2); если не указан — тот, кто на поле */
     public record UseItemRequest(
             @NotBlank(message = "Выберите предмет") String itemCode,
             @Min(value = 0, message = "Номер бойца 0–2") @Max(value = 2, message = "Номер бойца 0–2") Integer targetIndex
     ) {}
 
-    /** @param partySlot каким слотом отряда начать бой; если не указан — активным */
     public record StartBattleRequest(
             @NotNull(message = "Не выбран эвон на карте") Long spawnId,
             @Min(1) @Max(3) Integer partySlot

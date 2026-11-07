@@ -1,13 +1,8 @@
-# ============================================================
-#  Общие настройки, которые Config Server раздаёт всем сервисам
-# ============================================================
-
 spring:
-  # Сообщения валидации (@Min, @NotNull …) всегда на русском, независимо от языка браузера
   web:
     locale: ru
     locale-resolver: fixed
-  # Подключение к PostgreSQL. Имя базы у каждого сервиса своё: DB_NAME из docker-compose
+
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}
     username: ${DB_USER:postgres}
@@ -25,10 +20,8 @@ eureka:
     prefer-ip-address: true
 
 server:
-  # учитывать X-Forwarded-* от шлюза: Swagger строит ссылки на адрес шлюза
   forward-headers-strategy: framework
 
-# Мониторинг: /actuator/health, /actuator/metrics, /actuator/circuitbreakers
 management:
   endpoints:
     web:
@@ -44,8 +37,6 @@ management:
     sampling:
       probability: 1.0
 
-# Circuit Breaker для всех вызовов между сервисами:
-# 3 ошибки из 5 запросов — автомат размыкается на 15 секунд, потом пробует снова
 resilience4j:
   circuitbreaker:
     configs:
@@ -66,7 +57,6 @@ springdoc:
 
 logging:
   pattern:
-    # [сервис,traceId,spanId] — один traceId у запроса во всех сервисах
     console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name:-},%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
   level:
     com.EvoGrid: INFO

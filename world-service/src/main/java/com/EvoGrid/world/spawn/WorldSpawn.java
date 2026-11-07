@@ -17,7 +17,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
-/** Дикий эвон на карте. */
 @Entity
 @Table(name = "world_spawns", indexes = @Index(name = "idx_spawn_area", columnList = "active, latitude, longitude"))
 @Getter
@@ -42,11 +41,9 @@ public class WorldSpawn {
     private boolean active;
     private LocalDateTime spawnedAt;
 
-    /** Кто сейчас с ним сражается и до какого момента держится бронь. */
     private Long reservedBy;
     private Instant reservedUntil;
 
-    /** Защита от одновременной брони двумя игроками. */
     @Version
     @Column(columnDefinition = "bigint default 0 not null")
     private long version;

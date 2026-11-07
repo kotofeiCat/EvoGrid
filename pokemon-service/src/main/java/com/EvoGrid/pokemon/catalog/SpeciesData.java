@@ -13,10 +13,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Содержимое data/species.json — единственный источник данных о видах и способностях.
- * Файл читается один раз при старте и проверяется: у каждого вида ровно 4 способности в слотах 1–4.
- */
 @Component
 public class SpeciesData {
 

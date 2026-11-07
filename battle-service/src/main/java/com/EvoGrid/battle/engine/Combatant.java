@@ -12,18 +12,10 @@ import java.util.Set;
 
 import static com.EvoGrid.common.game.StatusEffectType.*;
 
-/**
- * Один участник боя (эвон игрока или дикий эвон).
- * Вместо десятков отдельных полей вида playerBurnTurns / enemyBurnTurns
- * все статусы хранятся в одном словаре «эффект → сколько ходов осталось».
- * Хранится в БД как JSON (см. BattleSession).
- */
 public class Combatant {
 
-    /** Негативные статусы, которые снимает очищение (CLEANSE). */
     public static final Set<StatusEffectType> DEBUFFS = EnumSet.of(BURN, POISON, SLEEP, STUN, SLOW, BLIND);
 
-    /** id эвона в коллекции игрока (у дикого — null): по нему здоровье после боя уходит в user-service. */
     public Long ownedPokemonId;
 
     public Long speciesId;
@@ -37,20 +29,15 @@ public class Combatant {
     public int defense;
     public int speed;
 
-    /** Процент блока от защитной стойки; сбрасывается перед следующим действием бойца. */
     public int blockPercent;
 
-    /** Активные статусы и баффы: эффект → оставшиеся ходы. */
     public Map<StatusEffectType, Integer> effects = new HashMap<>();
 
-    /** Перезарядка способностей: слот → оставшиеся ходы. */
     public Map<Integer, Integer> cooldowns = new HashMap<>();
 
-    /** Четыре способности вида, загружаются из pokemon-service в начале боя. */
     public List<AbilityDto> abilities = new ArrayList<>();
 
     public Combatant() {
-        // для Jackson
     }
 
     public Combatant(Long speciesId, String name, String element, String archetype,
@@ -73,8 +60,6 @@ public class Combatant {
         this.speed = speed;
     }
 
-    // ---------- здоровье ----------
-
     public boolean alive() {
         return hp > 0;
     }
@@ -83,14 +68,12 @@ public class Combatant {
         hp = Math.max(0, hp - amount);
     }
 
-    /** @return сколько HP реально восстановлено */
     public int heal(int amount) {
         int before = hp;
         hp = Math.min(maxHp, hp + amount);
         return hp - before;
     }
 
-    /** Поднять бойца без сил (предмет «Искра жизни»). Статусы с прошлой жизни снимаются. */
     public int revive(int percent) {
         hp = Math.max(1, maxHp * percent / 100);
         effects.clear();
@@ -106,8 +89,6 @@ public class Combatant {
     public int percentOfMaxHp(int percent) {
         return Math.max(1, (int) Math.round(maxHp * percent / 100.0));
     }
-
-    // ---------- статусы ----------
 
     public int turns(StatusEffectType type) {
         return effects.getOrDefault(type, 0);
@@ -137,7 +118,6 @@ public class Combatant {
         DEBUFFS.forEach(effects::remove);
     }
 
-    /** Пропускает ли боец свой ход (сон или оглушение). */
     public boolean skipsTurn() {
         return has(SLEEP) || has(STUN);
     }
@@ -149,8 +129,6 @@ public class Combatant {
         return Math.max(1, (int) Math.round(spd));
     }
 
-    // ---------- способности ----------
-
     public AbilityDto ability(int slot) {
         return abilities.stream()
                 .filter(a -> a.slot() == slot)
@@ -158,12 +136,9 @@ public class Combatant {
                 .orElseThrow(() -> new IllegalStateException(name + ": нет способности в слоте " + slot));
     }
 
-    /** Способности с текущей перезарядкой — для экрана боя. */
     public List<AbilityDto> abilitiesWithCooldowns() {
         return abilities.stream().map(a -> a.withCurrentCooldown(cooldown(a.slot()))).toList();
     }
-
-    // ---------- перезарядки ----------
 
     public int cooldown(int slot) {
         return cooldowns.getOrDefault(slot, 0);
@@ -179,8 +154,6 @@ public class Combatant {
         cooldowns.replaceAll((slot, left) -> left - 1);
         cooldowns.values().removeIf(left -> left <= 0);
     }
-
-    // ---------- для интерфейса ----------
 
     public List<String> statusBadges() {
         List<String> list = new ArrayList<>();

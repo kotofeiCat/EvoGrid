@@ -1,6 +1,5 @@
 package com.EvoGrid.battle.service;
 
-/** Расстояние между двумя точками на Земле (формула гаверсинусов). */
 final class Geo {
 
     private static final double EARTH_RADIUS_METERS = 6_371_000;

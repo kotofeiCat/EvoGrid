@@ -4,6 +4,5 @@ server:
 spring:
   application:
     name: world-service
-  # база, Eureka, логи, actuator, Circuit Breaker и настройки спавнов приходят из Config Server
   config:
     import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"

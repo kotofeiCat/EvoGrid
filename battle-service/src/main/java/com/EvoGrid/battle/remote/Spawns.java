@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-/** world-service под Circuit Breaker: бронь эвона под бой и удаление с карты. */
 @Slf4j
 @Component
 @RequiredArgsConstructor

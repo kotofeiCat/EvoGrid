@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
-/** Заголовок документации в Swagger UI: «EvoGrid · battle-service» вместо «OpenAPI definition». */
 @AutoConfiguration
 @ConditionalOnClass(OpenAPI.class)
 public class OpenApiAutoConfiguration {

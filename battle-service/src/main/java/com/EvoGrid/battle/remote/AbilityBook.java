@@ -12,10 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Способности видов из pokemon-service. Справочник не меняется во время работы,
- * поэтому ответы кэшируются: каждый вид запрашивается один раз.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

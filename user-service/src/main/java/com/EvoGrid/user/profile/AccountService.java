@@ -18,13 +18,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Locale;
 
-/** Регистрация и вход. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountService {
 
-    /** Куда ставим игрока, если браузер не дал геолокацию (центр Москвы). */
     private static final double DEFAULT_LAT = 55.7558;
     private static final double DEFAULT_LON = 37.6173;
 

@@ -4,14 +4,12 @@ server:
 spring:
   application:
     name: user-service
-  # база, Eureka, логи, actuator и Circuit Breaker приходят из Config Server
   config:
     import: "configserver:http://${CONFIG_SERVER_HOST:localhost}:8888"
 
 jwt:
   secret: ${JWT_SECRET}
 
-# «не найдено», «уже занято» и ошибки валидации — не поломка сервиса, автомат из-за них не размыкается
 resilience4j:
   circuitbreaker:
     configs:

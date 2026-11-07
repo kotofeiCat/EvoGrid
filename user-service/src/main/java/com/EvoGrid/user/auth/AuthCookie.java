@@ -4,7 +4,6 @@ import org.springframework.http.ResponseCookie;
 
 import java.time.Duration;
 
-/** HttpOnly-кука с JWT: JavaScript на странице её не видит, поэтому токен не украсть через XSS. */
 public final class AuthCookie {
 
     public static final String NAME = "evogrid_jwt";

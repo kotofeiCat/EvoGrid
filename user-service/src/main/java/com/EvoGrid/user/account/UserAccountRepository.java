@@ -16,10 +16,6 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
 
     List<UserAccount> findTop50ByPendingSpheresGreaterThan(int amount);
 
-    /**
-     * Отмечает доставку сфер одним атомарным UPDATE: если за это время игрок получил новый уровень,
-     * его новые сферы не потеряются — вычитается ровно доставленное количество.
-     */
     @Modifying
     @Query("""
             update UserAccount u

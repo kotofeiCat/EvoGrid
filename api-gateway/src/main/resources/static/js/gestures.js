@@ -1,12 +1,5 @@
-// Жесты для телефона:
-//   enableSwipeToClose — окно-карточка закрывается свайпом вниз;
-//   enableTabSwipe     — свайп влево/вправо переключает вкладки нижнего меню.
 
 const Gestures = {
-    /**
-     * @param {HTMLElement} backdrop  — .modal-backdrop
-     * @param {Function} onClose      — что сделать при закрытии
-     */
     enableSwipeToClose(backdrop, onClose) {
         const sheet = backdrop.querySelector('.modal-window');
         if (!sheet) return;
@@ -27,7 +20,6 @@ const Gestures = {
 
         sheet.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) return;
-            // Тянуть можно, только если содержимое окна прокручено к самому верху
             if (sheet.scrollTop > 0) return;
             startY = e.touches[0].clientY;
             startX = e.touches[0].clientX;
@@ -45,7 +37,6 @@ const Gestures = {
             if (!decided) {
                 if (Math.abs(moveY) < 8 && Math.abs(moveX) < 8) return;
                 decided = true;
-                // Свайп не вниз или больше вбок — отдаём жест прокрутке
                 if (moveY <= 0 || Math.abs(moveX) > Math.abs(moveY)) {
                     dragging = false;
                     return;
@@ -63,7 +54,7 @@ const Gestures = {
             if (!dragging) return;
             dragging = false;
             sheet.classList.remove('is-dragging');
-            const velocity = dy / Math.max(1, Date.now() - startTime); // px/мс
+            const velocity = dy / Math.max(1, Date.now() - startTime);
             const shouldClose = dy > Math.min(140, sheet.offsetHeight * 0.25) || (dy > 40 && velocity > 0.6);
 
             if (shouldClose) {
@@ -91,13 +82,6 @@ const Gestures = {
         sheet.addEventListener('touchcancel', finish);
     },
 
-    /**
-     * Свайп влево/вправо по странице переключает вкладки.
-     * @param {HTMLElement} area       — где ловить жест
-     * @param {Function} getCurrent    — текущий индекс вкладки
-     * @param {Function} goTo          — перейти на вкладку с индексом
-     * @param {number} count           — сколько всего вкладок
-     */
     enableTabSwipe(area, getCurrent, goTo, count) {
         let startX = 0;
         let startY = 0;
@@ -108,7 +92,6 @@ const Gestures = {
             tracking = false;
             if (e.touches.length !== 1) return;
             if (document.querySelector('.modal-backdrop:not(.hidden)')) return;
-            // Не перехватываем свайпы внутри горизонтально прокручиваемых блоков
             if (e.target.closest('[data-no-tab-swipe]')) return;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;

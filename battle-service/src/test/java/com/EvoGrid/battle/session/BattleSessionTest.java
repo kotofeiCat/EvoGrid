@@ -81,7 +81,6 @@ class BattleSessionTest {
         assertThat(battle.player().name).isEqualTo("E");
     }
 
-    /** Сбрасывает закэшированное состояние, чтобы оно прочиталось из JSON заново. */
     private static void forget(BattleSession battle, String field) throws Exception {
         Field f = BattleSession.class.getDeclaredField(field);
         f.setAccessible(true);

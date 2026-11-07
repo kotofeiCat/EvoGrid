@@ -51,12 +51,10 @@ async function loadYandexMapsScript() {
                 apiKey = cfg.yandexMapsApiKey.trim();
             }
         } catch {
-            // Резервный ключ
         }
 
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            // Подключаем API 2.1 вместо v3
             script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`;
             script.async = true;
             script.onload = resolve;
@@ -252,8 +250,6 @@ const ApiService = {
         if (!res.ok) throw new Error(await readError(res, 'Не удалось применить предмет'));
         return res.json();
     },
-
-    // ---------- магазин и сумка (inventory-service) ----------
 
     async getShop() {
         const res = await fetch(`${API_BASE}/api/shop`, { credentials: 'include' });

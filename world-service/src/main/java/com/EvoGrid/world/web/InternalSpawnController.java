@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Адреса для battle-service. Снаружи недоступны: в шлюзе нет маршрута на /internal/**. */
 @RestController
 @RequestMapping("/internal/spawns/{spawnId}")
 @RequiredArgsConstructor

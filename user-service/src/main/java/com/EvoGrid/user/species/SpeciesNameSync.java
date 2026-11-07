@@ -11,11 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Один раз после старта сверяет названия пойманных эвонов с каталогом pokemon-service:
- * старые записи могли сохраниться под прежними именами.
- * Повторяет попытку раз в минуту, пока каталог не станет доступен.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

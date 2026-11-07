@@ -19,15 +19,12 @@
     </div>
 </div>
 
-<!-- Кнопка «Где я» -->
 <button type="button" class="map-fab" onclick="centerOnTrainerGps()" title="Показать, где я" aria-label="Показать, где я">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
 </button>
 
-<!-- Нижний док -->
 <div id="dock-mount"></div>
 
-<!-- Модальное окно осмотра дикого эвона -->
 <div id="modal-wild-inspect" class="modal-backdrop hidden">
     <div class="modal-window">
         <div class="inspector-layout">
@@ -51,7 +48,6 @@
     </div>
 </div>
 
-<!-- Модальное окно боя -->
 <div id="modal-battle" class="modal-backdrop hidden">
     <div class="modal-window battle-modal-window">
         <div class="battle-header">
@@ -61,7 +57,7 @@
                 <div class="turn-timer-track"><div id="turn-timer-fill" class="turn-timer-fill"></div></div>
             </div>
         </div>
-        <p class="battle-rules-hint">Огонь бьёт лес, лес — воду, вода — огонь (x1.5). Атака своей стихии — x1.25.</p>
+        <p class="battle-rules-hint">Огонь бьёт лес, лес — воду, вода — огонь (x1.3). Атака своей стихии — x1.2.</p>
 
         <div class="battle-arena-row">
             <div class="battle-fighter-col">
@@ -79,7 +75,6 @@
             </div>
         </div>
 
-        <!-- Отряд: кто на поле, кто в запасе. Тап по бойцу в запасе — смена (тратит ход) -->
         <div class="team-strip-wrap">
             <div class="abilities-section-title">Отряд <span class="team-strip-hint">нажмите на бойца, чтобы сменить — это тратит ход</span></div>
             <div id="battle-team" class="team-strip"></div>
@@ -101,7 +96,6 @@
             <div id="battle-abilities-grid" class="abilities-grid"></div>
         </div>
 
-        <!-- Сумка в бою: выбор сферы или лечилки -->
         <div id="battle-bag-panel" class="bag-panel hidden">
             <div class="bag-panel-head">
                 <span id="battle-bag-title" class="abilities-section-title">Сумка</span>

@@ -13,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
-/** Монеты и предметы игрока: покупка, списание, начисление наград. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,10 +43,6 @@ public class InventoryService {
         return snapshot(userId);
     }
 
-    /**
-     * Списывает один предмет и возвращает его описание, чтобы вызывающий сервис применил эффект.
-     * Повторный вызов с тем же operationId ничего не списывает.
-     */
     @Transactional
     public ItemDto consume(Long userId, String operationId, String itemCode) {
         ItemDto item = catalog.get(itemCode);
@@ -66,7 +61,6 @@ public class InventoryService {
         return item;
     }
 
-    /** Начисляет монеты и предметы. Повторный вызов с тем же operationId игнорируется. */
     @Transactional
     public InventoryDto grant(Long userId, GrantRequest request) {
         if (alreadyDone(request.operationId())) {
@@ -83,9 +77,6 @@ public class InventoryService {
         return snapshot(userId);
     }
 
-    // ==================== ВНУТРЕННЕЕ ====================
-
-    /** Кошелёк игрока; при первом обращении выдаётся стартовый набор. */
     private Wallet walletOf(Long userId) {
         return wallets.findById(userId).orElseGet(() -> {
             Wallet wallet = wallets.save(new Wallet(userId, settings.starterCoins()));
@@ -122,7 +113,6 @@ public class InventoryService {
         operations.save(new ProcessedOperation(operationId, userId));
     }
 
-    /** Сумка в порядке каталога; пустые ячейки не показываем. */
     private InventoryDto snapshot(Long userId) {
         Map<String, Integer> counts = new java.util.HashMap<>();
         bag.findByUserId(userId).forEach(slot -> counts.put(slot.getItemCode(), slot.getQuantity()));

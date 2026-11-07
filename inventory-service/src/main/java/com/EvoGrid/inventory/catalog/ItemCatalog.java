@@ -14,10 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Ассортимент магазина из data/items.json. Чтобы добавить предмет или поменять цену,
- * достаточно поправить JSON — код трогать не нужно.
- */
 @Component
 public class ItemCatalog {
 

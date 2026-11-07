@@ -14,7 +14,6 @@
     <description>Общие DTO, обработка ошибок и @CurrentUser для сервисов EvoGrid</description>
 
     <dependencies>
-        <!-- предоставляются самими сервисами -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -39,7 +38,6 @@
 
     <build>
         <plugins>
-            <!-- обычная библиотека, а не исполняемый jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

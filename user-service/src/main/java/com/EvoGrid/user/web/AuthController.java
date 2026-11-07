@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/** Регистрация и вход. Эти адреса шлюз пропускает без токена. */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor

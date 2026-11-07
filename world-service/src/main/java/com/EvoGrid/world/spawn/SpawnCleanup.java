@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Раз в 5 минут чистит базу от исчезнувших эвонов, чтобы таблица не росла бесконечно. */
 @Slf4j
 @Component
 @RequiredArgsConstructor

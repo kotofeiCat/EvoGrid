@@ -5,7 +5,6 @@ import com.EvoGrid.common.dto.AbilityDto;
 
 import java.util.List;
 
-/** Состояние боя для экрана битвы. */
 public record BattleStateDto(
         Long battleId,
         Long userId,
@@ -34,19 +33,13 @@ public record BattleStateDto(
         List<String> enemyActiveStatuses,
         List<AbilityDto> playerAbilities,
         List<AbilityDto> enemyAbilities,
-        /** Момент, до которого нужно выбрать действие (epoch ms), 0 — бой окончен. */
         long turnDeadlineEpochMs,
-        /** Сколько секунд осталось на ход (считается сервером, без расхождения часов). */
         int turnSecondsLeft,
-        /** Сколько всего секунд даётся на ход. */
         int turnSecondsTotal,
-        /** Эвон игрока спит или оглушён: атаковать не может, но можно сменить бойца или применить предмет. */
         boolean playerSkipsTurn,
         Long playerSpeciesId,
         Long enemySpeciesId,
-        /** Весь отряд игрока: кто на поле, кто в запасе, кто без сил. */
         List<Fighter> team,
-        /** Номер бойца на поле в списке team. */
         int activeIndex
 ) {
     public record Fighter(

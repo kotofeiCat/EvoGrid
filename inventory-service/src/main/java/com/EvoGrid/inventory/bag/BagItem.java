@@ -11,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/** Сколько штук одного предмета лежит в сумке игрока. */
 @Entity
 @Table(name = "bag_items", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "item_code"}))
 @Getter

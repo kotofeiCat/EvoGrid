@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-/** Профиль игрока: позиция, отряд, здоровье эвонов, награды за бои. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -51,7 +50,6 @@ public class ProfileService {
         return toProfile(user);
     }
 
-    /** Ставит эвона в слот отряда; прежний обитатель слота уходит в коллекцию. */
     @Transactional
     public UserProfileDto assignToParty(Long userId, Long ownedPokemonId, int slot) {
         UserAccount user = findUser(userId);
@@ -62,7 +60,6 @@ public class ProfileService {
         return toProfile(user);
     }
 
-    /** Лечение или оживление вне боя предметом из сумки. */
     @Transactional
     public UserProfileDto useItem(Long userId, Long ownedPokemonId, String itemCode) {
         UserAccount user = findUser(userId);
@@ -73,14 +70,12 @@ public class ProfileService {
         int hp = target.hpAt(now, settings.fullRegenTime());
         int newHp = ItemEffects.hpAfter(item, target.getName(), hp, target.getMaxHp());
 
-        // Сначала проверили, что предмет подходит, и только потом списываем его
         inventory.consume(userId, UUID.randomUUID().toString(), itemCode);
         target.setHp(newHp, now);
         log.info("Игрок {} применил «{}» на {}: {} → {} HP", userId, item.name(), target.getName(), hp, newHp);
         return toProfile(user);
     }
 
-    /** Итог боя от battle-service: опыт, здоровье отряда и пойманный эвон. */
     @Transactional
     public UserProfileDto applyBattleReward(Long userId, BattleRewardRequest reward) {
         UserAccount user = findUser(userId);

@@ -3,10 +3,6 @@ package com.EvoGrid.common.dto;
 import com.EvoGrid.common.game.AbilityCategory;
 import com.EvoGrid.common.game.StatusEffectType;
 
-/**
- * Способность эвона. Справочник хранит pokemon-service,
- * battle-service добавляет текущую перезарядку в бою.
- */
 public record AbilityDto(
         int slot,
         String code,

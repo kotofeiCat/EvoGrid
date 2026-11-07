@@ -8,11 +8,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * Доставляет в inventory-service сферы за новые уровни и старые покеболы из прошлой версии игры.
- * Если inventory-service недоступен, ничего не теряется: попытка повторится через 30 секунд.
- * Id операции «spheres-{игрок}-{сколько уже доставлено}» не даёт выдать одни и те же сферы дважды.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

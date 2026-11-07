@@ -2,12 +2,6 @@ package com.EvoGrid.common.dto;
 
 import java.util.List;
 
-/**
- * Итог боя, который battle-service отправляет в user-service.
- *
- * @param partyHp здоровье бойцов отряда после боя — оно сохраняется до следующего боя
- * @param caught  пойманный эвон или null, если никого не поймали
- */
 public record BattleRewardRequest(
         int experience,
         List<FighterHp> partyHp,

@@ -8,7 +8,6 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
-/** Подставляет значение заголовка {@code X-User-Id} в параметры с {@link CurrentUser}. */
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
     public static final String USER_ID_HEADER = "X-User-Id";

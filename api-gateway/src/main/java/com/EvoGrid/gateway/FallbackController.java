@@ -9,10 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/**
- * Ответ шлюза, когда Circuit Breaker сработал: сервис упал, не отвечает
- * или автомат уже разомкнут. Вместо зависания клиент сразу получает 503.
- */
 @Slf4j
 @RestController
 public class FallbackController {

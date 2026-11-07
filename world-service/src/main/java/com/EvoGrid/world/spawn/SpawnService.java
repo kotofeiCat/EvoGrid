@@ -28,7 +28,6 @@ public class SpawnService {
     private final SpeciesCatalog speciesCatalog;
     private final SpawnSettings settings;
 
-    /** Эвоны вокруг игрока; если их мало — создаём новых. */
     @Transactional
     public List<WorldSpawnDto> around(double lat, double lon, Long userId) {
         Map<Long, PokemonSpeciesDto> spawnable = speciesCatalog.spawnable().stream()
@@ -40,7 +39,6 @@ public class SpawnService {
                 lon - search.lonDelta(), lon + search.lonDelta(),
                 bornAfter()));
 
-        // Вид убрали из каталога или запретили спавнить — убираем и с карты
         if (!spawnable.isEmpty()) {
             nearby.removeIf(spawn -> {
                 boolean outdated = !spawnable.containsKey(spawn.getSpeciesId());
@@ -75,7 +73,6 @@ public class SpawnService {
         return toDto(findAlive(spawnId));
     }
 
-    /** Бронирует эвона под бой, чтобы двое игроков не поймали одного и того же. */
     @Transactional
     public WorldSpawnDto reserve(Long spawnId, Long userId) {
         WorldSpawn spawn = findAlive(spawnId);
@@ -88,7 +85,6 @@ public class SpawnService {
         return toDto(spawn);
     }
 
-    /** Убирает эвона с карты после победы или поимки. */
     @Transactional
     public void remove(Long spawnId) {
         repository.findById(spawnId).ifPresent(spawn -> {
@@ -97,7 +93,6 @@ public class SpawnService {
         });
     }
 
-    /** Удаляет из базы исчезнувших и устаревших эвонов. */
     @Transactional
     public int cleanUp() {
         return repository.deleteGoneOrOlderThan(bornAfter());

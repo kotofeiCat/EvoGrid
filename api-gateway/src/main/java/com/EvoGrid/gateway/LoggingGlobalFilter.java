@@ -8,12 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-
-/**
- * Логирует каждый запрос через шлюз: метод, путь, статус и время ответа.
- * traceId в начале строки ставит Micrometer Tracing, и тот же traceId
- * виден в логах сервиса, который обработал запрос.
- */
 @Slf4j
 @Component
 public class LoggingGlobalFilter implements GlobalFilter, Ordered {

@@ -2,7 +2,6 @@ package com.EvoGrid.common.dto;
 
 import java.util.List;
 
-/** Кошелёк и сумка игрока. */
 public record InventoryDto(
         Long userId,
         int coins,

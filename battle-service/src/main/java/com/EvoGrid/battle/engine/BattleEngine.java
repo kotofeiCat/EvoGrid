@@ -15,31 +15,31 @@ import java.util.function.Supplier;
 
 import static com.EvoGrid.common.game.StatusEffectType.*;
 
-/**
- * Правила боя: порядок ходов, урон, статусы, тики конца раунда.
- * Ничего не знает о БД, HTTP и других сервисах — только меняет бойцов и пишет лог.
- */
 @Component
 public class BattleEngine {
 
-    static final double STAB_MULTIPLIER = 1.25;
+    static final double ATTACK_WEIGHT = 0.6;
+    static final double DEFENSE_SCALE = 70.0;
+    static final double DAMAGE_SCALE = 0.8;
+    static final double DAMAGE_SPREAD = 0.15;
+    static final double MIN_DAMAGE = 3.0;
+
+    static final double ELEMENT_ADVANTAGE = 1.3;
+    static final double ELEMENT_DISADVANTAGE = 0.77;
+    static final double STAB_MULTIPLIER = 1.2;
     static final double CRIT_MULTIPLIER = 1.50;
     static final int BASE_CRIT_CHANCE = 10;
     static final int EVASION_CHANCE = 65;
 
     private static final Set<String> ADVANTAGE = Set.of("FIRE->FOREST", "FOREST->WATER", "WATER->FIRE");
 
-    /** Эффекты, которые просто истекают в конце раунда (−1 ход). */
     private static final Set<StatusEffectType> EXPIRING = EnumSet.of(
             SLOW, BLIND, CRIT_IMMUNE, CC_IMMUNE, ATK_UP, DEF_UP, THORNS, RAGE_SPEED_PIERCE);
 
-    /** Дебаффы, которые накладываются на противника (действуют N ходов). */
     private static final Set<StatusEffectType> TIMED_DEBUFFS = EnumSet.of(BURN, POISON, SLOW, BLIND);
 
-    /** Контроль: пропуск хода. */
     private static final Set<StatusEffectType> CONTROL = EnumSet.of(SLEEP, STUN);
 
-    /** Баффы на себя с длительностью. */
     private static final Set<StatusEffectType> TIMED_BUFFS = EnumSet.of(
             REGEN, ATK_UP, DEF_UP, THORNS, RAGE_SPEED_PIERCE, NEXT_HIT_BURN,
             WATER_BOOST, GUARANTEED_CRIT, CRIT_IMMUNE, CC_IMMUNE);
@@ -54,9 +54,6 @@ public class BattleEngine {
         this.random = random;
     }
 
-    // ==================== РАУНДЫ ====================
-
-    /** Полный раунд: оба бойца действуют в порядке скорости, затем тики статусов. */
     public void playRound(BattleSession b, AbilityDto playerAbility, AbilityDto enemyAbility) {
         Combatant player = b.player();
         Combatant enemy = b.enemy();
@@ -79,7 +76,6 @@ public class BattleEngine {
         if (bothAlive(b)) endOfRound(b);
     }
 
-    /** Раунд, в котором игрок не атаковал (сменил бойца, применил предмет или бросил сферу): ходит только враг. */
     public void enemyOnlyRound(BattleSession b, AbilityDto enemyAbility) {
         act(b, b.enemy(), b.player(), enemyAbility, false);
         if (bothAlive(b)) endOfRound(b);
@@ -89,12 +85,9 @@ public class BattleEngine {
         return b.player().alive() && b.enemy().alive();
     }
 
-    // ==================== ДЕЙСТВИЕ ОДНОГО БОЙЦА ====================
-
     private void act(BattleSession b, Combatant actor, Combatant target, AbilityDto ability, boolean actorIsPlayer) {
         String who = label(actor, actorIsPlayer);
 
-        // Защитная стойка держится только до следующего действия бойца
         actor.blockPercent = 0;
         actor.clearEffect(EVASION);
 
@@ -109,7 +102,6 @@ public class BattleEngine {
             return;
         }
 
-        // +1, потому что в конце этого же раунда перезарядка уменьшится на 1
         if (ability.maxCooldown() > 0) {
             actor.startCooldown(ability.slot(), ability.maxCooldown() + 1);
         }
@@ -160,14 +152,12 @@ public class BattleEngine {
     private void attack(BattleSession b, Combatant actor, Combatant target, AbilityDto ab, String who, String whom) {
         Random rnd = random.get();
 
-        // 1. Точность (ослепление −35%)
         double hitChance = ab.accuracy() / 100.0 * (actor.has(BLIND) ? 0.65 : 1.0);
         if (rnd.nextDouble() > hitChance) {
             b.log(String.format("%s использует «%s», но промахивается.", who, ab.name()));
             return;
         }
 
-        // 2. Уворот цели (одноразовый)
         if (target.has(EVASION)) {
             target.clearEffect(EVASION);
             if (rnd.nextInt(100) < EVASION_CHANCE) {
@@ -176,14 +166,12 @@ public class BattleEngine {
             }
         }
 
-        // 3. Ракушечный барьер цели поглощает удар целиком
         if (target.has(SHELL_BARRIER)) {
             target.clearEffect(SHELL_BARRIER);
             b.log(String.format("%s использует «%s», но барьер %s поглощает удар.", who, ab.name(), whom));
             return;
         }
 
-        // 4. Урон
         String moveElement = moveElement(ab);
         boolean stab = hasStab(ab, actor);
         double elementMult = elementMultiplier(moveElement, target.element);
@@ -215,20 +203,20 @@ public class BattleEngine {
             target.blockPercent = 0;
         }
 
+        double spread = 1.0 - DAMAGE_SPREAD + rnd.nextDouble() * 2 * DAMAGE_SPREAD;
         int damage = Math.max(1, (int) Math.round(baseDamage(actor, target, ab)
                 * elementMult * (stab ? STAB_MULTIPLIER : 1.0) * waterBoost
-                * (crit ? CRIT_MULTIPLIER : 1.0) * blockMult));
+                * (crit ? CRIT_MULTIPLIER : 1.0) * blockMult * spread));
         target.takeDamage(damage);
 
         List<String> tags = new ArrayList<>();
         if (stab) tags.add("STAB");
-        if (elementMult > 1.0) tags.add("стихия x1.5");
-        if (elementMult < 1.0) tags.add("стихия x0.67");
+        if (elementMult > 1.0) tags.add("стихия x" + ELEMENT_ADVANTAGE);
+        if (elementMult < 1.0) tags.add("стихия x" + ELEMENT_DISADVANTAGE);
         if (waterBoost > 1.0) tags.add("заряд x1.35");
         if (crit) tags.add("КРИТ");
         if (blockNote != null) tags.add(blockNote);
 
-        // 5. Статусы от атаки
         List<String> effects = new ArrayList<>();
         applyEffect(actor, target, ab.primaryEffect(), ab.primaryEffectChancePercent(), ab.primaryEffectDuration(), effects);
         if (actor.has(NEXT_HIT_BURN)) {
@@ -242,15 +230,12 @@ public class BattleEngine {
                 damage, target.name, target.hp, target.maxHp,
                 effects.isEmpty() ? "." : " → " + String.join(", ", effects) + "."));
 
-        // 6. Шипы цели отвечают атакующему
         if (target.has(THORNS)) {
             int thorns = actor.percentOfMaxHp(10);
             actor.takeDamage(thorns);
             b.log(String.format("Огненные шипы: %s получает −%d HP.", who, thorns));
         }
     }
-
-    // ==================== СТАТУСЫ ====================
 
     private void applyEffect(Combatant actor, Combatant opponent, StatusEffectType effect,
                              int chancePercent, int duration, List<String> notes) {
@@ -262,7 +247,6 @@ public class BattleEngine {
                 notes.add("иммунитет блокирует «" + effectName(effect) + "»");
                 return;
             }
-            // Длительные дебаффы тикают в конце раунда, поэтому +1; контроль тратится при пропуске хода
             opponent.setEffect(effect, CONTROL.contains(effect) ? duration : duration + 1);
             notes.add(effectName(effect) + " (" + duration + " х.)");
             return;
@@ -278,7 +262,6 @@ public class BattleEngine {
             actor.setEffect(effect, duration + 1);
             notes.add(effectName(effect) + " (" + duration + " х.)");
         }
-        // BLOCK и EVASION задаются полями способности (blockPercent / evasionChancePercent)
     }
 
     private void endOfRound(BattleSession b) {
@@ -310,19 +293,15 @@ public class BattleEngine {
         EXPIRING.forEach(c::decrementEffect);
     }
 
-    // ==================== РАСЧЁТЫ ====================
-
-    /** Примерный урон без случайностей — нужен ИИ для проверки добивания. */
     public int estimateDamage(Combatant actor, Combatant target, AbilityDto ab) {
         double mult = elementMultiplier(moveElement(ab), target.element) * (hasStab(ab, actor) ? STAB_MULTIPLIER : 1.0);
-        double base = Math.max(6.0, (actor.attack + ab.power() * 0.65) - target.defense * 0.45);
-        return Math.max(1, (int) Math.round(base * mult));
+        return Math.max(1, (int) Math.round(baseDamage(actor, target, ab) * mult));
     }
 
     private double baseDamage(Combatant actor, Combatant target, AbilityDto ab) {
-        double atk = actor.attack * (actor.has(ATK_UP) ? 1.30 : 1.0) + ab.power() * 0.65;
-        double def = target.defense * (target.has(DEF_UP) ? 1.35 : 1.0) * 0.45;
-        return Math.max(6.0, atk - def);
+        double atk = actor.attack * (actor.has(ATK_UP) ? 1.30 : 1.0) * ATTACK_WEIGHT + ab.power();
+        double def = target.defense * (target.has(DEF_UP) ? 1.35 : 1.0);
+        return Math.max(MIN_DAMAGE, DAMAGE_SCALE * atk * DEFENSE_SCALE / (DEFENSE_SCALE + def));
     }
 
     public static double elementMultiplier(String attackElement, String defendElement) {
@@ -331,7 +310,7 @@ public class BattleEngine {
                 || "NEUTRAL".equals(attackElement) || "NEUTRAL".equals(defendElement)) {
             return 1.0;
         }
-        return ADVANTAGE.contains(attackElement + "->" + defendElement) ? 1.5 : 0.67;
+        return ADVANTAGE.contains(attackElement + "->" + defendElement) ? ELEMENT_ADVANTAGE : ELEMENT_DISADVANTAGE;
     }
 
     private static String moveElement(AbilityDto ab) {

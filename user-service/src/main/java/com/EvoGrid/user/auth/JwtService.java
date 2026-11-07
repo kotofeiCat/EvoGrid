@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-/** Выпускает JWT. Проверяет токены шлюз — сервису это делать не нужно. */
 @Component
 public class JwtService {
 

@@ -1,5 +1,5 @@
 [
-  {"code": "SPHERE_BASIC", "name": "Простая сфера", "kind": "CAPTURE", "price": 100,
+  {"code": "SPHERE_BASIC", "name": "Простая сфера", "kind": "CAPTURE", "price": 60,
    "description": "Обычный шанс поимки.", "catchMultiplier": 1.0},
   {"code": "SPHERE_GREAT", "name": "Усиленная сфера", "kind": "CAPTURE", "price": 250,
    "description": "Шанс поимки ×1.5.", "catchMultiplier": 1.5},

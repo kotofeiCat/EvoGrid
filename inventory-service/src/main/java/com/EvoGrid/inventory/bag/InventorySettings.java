@@ -4,13 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 
-/**
- * Настройки экономики (config-server: inventory-service.yml).
- *
- * @param starterCoins монеты нового игрока
- * @param starterItems стартовый набор: код предмета → количество
- * @param maxPerPurchase сколько штук можно купить за раз
- */
 @ConfigurationProperties("inventory")
 public record InventorySettings(Integer starterCoins, Map<String, Integer> starterItems, Integer maxPerPurchase) {
 

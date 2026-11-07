@@ -1,32 +1,28 @@
 package com.EvoGrid.common.game;
 
-/** Статусы и баффы, которые способности накладывают в бою. */
 public enum StatusEffectType {
     NONE,
 
-    // На противника
-    BURN,               // горение: 8% max HP в конце хода
-    POISON,             // яд: 10% max HP в конце хода
-    SLEEP,              // сон: пропуск хода
-    STUN,               // оглушение: пропуск хода
-    SLOW,               // замедление: −35% скорости
-    BLIND,              // ослепление: −35% точности
+    BURN,
+    POISON,
+    SLEEP,
+    STUN,
+    SLOW,
+    BLIND,
 
-    // Защитные стойки
-    BLOCK,              // снижение урона на X% (процент задаёт способность)
-    EVASION,            // 65% шанс увернуться от следующей атаки
-    SHELL_BARRIER,      // полностью поглощает следующий удар
-    CRIT_IMMUNE,        // защита от критов
-    CC_IMMUNE,          // иммунитет к контролю и дебаффам
+    BLOCK,
+    EVASION,
+    SHELL_BARRIER,
+    CRIT_IMMUNE,
+    CC_IMMUNE,
 
-    // Баффы на себя
-    REGEN,              // +10% max HP в конце хода
-    ATK_UP,             // атака +30%
-    DEF_UP,             // защита +35%
-    THORNS,             // возврат 10% max HP атакующему
-    RAGE_SPEED_PIERCE,  // скорость x2 и пробитие блока
-    NEXT_HIT_BURN,      // следующий удар поджигает
-    WATER_BOOST,        // следующая водная атака +35%
-    GUARANTEED_CRIT,    // следующая атака — крит
-    CLEANSE             // мгновенно снимает дебаффы
+    REGEN,
+    ATK_UP,
+    DEF_UP,
+    THORNS,
+    RAGE_SPEED_PIERCE,
+    NEXT_HIT_BURN,
+    WATER_BOOST,
+    GUARANTEED_CRIT,
+    CLEANSE
 }

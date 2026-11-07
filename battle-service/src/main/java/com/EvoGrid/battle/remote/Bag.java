@@ -14,10 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Сумка игрока в inventory-service под Circuit Breaker.
- * Если инвентарь недоступен, бой продолжается: не работают только предметы и сферы.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -25,7 +21,6 @@ public class Bag {
 
     private final InventoryClient client;
 
-    /** Каталог предметов меняется только с новой версией сервиса — кэшируем. */
     private final Map<String, ItemDto> catalog = new ConcurrentHashMap<>();
 
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "catalogUnavailable")
@@ -45,7 +40,6 @@ public class Bag {
         client.consume(userId, new ConsumeItemRequest(operationId, itemCode));
     }
 
-    /** @return false, если начислить не удалось — монеты останутся «в долге» и начислятся позже */
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "grantFailed")
     public boolean grantCoins(Long userId, String operationId, int coins) {
         client.grant(userId, GrantRequest.coins(operationId, coins));

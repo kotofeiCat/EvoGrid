@@ -1,9 +1,5 @@
 package com.EvoGrid.common.dto;
 
-/**
- * Эвон в коллекции игрока. partySlot = 1..3, если он в отряде, иначе null.
- * currentHp сохраняется между боями и понемногу восстанавливается со временем.
- */
 public record OwnedPokemonDto(
         Long id,
         Long speciesId,
