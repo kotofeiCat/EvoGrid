@@ -192,7 +192,7 @@ async function openDossierModal(pokeObj, isOwned) {
     document.getElementById('detail-card-box').innerHTML =
         UiComponents.createPokemonLandscapeCard(isOwned ? withHp(pokeObj) : pokeObj);
     renderHealSection(isOwned ? pokeObj : null);
-    document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.archetype}`;
+    document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.level ? `ур. ${pokeObj.level} • ` : ''}${pokeObj.archetype}`;
     document.getElementById('detail-poke-lore').textContent =
         species.description || 'Обитатель мира EvoGrid.';
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);

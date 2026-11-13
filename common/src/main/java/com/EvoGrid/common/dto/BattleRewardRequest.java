@@ -5,7 +5,8 @@ import java.util.List;
 public record BattleRewardRequest(
         int experience,
         List<FighterHp> partyHp,
-        CaughtPokemon caught
+        CaughtPokemon caught,
+        int pokemonExperience
 ) {
     public record FighterHp(Long ownedPokemonId, int hp) {}
 
@@ -18,6 +19,7 @@ public record BattleRewardRequest(
             int currentHp,
             int attack,
             int defense,
-            int speed
+            int speed,
+            int level
     ) {}
 }

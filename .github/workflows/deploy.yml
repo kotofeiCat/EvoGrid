@@ -59,7 +59,7 @@ jobs:
               swapon /swapfile || true
             fi
 
-            mkdir -p /var/www/EboGrid
+            mkdir -p /var/www/EvoGrid
 
       - name: Upload archive to server
         uses: appleboy/scp-action@v0.1.7
@@ -70,7 +70,7 @@ jobs:
           port: 49351
           timeout: 90s
           source: "deploy.tar.gz"
-          target: "/var/www/EboGrid"
+          target: "/var/www/EvoGrid"
 
       - name: Extract and start Docker containers
         uses: appleboy/ssh-action@v1.0.3
@@ -101,6 +101,8 @@ jobs:
             INVENTORY_DB_NAME=inventory_db
             JWT_SECRET=EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!
             EOF
+
+            echo "YANDEX_MAPS_API_KEY=${{ secrets.YANDEX_MAPS_API_KEY }}" >> .env
 
             docker compose build
 

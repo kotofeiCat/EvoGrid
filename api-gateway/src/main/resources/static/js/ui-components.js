@@ -46,6 +46,18 @@ const UiComponents = {
         const spd = poke.speed ?? poke.baseSpeed ?? 25;
         const elem = poke.element || 'NEUTRAL';
         const art = typeof getPokemonArt === 'function' ? getPokemonArt(poke) : null;
+        const arch = poke.archetype || 'Базовый вид';
+        const archLine = poke.level ? `Ур. ${poke.level} · ${arch}` : arch;
+        const hasXp = poke.experienceToNext !== undefined && poke.level;
+        const maxLevel = hasXp && poke.experienceToNext === 0;
+        const xpPct = hasXp && !maxLevel ? Math.min(100, Math.round(poke.experience / poke.experienceToNext * 100)) : 100;
+        const xpRow = hasXp ? `
+                    <div class="separator"></div>
+                    <div class="stat-row xp-row">
+                        <span class="stat-label">Опыт</span>
+                        <span class="xp-bar"><span class="xp-bar-fill" style="width:${xpPct}%"></span></span>
+                        <span class="stat-val">${maxLevel ? 'макс.' : `${poke.experience}/${poke.experienceToNext}`}</span>
+                    </div>` : '';
 
         return `
         <div class="poke-card ${isSelected ? 'selected-card' : ''} ${art ? 'has-art art-' + art.fit : ''}" data-element="${elem}">
@@ -77,7 +89,7 @@ const UiComponents = {
 
                 <div class="card-hero-title">
                     <div class="poke-name-line">${poke.name}</div>
-                    <div class="poke-arch-line">${poke.archetype || 'Базовый вид'}</div>
+                    <div class="poke-arch-line">${archLine}</div>
                 </div>
             </section>
 
@@ -96,7 +108,7 @@ const UiComponents = {
                     <div class="stat-row">
                         <span class="stat-label">Скорость</span>
                         <span class="stat-val">${spd}</span>
-                    </div>
+                    </div>${xpRow}
                 </div>
             </section>
         </div>`;

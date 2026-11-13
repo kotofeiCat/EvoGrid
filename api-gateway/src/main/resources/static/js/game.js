@@ -507,6 +507,7 @@ function renderBattleState() {
         name: b.playerPokemonName,
         element: b.playerElement,
         archetype: 'Ваш боец',
+        level: b.playerLevel,
         maxHp: `${b.playerCurrentHp}/${b.playerMaxHp}`,
         attack: b.playerAttack,
         defense: b.playerDefense,
@@ -517,6 +518,7 @@ function renderBattleState() {
         name: b.enemyPokemonName,
         element: b.enemyElement,
         archetype: b.enemyArchetype,
+        level: b.enemyLevel,
         maxHp: `${b.enemyCurrentHp}/${b.enemyMaxHp}`,
         attack: b.enemyAttack,
         defense: b.enemyDefense,
@@ -690,7 +692,7 @@ function renderTeamStrip(b, isOver) {
                 <span class="team-chip-icon">${renderGoogleIcon(f.element)}</span>
                 <span class="team-chip-body">
                     <span class="team-chip-name">${escapeHtml(f.name)}</span>
-                    <span class="team-chip-state">${state} · ${f.currentHp}/${f.maxHp}</span>
+                    <span class="team-chip-state">${f.level ? `ур. ${f.level} · ` : ''}${state} · ${f.currentHp}/${f.maxHp}</span>
                     <span class="team-chip-hp"><span class="hp-bar-fill ${hpCls}" style="width:${pct}%"></span></span>
                 </span>
             </button>`;

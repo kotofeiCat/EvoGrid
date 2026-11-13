@@ -781,3 +781,22 @@ ul {
         transform: scale(1.04);
     }
 }
+
+.xp-row {
+    gap: 8px;
+}
+
+.xp-bar {
+    flex: 1;
+    height: 5px;
+    border-radius: 999px;
+    background: #eef2f9;
+    overflow: hidden;
+}
+
+.xp-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #f5b301;
+}

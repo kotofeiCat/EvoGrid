@@ -1,23 +1,24 @@
 package com.EvoGrid.battle.service;
 
-import com.EvoGrid.battle.engine.BattleEngine;
-import com.EvoGrid.battle.engine.CatchRules;
-import com.EvoGrid.battle.engine.Combatant;
-import com.EvoGrid.battle.engine.EnemyAi;
-import com.EvoGrid.battle.remote.AbilityBook;
-import com.EvoGrid.battle.remote.Bag;
-import com.EvoGrid.battle.remote.Players;
-import com.EvoGrid.battle.remote.Spawns;
-import com.EvoGrid.battle.session.BattleSession;
-import com.EvoGrid.battle.session.BattleSessionRepository;
-import com.EvoGrid.battle.session.BattleStatus;
-import com.EvoGrid.battle.web.BattleStateDto;
+import com.EvoGrid.battle.client.AbilityBook;
+import com.EvoGrid.battle.client.Bag;
+import com.EvoGrid.battle.client.Players;
+import com.EvoGrid.battle.client.Spawns;
+import com.EvoGrid.battle.config.BattleSettings;
+import com.EvoGrid.battle.dto.BattleStateDto;
+import com.EvoGrid.battle.mapper.BattleMapper;
+import com.EvoGrid.battle.model.BattleSession;
+import com.EvoGrid.battle.model.BattleStatus;
+import com.EvoGrid.battle.model.Combatant;
+import com.EvoGrid.battle.repository.BattleSessionRepository;
+import com.EvoGrid.battle.util.Geo;
 import com.EvoGrid.common.dto.AbilityDto;
 import com.EvoGrid.common.dto.ItemDto;
 import com.EvoGrid.common.dto.OwnedPokemonDto;
 import com.EvoGrid.common.dto.UserProfileDto;
 import com.EvoGrid.common.dto.WorldSpawnDto;
 import com.EvoGrid.common.game.ItemKind;
+import com.EvoGrid.common.game.Leveling;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -70,17 +71,26 @@ public class BattleService {
         }
 
         List<Combatant> team = party.stream()
-                .map(p -> new Combatant(p.id(), p.speciesId(), p.name(), p.element(), p.archetype(),
-                        p.maxHp(), p.currentHp(), p.attack(), p.defense(), p.speed(),
-                        abilityBook.forSpecies(p.speciesId())))
+                .map(p -> {
+                    Combatant c = new Combatant(p.id(), p.speciesId(), p.name(), p.element(), p.archetype(),
+                            p.maxHp(), p.currentHp(), p.attack(), p.defense(), p.speed(),
+                            abilityBook.forSpecies(p.speciesId()));
+                    c.level = Leveling.clamp(p.level());
+                    c.experience = p.experience();
+                    return c;
+                })
                 .toList();
         int active = firstFighter(party, partySlot != null ? partySlot : user.activePartySlot());
+        int enemyLevel = enemyLevelFor(party);
         Combatant enemy = new Combatant(spawn.speciesId(), spawn.name(), spawn.element(), spawn.archetype(),
-                spawn.maxHp(), spawn.attack(), spawn.defense(), spawn.speed(),
+                Leveling.scale(spawn.maxHp(), enemyLevel), Leveling.scale(spawn.attack(), enemyLevel),
+                Leveling.scale(spawn.defense(), enemyLevel), Leveling.scale(spawn.speed(), enemyLevel),
                 abilityBook.forSpecies(spawn.speciesId()));
+        enemy.level = enemyLevel;
 
         BattleSession battle = save(new BattleSession(userId, spawnId, team, active, enemy,
-                "Бой начался: " + team.get(active).name + " против дикого " + enemy.name + ".", nextDeadline()));
+                "Бой начался: " + team.get(active).name + " против дикого " + enemy.name
+                        + " (ур. " + enemy.level + ").", nextDeadline()));
         log.info("Бой {} начат: игрок {} ({} в отряде) против {} (спавн {})",
                 battle.getId(), userId, team.size(), enemy.name, spawnId);
         return toDto(battle);
@@ -264,6 +274,12 @@ public class BattleService {
             if (!party.get(i).fainted()) return i;
         }
         throw new IllegalStateException("в отряде нет живых — проверяется раньше");
+    }
+
+    static int enemyLevelFor(List<OwnedPokemonDto> party) {
+        int average = Leveling.averageLevel(party.stream().map(OwnedPokemonDto::level).toList());
+        int spread = ThreadLocalRandom.current().nextInt(-1, 2);
+        return Leveling.clamp(average + spread);
     }
 
     private static Combatant fighter(BattleSession battle, int index) {

@@ -10,6 +10,8 @@ x-cloud-env: &cloud-env
   EUREKA_URI: http://discovery-server:8761/eureka
 
 x-db-env: &db-env
+  CONFIG_SERVER_HOST: config-server
+  EUREKA_URI: http://discovery-server:8761/eureka
   DB_HOST: postgres
   DB_PORT: 5432
   DB_USER: ${POSTGRES_USER:-postgres}
@@ -109,7 +111,7 @@ services:
         JAR_FILE: user-service/target/user-service-1.0.0.jar
     container_name: user-service
     environment:
-      <<: [*cloud-env, *db-env]
+      <<: *db-env
       DB_NAME: ${USER_DB_NAME:-user_db}
       JWT_SECRET: ${JWT_SECRET:-EvoGridSuperSecretKeyForJwtSigning2026CloudMvpProject!}
     depends_on: *after-infra
@@ -125,7 +127,7 @@ services:
         JAR_FILE: pokemon-service/target/pokemon-service-1.0.0.jar
     container_name: pokemon-service
     environment:
-      <<: [*cloud-env, *db-env]
+      <<: *db-env
       DB_NAME: ${POKEMON_DB_NAME:-pokemon_db}
     depends_on: *after-infra
     healthcheck:
@@ -140,7 +142,7 @@ services:
         JAR_FILE: world-service/target/world-service-1.0.0.jar
     container_name: world-service
     environment:
-      <<: [*cloud-env, *db-env]
+      <<: *db-env
       DB_NAME: ${WORLD_DB_NAME:-world_db}
     depends_on: *after-infra
     healthcheck:
@@ -155,7 +157,7 @@ services:
         JAR_FILE: battle-service/target/battle-service-1.0.0.jar
     container_name: battle-service
     environment:
-      <<: [*cloud-env, *db-env]
+      <<: *db-env
       DB_NAME: ${BATTLE_DB_NAME:-battle_db}
     depends_on: *after-infra
     healthcheck:
@@ -170,7 +172,7 @@ services:
         JAR_FILE: inventory-service/target/inventory-service-1.0.0.jar
     container_name: inventory-service
     environment:
-      <<: [*cloud-env, *db-env]
+      <<: *db-env
       DB_NAME: ${INVENTORY_DB_NAME:-inventory_db}
     depends_on:
       <<: *after-infra

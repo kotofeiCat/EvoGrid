@@ -11,7 +11,10 @@ public record OwnedPokemonDto(
         int attack,
         int defense,
         int speed,
-        Integer partySlot
+        Integer partySlot,
+        int level,
+        int experience,
+        int experienceToNext
 ) {
     public boolean fainted() {
         return currentHp <= 0;
