@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'evogrid-microservices'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'api-gateway:8080'
+          - 'user-service:8081'
+          - 'pokemon-service:8082'
+          - 'battle-service:8083'
+          - 'world-service:8084'
+          - 'inventory-service:8085'
+          - 'discovery-server:8761'
+          - 'config-server:8888'

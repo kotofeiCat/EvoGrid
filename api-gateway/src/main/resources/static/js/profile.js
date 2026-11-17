@@ -3,7 +3,35 @@ let allSpecies = [];
 let inspectedPokemon = null;
 let bagData = null;
 
+const HELP_FAQ = [
+    {
+        q: 'Как ловить диких эвонов на карте?',
+        a: 'Подойдите к эвону в синий радиус радара (70 метров), нажмите на его метку на карте и начните бой. Снизьте его здоровье (чем меньше HP осталось, тем выше шанс поимки — до 95%), затем нажмите «Сферы» и бросьте подходящую сферу.'
+    },
+    {
+        q: 'Как работают стихии и бонус STAB в бою?',
+        a: 'Действует треугольник стихий: Огонь сильнее Леса, Лес сильнее Воды, Вода сильнее Огня (урон ×1.3 при преимуществе и ×0.77 при слабости). Если стихия способности совпадает со стихией вашего эвона, срабатывает бонус STAB (+20% к урону).'
+    },
+    {
+        q: 'Чем отличаются сферы в магазине?',
+        a: 'Простая сфера даёт базовый шанс (×1.0), Усиленная — ×1.5, Звёздная — ×2.0 против любых стихий. Стихийные сферы (Огня, Воды, Леса) дают максимальный бонус ×3.0 против эвонов своей стихии.'
+    },
+    {
+        q: 'Как лечить и воскрешать своих эвонов?',
+        a: 'Вне боя эвоны постепенно восстанавливают здоровье сами (полное восстановление занимает 30 минут). Мгновенно вылечить бойца или поднять выбывшего («Искра жизни» — 50% HP) можно прямо в бою через кнопку «Предметы» или в профиле, открыв карточку эвона во вкладке «Отряд».'
+    },
+    {
+        q: 'Зачем нужен отряд из 3 слотов и как менять бойца?',
+        a: 'В активный отряд можно назначить до 3 эвонов (во вкладке «Отряд» → нажмите на карточку из коллекции и выберите слот 1, 2 или 3). В бою можно переключаться между живыми бойцами отряда, нажав на нужного эвона в полоске команды.'
+    },
+    {
+        q: 'Как повышать уровень тренера и эвонов?',
+        a: 'За победы, поимку и участие в боях начисляются монеты и опыт (XP). Каждые 100 XP повышают уровень тренера и автоматически добавляют +3 Простые сферы в сумку. Эвоны отряда также получают опыт и усиливают характеристики вплоть до 10 уровня.'
+    }
+];
+
 window.addEventListener('DOMContentLoaded', async () => {
+    renderHelpFaq();
     try {
         await reloadProfileData();
         routeByHash();
@@ -17,6 +45,21 @@ window.addEventListener('DOMContentLoaded', async () => {
     Gestures.enableSwipeToClose(detailModal, closeDetailModal);
     detailModal.addEventListener('click', (e) => {
         if (e.target === detailModal) closeDetailModal();
+    });
+
+    const helpModal = document.getElementById('modal-help');
+    if (helpModal) {
+        Gestures.enableSwipeToClose(helpModal, closeHelpModal);
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) closeHelpModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeHelpModal();
+            closeDetailModal();
+        }
     });
 
     Gestures.enableTabSwipe(document.body, () => TAB_ORDER.indexOf(currentTab()), (index, direction) => {
@@ -41,13 +84,10 @@ function currentTab() {
 function routeByHash() {
     const hash = (window.location.hash || '#profile').replace('#', '');
     const validTab = ['profile', 'party', 'pokedex'].includes(hash) ? hash : 'profile';
-
     document.getElementById('view-profile').classList.toggle('hidden', validTab !== 'profile');
     document.getElementById('view-party').classList.toggle('hidden', validTab !== 'party');
     document.getElementById('view-pokedex').classList.toggle('hidden', validTab !== 'pokedex');
-
     document.getElementById('dock-mount').innerHTML = UiComponents.renderBottomDock(validTab);
-
     if (pendingSlide) {
         const view = document.getElementById('view-' + validTab);
         view.classList.remove('slide-from-left', 'slide-from-right');
@@ -64,25 +104,19 @@ async function reloadProfileData() {
         ApiService.getAllSpecies(),
         ApiService.getInventory().catch(() => null)
     ]);
-
     const xp = profileData.experience || 0;
     const xpPercent = Math.min(100, Math.max(0, xp % 100));
-
     document.getElementById('prof-avatar').textContent = profileData.email.charAt(0).toUpperCase();
     document.getElementById('prof-name').textContent = profileData.email;
     document.getElementById('prof-level').textContent = profileData.level;
     document.getElementById('prof-xp').textContent = xp;
-
     const xpTile = document.getElementById('prof-xp-tile');
     if (xpTile) xpTile.textContent = xp;
-
     const xpBar = document.getElementById('prof-xp-bar');
     if (xpBar) xpBar.style.width = `${xpPercent}%`;
-
     document.getElementById('prof-coins').textContent = bagData ? bagData.coins : '—';
     renderProfileBag();
     document.getElementById('prof-total-count').textContent = (profileData.collection || []).length;
-
     renderPartySlots();
     renderOwnedCollection();
     renderFullPokedex();
@@ -92,23 +126,21 @@ function renderPartySlots() {
     const activeSlot = profileData.activePartySlot || 1;
     const container = document.getElementById('party-slots-row');
     container.innerHTML = '';
-
     for (let slot = 1; slot <= 3; slot++) {
         const p = (profileData.party || []).find(item => item.partySlot === slot);
         const pillar = document.createElement('div');
         pillar.className = 'slot-pillar';
-
         if (p) {
             const isMain = activeSlot === slot;
             pillar.innerHTML = `
                 <span class="slot-tag ${isMain ? 'active-tag' : ''}">
-                    Слот #${slot} ${isMain ? '• Активен' : ''}
+                    Слот #${slot}${isMain ? ' • Активный' : ''}
                 </span>
                 <div class="card-click-area ${p.currentHp <= 0 ? 'is-fainted' : ''}">${UiComponents.createPokemonLandscapeCard(withHp(p), isMain)}</div>
                 ${renderHpLine(p)}
                 <div class="slot-actions-col">
                     <button class="uiv-btn ${isMain ? 'primary' : ''} btn-select-slot" style="width:100%" data-slot="${slot}">
-                        <span class="button_top">${isMain ? 'Активный боец' : 'Сделать основным'}</span>
+                        <span class="button_top">${isMain ? 'Активный боец' : 'Сделать активным'}</span>
                     </button>
                     <button class="uiv-btn btn-inspect-abilities" style="width:100%">
                         <span class="button_top">Способности</span>
@@ -122,7 +154,7 @@ function renderPartySlots() {
                     profileData = await ApiService.selectActiveSlot(slot);
                     renderPartySlots();
                 } catch (err) {
-                    UiComponents.showErrorAlert('Не получилось', err.message);
+                    UiComponents.showErrorAlert('Ошибка', err.message);
                 }
             };
         } else {
@@ -134,7 +166,7 @@ function renderPartySlots() {
                         <line x1="12" y1="8" x2="12" y2="16"/>
                         <line x1="8" y1="12" x2="16" y2="12"/>
                     </svg>
-                    <span>Слот свободен</span>
+                    <span>Пустой слот</span>
                     <small>Выберите эвона из коллекции ниже</small>
                 </div>
             `;
@@ -147,12 +179,11 @@ function renderOwnedCollection() {
     const colContainer = document.getElementById('owned-collection-row');
     colContainer.innerHTML = '';
     if (!(profileData.collection || []).length) {
-        colContainer.innerHTML = '<div class="empty-hint">Пока никого не поймано. Открой карту и подойди к дикому эвону ближе чем на 70 м.</div>';
+        colContainer.innerHTML = '<div class="empty-hint">Пока нет пойманных эвонов. Подойдите к дикому эвону на карте ближе 70 м и поймайте его в бою.</div>';
         return;
     }
     (profileData.collection || []).forEach(p => {
         const wrapper = document.createElement('div');
-        wrapper.className = 'grid-card-item';
         wrapper.className = `grid-card-item ${p.currentHp <= 0 ? 'is-fainted' : ''}`;
         wrapper.innerHTML = UiComponents.createPokemonLandscapeCard(withHp(p), Boolean(p.partySlot));
         wrapper.onclick = () => openDossierModal(p, true);
@@ -175,10 +206,10 @@ function renderFullPokedex() {
 
 function formatDossierAbilityMeta(ab) {
     if (ab.category === 'DEFENSE') {
-        return ab.blockPercent > 0 ? `БЛОК ${ab.blockPercent}%` : `УКЛОНЕНИЕ ${ab.evasionChancePercent}%`;
+        return ab.blockPercent > 0 ? `Блок ${ab.blockPercent}%` : `Уклонение ${ab.evasionChancePercent}%`;
     }
     if (ab.category === 'UTILITY') {
-        return ab.healPercentMaxHp > 0 ? `ХИЛ +${ab.healPercentMaxHp}%` : 'УСИЛЕНИЕ';
+        return ab.healPercentMaxHp > 0 ? `Лечение +${ab.healPercentMaxHp}%` : 'Поддержка';
     }
     const stabLabel = ab.stab ? ' • STAB' : '';
     return `PWR ${ab.power}${stabLabel}`;
@@ -188,15 +219,13 @@ async function openDossierModal(pokeObj, isOwned) {
     inspectedPokemon = isOwned ? pokeObj : null;
     const speciesId = pokeObj.speciesId ?? pokeObj.id;
     const species = allSpecies.find(s => s.id === speciesId) || pokeObj;
-
     document.getElementById('detail-card-box').innerHTML =
         UiComponents.createPokemonLandscapeCard(isOwned ? withHp(pokeObj) : pokeObj);
     renderHealSection(isOwned ? pokeObj : null);
-    document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.level ? `ур. ${pokeObj.level} • ` : ''}${pokeObj.archetype}`;
+    document.getElementById('detail-poke-name').textContent = `${pokeObj.name} • ${pokeObj.level ? `Ур. ${pokeObj.level} • ` : ''}${pokeObj.archetype}`;
     document.getElementById('detail-poke-lore').textContent =
-        species.description || 'Обитатель мира EvoGrid.';
+        species.description || 'Существо мира EvoGrid.';
     document.getElementById('slot-assignment-controls').classList.toggle('hidden', !isOwned);
-
     const abilitiesListEl = document.getElementById('detail-poke-abilities-list');
     abilitiesListEl.innerHTML = `<div class="ability-loading">Загрузка способностей...</div>`;
     document.getElementById('modal-poke-details').classList.remove('hidden');
@@ -219,7 +248,7 @@ async function openDossierModal(pokeObj, isOwned) {
             `;
         }).join('');
     } catch {
-        abilitiesListEl.innerHTML = `<div class="ability-loading">Не удалось получить список способностей</div>`;
+        abilitiesListEl.innerHTML = `<div class="ability-loading">Не удалось загрузить способности</div>`;
     }
 }
 
@@ -230,7 +259,7 @@ async function assignToSlot(slotNumber) {
         closeDetailModal();
         await reloadProfileData();
     } catch (err) {
-        UiComponents.showErrorAlert('Не получилось', err.message);
+        UiComponents.showErrorAlert('Ошибка', err.message);
     }
 }
 
@@ -256,11 +285,11 @@ function renderHpLine(p) {
 function renderProfileBag() {
     const box = document.getElementById('profile-bag');
     if (!bagData) {
-        box.innerHTML = '<div class="empty-hint">Сумка временно недоступна.</div>';
+        box.innerHTML = '<div class="empty-hint">Не удалось загрузить сумку.</div>';
         return;
     }
     if (!bagData.items.length) {
-        box.innerHTML = '<div class="empty-hint">Сумка пуста. Загляните в магазин.</div>';
+        box.innerHTML = '<div class="empty-hint">В сумке пока пусто.</div>';
         return;
     }
     box.innerHTML = bagData.items.map(({ item, quantity }) => `
@@ -278,27 +307,25 @@ function renderHealSection(owned) {
     const wrap = document.getElementById('detail-heal-wrap');
     wrap.classList.toggle('hidden', !owned);
     if (!owned) return;
-
     const pct = owned.maxHp > 0 ? (owned.currentHp / owned.maxHp) * 100 : 0;
     const fill = document.getElementById('detail-hp-fill');
     fill.style.width = `${pct}%`;
     fill.className = `hp-bar-fill ${hpClass(owned)}`;
     document.getElementById('detail-hp-text').textContent =
         owned.currentHp <= 0 ? 'Без сил' : `${owned.currentHp}/${owned.maxHp} HP`;
-
     const list = document.getElementById('detail-heal-items');
     const fainted = owned.currentHp <= 0;
     const full = owned.currentHp >= owned.maxHp;
     if (full) {
-        list.innerHTML = '<div class="bag-panel-hint">Полностью здоров.</div>';
+        list.innerHTML = '<div class="bag-panel-hint">Здоровье полное.</div>';
         return;
     }
     const usable = (bagData?.items || []).filter(({ item }) =>
         fainted ? item.kind === 'REVIVE' : item.kind === 'HEAL');
     if (!usable.length) {
         list.innerHTML = `<div class="bag-panel-hint">${fainted
-            ? 'Нужна «Искра жизни» — она есть в магазине. Или подождите: силы возвращаются сами примерно за полчаса.'
-            : 'Лечилок нет. Здоровье восстанавливается само со временем или купите настой в магазине.'}</div>`;
+            ? 'Нет «Искры жизни» в сумке.'
+            : 'Нет лечебных настоев в сумке.'}</div>`;
         return;
     }
     list.innerHTML = usable.map(({ item, quantity }) => `
@@ -324,10 +351,53 @@ async function healInspected(itemCode) {
             renderHealSection(updated);
         }
     } catch (err) {
-        UiComponents.showErrorAlert('Не получилось', err.message);
+        UiComponents.showErrorAlert('Ошибка', err.message);
     }
 }
 
 function closeDetailModal() {
     document.getElementById('modal-poke-details').classList.add('hidden');
-}
+}
+
+function renderHelpFaq() {
+    const container = document.getElementById('help-faq-list');
+    if (!container) return;
+    container.innerHTML = HELP_FAQ.map((item, idx) => `
+        <div class="faq-item" data-faq-idx="${idx}">
+            <button type="button" class="faq-question" aria-expanded="false" onclick="toggleFaqItem(${idx})">
+                <span class="faq-q-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </span>
+                <span class="faq-q-text">${item.q}</span>
+                <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </button>
+            <div class="faq-answer">
+                <div class="faq-answer-inner">${item.a}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleFaqItem(idx) {
+    const item = document.querySelector(`.faq-item[data-faq-idx="${idx}"]`);
+    if (!item) return;
+    const isOpen = item.classList.toggle('open');
+    const btn = item.querySelector('.faq-question');
+    if (btn) btn.setAttribute('aria-expanded', String(isOpen));
+}
+
+function openHelpModal() {
+    const modal = document.getElementById('modal-help');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeHelpModal() {
+    const modal = document.getElementById('modal-help');
+    if (modal) modal.classList.add('hidden');
+}

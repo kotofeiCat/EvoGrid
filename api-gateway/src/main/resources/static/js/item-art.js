@@ -10,8 +10,10 @@ const ItemArt = (() => {
 
     function sphere(code) {
         const [main, light] = SPHERE_COLORS[code] || SPHERE_COLORS.SPHERE_BASIC;
-        const star = code === 'SPHERE_STAR'
-            ? '<path d="M24 13l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z" fill="#fff" opacity=".9"/>'
+        const isStar = code === 'SPHERE_STAR';
+        const starEmblem = isStar
+            ? `<polygon points="24,6.8 25.3,9.6 28.4,10 26.1,12.2 26.7,15.3 24,13.8 21.3,15.3 21.9,12.2 19.6,10 22.7,9.6" fill="#ffffff"/>
+               <circle cx="24" cy="24" r="2.3" fill="#e0a100"/>`
             : '';
         return `
         <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -19,7 +21,7 @@ const ItemArt = (() => {
             <path d="M4 24a20 20 0 0 1 40 0z" fill="${main}"/>
             <rect x="4" y="22.5" width="40" height="3" fill="#0f1f3d"/>
             <circle cx="24" cy="24" r="6" fill="#fff" stroke="#0f1f3d" stroke-width="3"/>
-            ${star}
+            ${starEmblem}
         </svg>`;
     }
 
@@ -27,10 +29,10 @@ const ItemArt = (() => {
         const color = item.fullHeal ? '#e0a100' : (item.healHp >= 80 ? '#7a3cff' : '#e4572e');
         return `
         <svg viewBox="0 0 48 48" aria-hidden="true">
-            <rect x="19" y="4" width="10" height="8" rx="2" fill="#8b97b0"/>
-            <path d="M18 12h12v6l7 10v10a6 6 0 0 1-6 6H17a6 6 0 0 1-6-6V28l7-10z" fill="#ffffff" stroke="#0f1f3d" stroke-width="2.5"/>
-            <path d="M12.5 30h23v8a4.5 4.5 0 0 1-4.5 4.5H17a4.5 4.5 0 0 1-4.5-4.5z" fill="${color}"/>
-            <path d="M24 31.5v8M20 35.5h8" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="20" y="5" width="8" height="5" rx="2" fill="#d99b52" stroke="#0f1f3d" stroke-width="2.2"/>
+            <rect x="19" y="10" width="10" height="5" rx="1.5" fill="#ffffff" stroke="#0f1f3d" stroke-width="2.2"/>
+            <circle cx="24" cy="29" r="14" fill="${color}" stroke="#0f1f3d" stroke-width="2.5"/>
+            <path d="M24 23v12M18 29h12" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
         </svg>`;
     }
 

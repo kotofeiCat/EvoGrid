@@ -12,3 +12,11 @@ spring:
       server:
         native:
           search-locations: classpath:/config
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}

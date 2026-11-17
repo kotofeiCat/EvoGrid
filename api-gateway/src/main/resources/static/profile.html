@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#1f5eff">
-    <title>EvoGrid — Профиль и Отряд</title>
+    <title>EvoGrid — Профиль</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/uiverse.css">
 </head>
 <body>
-
 <main class="workspace-page">
     <section id="view-profile" class="view-section hidden">
         <div class="profile-card-hero">
@@ -20,7 +19,6 @@
                     <p>Тренер EvoGrid</p>
                 </div>
             </div>
-
             <div class="xp-progress-wrap">
                 <div class="xp-progress-labels">
                     <span>Опыт до следующего уровня</span>
@@ -35,7 +33,9 @@
         <div class="metrics-grid">
             <div class="metric-tile">
                 <div class="metric-icon-box blue">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-3.5 2 1-4L6 10l4-.5L12 6l2 3.5 4 .5-3.5 3 1 4z"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
                 </div>
                 <div class="metric-info">
                     <span class="metric-label">Уровень тренера</span>
@@ -44,7 +44,11 @@
             </div>
             <div class="metric-tile">
                 <div class="metric-icon-box rose">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.6-.9-1.6-1.5-2.8-1.5-1.7 0-2.9 1-2.9 2.2 0 2.9 6 1.6 6 4.6 0 1.3-1.3 2.2-3.1 2.2-1.3 0-2.4-.6-3-1.5"/><path d="M12 6v12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M14.5 9.5c-.6-.9-1.6-1.5-2.8-1.5-1.7 0-2.9 1-2.9 2.2 0 2.9 6 1.6 6 4.6 0 1.3-1.3 2.2-3.1 2.2-1.3 0-2.4-.6-3-1.5"/>
+                        <path d="M12 6v12"/>
+                    </svg>
                 </div>
                 <div class="metric-info">
                     <span class="metric-label">Монеты</span>
@@ -53,7 +57,12 @@
             </div>
             <div class="metric-tile">
                 <div class="metric-icon-box emerald">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                    </svg>
                 </div>
                 <div class="metric-info">
                     <span class="metric-label">Поймано в коллекции</span>
@@ -67,11 +76,22 @@
             <p>Лечилки и «Искру жизни» применяйте из карточки эвона во вкладке «Отряд» или прямо в бою</p>
         </div>
         <div id="profile-bag" class="bag-list bag-list-wide"></div>
-        <a href="shop.html" class="uiv-btn primary bag-shop-link"><span class="button_top">В магазин</span></a>
 
         <div class="profile-footer">
+            <button type="button" class="help-link" onclick="openHelpModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Подсказки
+            </button>
             <button type="button" class="logout-link" onclick="ApiService.logout()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <path d="M16 17l5-5-5-5"/>
+                    <path d="M21 12H9"/>
+                </svg>
                 Выйти из аккаунта
             </button>
         </div>
@@ -79,14 +99,13 @@
 
     <section id="view-party" class="view-section hidden">
         <div class="section-header left-align">
-            <h2>Боевой отряд</h2>
-            <p>В бой выходит активный боец, остальные ждут в запасе — их можно выпустить по ходу боя. Нажмите на карточку, чтобы изучить способности или вылечить эвона</p>
+            <h2>Активный отряд</h2>
+            <p>До 3 бойцов, с которыми вы выходите в сражение</p>
         </div>
         <div id="party-slots-row" class="party-grid"></div>
-
         <div class="section-header left-align section-gap">
-            <h2>Пойманные эвоны</h2>
-            <p>Нажмите на любого пойманного эвона, чтобы почитать его способности и назначить в слот 1, 2 или 3</p>
+            <h2>Моя коллекция</h2>
+            <p>Нажмите на эвона, чтобы поставить его в слот 1, 2 или 3</p>
         </div>
         <div id="owned-collection-row" class="cards-grid"></div>
     </section>
@@ -94,7 +113,7 @@
     <section id="view-pokedex" class="view-section hidden">
         <div class="section-header left-align">
             <h2>Эводекс</h2>
-            <p>Полный каталог видов EvoGrid и их боевых характеристик</p>
+            <p>Все известные виды существ мира EvoGrid</p>
         </div>
         <div id="pokedex-catalog-row" class="cards-grid"></div>
     </section>
@@ -107,37 +126,58 @@
         <div class="inspector-layout">
             <div id="detail-card-box"></div>
             <div class="inspector-details">
-                <h2 id="detail-poke-name">Эвон</h2>
+                <h2 id="detail-poke-name">Имя эвона</h2>
                 <div id="detail-poke-lore" class="lore-box"></div>
-
                 <div id="detail-heal-wrap" class="hidden">
-                    <div class="abilities-section-title">Здоровье</div>
+                    <div class="abilities-section-title">Лечение и восстановление</div>
                     <div class="detail-hp-row">
                         <div class="hp-bar"><div id="detail-hp-fill" class="hp-bar-fill"></div></div>
                         <span id="detail-hp-text" class="detail-hp-text"></span>
                     </div>
                     <div id="detail-heal-items" class="bag-list"></div>
                 </div>
-
                 <div id="detail-poke-abilities-wrap">
-                    <div class="abilities-section-title">Боевые способности</div>
+                    <div class="abilities-section-title">Способности</div>
                     <div id="detail-poke-abilities-list" class="dossier-abilities-grid"></div>
                 </div>
-
                 <div id="slot-assignment-controls">
-                    <p class="slot-assign-title">Назначить в боевой слот:</p>
+                    <p class="slot-assign-title">Назначить в отряд:</p>
                     <div class="slot-assign-btns">
                         <button class="uiv-btn primary" onclick="assignToSlot(1)"><span class="button_top">Слот 1</span></button>
                         <button class="uiv-btn primary" onclick="assignToSlot(2)"><span class="button_top">Слот 2</span></button>
                         <button class="uiv-btn primary" onclick="assignToSlot(3)"><span class="button_top">Слот 3</span></button>
                     </div>
                 </div>
-
                 <button class="uiv-btn" onclick="closeDetailModal()">
                     <span class="button_top">Закрыть</span>
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="modal-help" class="modal-backdrop hidden">
+    <div class="modal-window help-modal-window">
+        <div class="help-modal-head">
+            <div class="help-modal-title-wrap">
+                <div class="metric-icon-box blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2>Подсказки и помощь</h2>
+                    <p>Нажмите на вопрос, чтобы раскрыть ответ</p>
+                </div>
+            </div>
+            <button type="button" class="bag-panel-close" onclick="closeHelpModal()" aria-label="Закрыть">✕</button>
+        </div>
+        <div id="help-faq-list" class="faq-list"></div>
+        <button type="button" class="uiv-btn" style="width:100%;margin-top:16px" onclick="closeHelpModal()">
+            <span class="button_top">Закрыть</span>
+        </button>
     </div>
 </div>
 
@@ -148,4 +188,4 @@
 <script src="js/ui-components.js"></script>
 <script src="js/profile.js"></script>
 </body>
-</html>
+</html>
